@@ -111,6 +111,36 @@
       "createdAt": "2026-09-28T08:33:11.312Z",
       "updatedAt": null,
       "expiresAt": null
+    },
+    {
+      "id": "7db1bbe9-cd3e-49a4-93fb-190f5e4a1be9",
+      "project": "Personal - TFM",
+      "sessionId": null,
+      "parentId": "project:Personal - TFM",
+      "nodeType": "entry",
+      "version": 1,
+      "title": "Configuración de Git con cuenta personal QSMANU y commit inicial",
+      "content": "Se configuró Git de forma local en el repositorio para usar la cuenta QSMANU con el correo QSMANU@users.noreply.github.com, aislando por completo la cuenta laboral. Se creó el commit inicial con la memoria y las instrucciones en la rama main apuntando al remoto https://github.com/QSMANU/Personal---TFM.git.",
+      "why": "Evitar usar la cuenta corporativa de trabajo y preparar la sincronización con Pablo vía GitHub.",
+      "outcome": "Commit inicial generado localmente con el usuario QSMANU y listo para subir al repositorio de GitHub.",
+      "type": "note",
+      "status": "active",
+      "tags": [],
+      "source": "user",
+      "files": [
+        {
+          "path": "c:/Users/QsManu-Movil/Documents/ChatGPT/Personal - TFM/CLAUDE.md"
+        },
+        {
+          "path": "c:/Users/QsManu-Movil/Documents/ChatGPT/Personal - TFM/AGENTS.md"
+        }
+      ],
+      "codeRefs": [],
+      "importance": 4,
+      "discussionId": null,
+      "createdAt": "2026-09-28T09:58:34.798Z",
+      "updatedAt": null,
+      "expiresAt": null
     }
   ]
 }
