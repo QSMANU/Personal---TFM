@@ -14,7 +14,7 @@ Toda la memoria (decisiones técnicas, directivas del TFM, estado del proyecto y
 
 ---
 
-## 🚀 Guía de Instalación Rápida (Para Pablo / Nuevo Equipo)
+## 🚀 Guía de Instalación Rápida
 
 ### 1. Requisitos Previos
 * [Git](https://git-scm.com/) instalado en Windows.
