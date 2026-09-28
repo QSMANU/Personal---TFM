@@ -171,6 +171,39 @@
       "createdAt": "2026-09-28T10:08:49.959Z",
       "updatedAt": null,
       "expiresAt": null
+    },
+    {
+      "id": "23319eec-79fc-464a-b52b-a3f9f9d9b8e4",
+      "project": "Personal - TFM",
+      "sessionId": null,
+      "parentId": "project:Personal - TFM",
+      "nodeType": "entry",
+      "version": 1,
+      "title": "Documentación de repositorio, README completo, CHATGPT.md y ANTIGRAVITY.md",
+      "content": "Se crearon los archivos de directivas específicas CHATGPT.md y ANTIGRAVITY.md, y se completó exhaustivamente el README.md con la guía de instalación rápida en 1 clic para Pablo, instrucciones para cada asistente y el flujo de trabajo diario vía Git. Todo quedó sincronizado en GitHub.",
+      "why": "Facilitar la comprensión, descarga, configuración y uso del sistema compartido a ambos integrantes del TFM.",
+      "outcome": "Documentación completa y directivas individuales para cada cliente disponibles en el repositorio.",
+      "type": "note",
+      "status": "active",
+      "tags": [],
+      "source": "user",
+      "files": [
+        {
+          "path": "c:/Users/QsManu-Movil/Documents/ChatGPT/Personal - TFM/README.md"
+        },
+        {
+          "path": "c:/Users/QsManu-Movil/Documents/ChatGPT/Personal - TFM/CHATGPT.md"
+        },
+        {
+          "path": "c:/Users/QsManu-Movil/Documents/ChatGPT/Personal - TFM/ANTIGRAVITY.md"
+        }
+      ],
+      "codeRefs": [],
+      "importance": 4,
+      "discussionId": null,
+      "createdAt": "2026-09-28T10:27:36.885Z",
+      "updatedAt": null,
+      "expiresAt": null
     }
   ]
 }
