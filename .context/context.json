@@ -141,6 +141,36 @@
       "createdAt": "2026-09-28T09:58:34.798Z",
       "updatedAt": null,
       "expiresAt": null
+    },
+    {
+      "id": "cc138e87-6618-4c5e-9328-70af9e37c514",
+      "project": "Personal - TFM",
+      "sessionId": null,
+      "parentId": "project:Personal - TFM",
+      "nodeType": "entry",
+      "version": 1,
+      "title": "Sincronización inicial exitosa en GitHub QSMANU/Personal---TFM",
+      "content": "Se completó la sincronización con GitHub en el repositorio privado https://github.com/QSMANU/Personal---TFM.git. Se autenticó mediante Personal Access Token (PAT) de QSMANU, se integró el commit inicial de GitHub (LICENSE y README.md) y se subieron los ficheros .context/ (memoria persistente), CLAUDE.md, AGENTS.md y los scripts setup-sync.bat y setup-sync.ps1. La rama main quedó limpia y sincronizada con origin/main.",
+      "why": "Dejar la memoria y la infraestructura de agentes disponible en la nube para ambos autores del TFM.",
+      "outcome": "El repositorio de GitHub quedó 100% actualizado y listo para que Pablo lo clone y use setup-sync.bat.",
+      "type": "note",
+      "status": "active",
+      "tags": [],
+      "source": "user",
+      "files": [
+        {
+          "path": "c:/Users/QsManu-Movil/Documents/ChatGPT/Personal - TFM/CLAUDE.md"
+        },
+        {
+          "path": "c:/Users/QsManu-Movil/Documents/ChatGPT/Personal - TFM/AGENTS.md"
+        }
+      ],
+      "codeRefs": [],
+      "importance": 4,
+      "discussionId": null,
+      "createdAt": "2026-09-28T10:08:49.959Z",
+      "updatedAt": null,
+      "expiresAt": null
     }
   ]
 }
