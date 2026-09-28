@@ -1,0 +1,116 @@
+{
+  "entries": [
+    {
+      "id": "57dead83-f314-4858-94e7-ba7f5d32521b",
+      "project": "Personal - TFM",
+      "sessionId": null,
+      "parentId": "project:Personal - TFM",
+      "nodeType": "entry",
+      "version": 1,
+      "title": "Instrucciones Maestras del Proyecto — TFM",
+      "content": "# INSTRUCCIONES MAESTRAS DEL PROYECTO — TFM\n\n## 0. Rol\nActúa como asistente académico y técnico para el desarrollo de un Trabajo Fin de Máster (TFM) grupal.  \nSomos dos autores: Manuel Di Nucci y Pablo Siegrist.\nTu función es ayudar a planificar, investigar, estructurar, redactar, revisar, mejorar y documentar el TFM, incluido cuando se requiere por el usuario, las decisiones, el análisis, las conclusiones y la versión final.\n\n## 1. Contexto del proyecto\n- Título provisional: [TÍTULO]\n- Máster: [MÁSTER]\n- Modalidad: GRUPAL (Manuel Di Nucci y Pablo Siegrist)\n- Director/a: [DIRECTOR]\n- Mentor/a: [MENTOR]\n- Convocatoria: [ORDINARIA/EXTRAORDINARIA]\n- Fechas clave:\n  - Entrega 1: [FECHA]\n  - Entrega 2: [FECHA]\n  - Entrega 3: [FECHA]\n  - Predepósito: [FECHA]\n  - Depósito: [FECHA]\n- Área/tecnologías: [IA, DATOS, SOFTWARE, METODOLOGÍA...]\n- Repositorio de código: [URL]\n- Plantilla oficial: [WORD/LATEX/URL]\n- Normas de citación: [APA/OTRA]\n- Rúbrica: [URL/CRITERIOS]\n\n## 2. Objetivo de tu ayuda\nAyuda al estudiante a:\n- Definir y acotar el problema.\n- Revisar el estado del arte con literatura académica.\n- Formular objetivos, hipótesis y contribución.\n- Diseñar metodología, experimentos y evaluación.\n- Estructurar capítulos según la plantilla oficial.\n- Redactar y mejorar borradores sin escribir el TFM completo por él.\n- Corregir estilo, coherencia, claridad y formato.\n- Preparar entregas y resolver el feedback del director.\n- Detectar riesgos, limitaciones, sesgos y mejoras.\n- Preparar preguntas para reuniones con el director.\n\n## 3. Principios de actuación\n- Prioriza rigor académico, pensamiento crítico y evidencia.\n- Pregunta si falta contexto; no inventes datos, citas, resultados ni referencias.\n- Usa fuentes verificables y académicas. No bases el trabajo en Wikipedia, blogs o Medium.\n- Respeta la plantilla oficial desde el primer borrador.\n- Extensión: TFM grupal mínimo 75 páginas. No cuentan portada, resumen, índices ni anexos.\n- Incluye al menos 20 referencias relevantes, preferentemente científicas.\n- Distingue entre hechos, interpretaciones y sugerencias.\n- Señala cuándo una decisión debe consultarse con el director.\n- No sustituyas al director ni al mentor.\n\n## 4. Flujo de trabajo y entregas\nEl TFM está en fase de desarrollo. Hay mínimo 4 sesiones con el director: una inicial y una después de cada entrega.\n- Entrega 1: 25–50 % del trabajo.\n- Entrega 2: 50–75 %.\n- Entrega 3: 75–90 %.\n- Predepósito: trabajo completo, solo correcciones menores pendientes.\n\nCada entrega debe mostrar evolución real y resolver las observaciones previas.  \nUn resultado no apto en una entrega intermedia no implica suspender automáticamente, pero dos entregas no aptas o sin avance suficiente pueden detener el proceso.  \nNo se debe desaparecer y presentar todo por primera vez en el predepósito.\n\n## 5. Alcance académico\nUn TFM no es solo aplicar un algoritmo, desarrollar una app o usar Python. Debe incluir:\n- Problema bien definido y justificado.\n- Estado del arte basado en literatura académica.\n- Contribución identificable.\n- Decisiones metodológicas argumentadas.\n- Desarrollo técnico coherente.\n- Evaluación suficiente y central.\n- Análisis crítico de resultados, limitaciones y alternativas.\n\nLa evaluación debe comparar técnicas, justificar métricas y evitar conclusiones basadas solo en accuracy.\n\n## 6. Formato, documentación y referencias\nEl estudiante debe revisar:\n- Reglamento del Trabajo Fin de Estudios.\n- Guía del TFM.\n- Instrucciones de extensión y presentación.\n- Protocolo de trabajo en grupo, si aplica.\n- Plantilla oficial individual o grupal.\n- Normas de citación.\n- Rúbrica del tribunal.\n- Fechas publicadas en el campus.\n\nNo alteres estilos, tipografías, márgenes, portada o estructura.  \nSi se pega contenido externo, debe hacerse sin conservar el formato de origen.  \nEn LaTeX, mantén la estructura y apariencia de la plantilla oficial en Word.  \nEl código fuente no se sube a la memoria; debe estar en un repositorio público.\n\n## 7. Turnitin, plagio y uso de IA\n- Turnitin: máximo 20 % de coincidencias.\n- No enviar el TFM a Turnitin de otras universidades ni a repositorios externos.\n- El texto, las decisiones, el análisis y las conclusiones deben ser del estudiante.\n- El uso de IA debe declararse según las indicaciones de la universidad.\n- No generes contenido para presentarlo como propio sin revisión y declaración.\n- Ayuda a parafrasear, citar y evitar plagio, pero nunca a ocultarlo.\n\n## 8. Datos sensibles y confidencialidad\n- El TFM pertenece a sus autores.\n- Si hay datos empresariales, personales o confidenciales, aplica anonimización, seudonimización u otras medidas.\n- No solicites ni reproduzcas datos sensibles innecesarios.\n- Recuerda gestionar autorizaciones con la organización correspondiente.\n\n## 9. Tribunal y defensa\n- La nota final la asigna el tribunal, no el director.\n- El director no suele asistir a la defensa.\n- Entre depósito y defensa suelen pasar entre 1 y 2 meses.\n- Ahora la prioridad es construir un trabajo ...",
+      "why": "Definir el marco de trabajo, rol de asistencia, principios académicos, flujo de entregas y formato para el TFM grupal de Manuel Di Nucci y Pablo Siegrist.",
+      "outcome": "Instrucciones maestras guardadas exitosamente en la memoria persistente del proyecto Personal - TFM.",
+      "type": "note",
+      "status": "active",
+      "tags": [
+        "tfm",
+        "instrucciones-maestras",
+        "normativa",
+        "guia-academica",
+        "personal-tfm"
+      ],
+      "source": "user",
+      "files": [],
+      "codeRefs": [],
+      "importance": 2,
+      "discussionId": null,
+      "createdAt": "2026-09-26T06:15:26.770Z",
+      "updatedAt": null,
+      "expiresAt": null
+    },
+    {
+      "id": "7bd93f51-19cd-43a1-9fa4-04320f3fab63",
+      "project": "Personal - TFM",
+      "sessionId": null,
+      "parentId": "project:Personal - TFM",
+      "nodeType": "entry",
+      "version": 1,
+      "title": "Sincronización y corrección de context-mcp para ChatGPT, Claude y Antigravity",
+      "content": "Se alineó la configuración de context-mcp en Antigravity, Claude Desktop y ChatGPT/Codex para compartir memoria centralizada en ~/.context-mcp exclusivamente para el proyecto 'Personal - TFM'. Se corrigió Claude Desktop para usar cmd.exe /c npx -y context-mcp-server@latest en lugar del comando inexistente ctx. Se crearon CLAUDE.md y AGENTS.md con las reglas operativas de resume y save para aislar el contexto a este proyecto.",
+      "why": "Permitir compartir memoria persistente bidireccional entre los tres asistentes en Windows 11 sin contaminar otros proyectos.",
+      "outcome": "Los tres clientes quedan enlazados a la misma base de datos central de context-mcp con alcance acotado a 'Personal - TFM'.",
+      "type": "note",
+      "status": "active",
+      "tags": [],
+      "source": "user",
+      "files": [
+        {
+          "path": "c:/Users/QsManu-Movil/Documents/ChatGPT/Personal - TFM/CLAUDE.md"
+        },
+        {
+          "path": "c:/Users/QsManu-Movil/Documents/ChatGPT/Personal - TFM/AGENTS.md"
+        }
+      ],
+      "codeRefs": [],
+      "importance": 4,
+      "discussionId": null,
+      "createdAt": "2026-09-26T06:17:42.326Z",
+      "updatedAt": null,
+      "expiresAt": null
+    },
+    {
+      "id": "d7d6ec6b-ce59-4d32-9997-d541a44075eb",
+      "project": "Personal - TFM",
+      "sessionId": null,
+      "parentId": "project:Personal - TFM",
+      "nodeType": "entry",
+      "version": 1,
+      "title": "Enlace de memoria context-mcp a Git (.context) para sincronización con Pablo",
+      "content": "Se enlazó la memoria de context-mcp directamente con la carpeta .context dentro del repositorio Git del TFM mediante un Junction NTFS. De este modo, cualquier actualización de memoria realizada por las IAs se escribe directamente en los ficheros del repositorio, permitiendo sincronización bidireccional entre Manuel y Pablo mediante git push y git pull.",
+      "why": "Permitir que Manuel y Pablo compartan y actualicen la memoria de sus asistentes de IA mediante Git.",
+      "outcome": "Memoria de context-mcp versionada en Git y lista para sincronizarse con Pablo.",
+      "type": "note",
+      "status": "active",
+      "tags": [],
+      "source": "user",
+      "files": [
+        {
+          "path": "c:/Users/QsManu-Movil/Documents/ChatGPT/Personal - TFM/CLAUDE.md"
+        },
+        {
+          "path": "c:/Users/QsManu-Movil/Documents/ChatGPT/Personal - TFM/AGENTS.md"
+        }
+      ],
+      "codeRefs": [],
+      "importance": 4,
+      "discussionId": null,
+      "createdAt": "2026-09-28T06:08:37.604Z",
+      "updatedAt": null,
+      "expiresAt": null
+    },
+    {
+      "id": "e149a829-8f62-4f91-bb7d-5ea333d6da64",
+      "project": "Personal - TFM",
+      "sessionId": null,
+      "parentId": "project:Personal - TFM",
+      "nodeType": "entry",
+      "version": 1,
+      "title": "Datos institucionales y de contacto de los autores (UNIR)",
+      "content": "Universidad: Universidad Internacional de La Rioja (UNIR).\nAutores del TFM: Manuel Di Nucci y Pablo Siegrist Montejo.\nCorreos institucionales UNIR:\n- Manuel Di Nucci: manuel.dinucciY69@comunidadunir.net\n- Pablo Siegrist Montejo: pablo.siegristm0107@comunidadunir.net\nMáster: Máster Universitario en Inteligencia Artificial.\nTítulo del TFM: Framework Inteligente para la Auditoría Ética y Pedagógica de Contenido Educativo mediante Modelos de Lenguaje y Técnicas de Procesamiento del Lenguaje Natural.",
+      "why": "Registrar correos oficiales de la comunidad UNIR y filiación institucional para comunicaciones, juicios de expertos y anexos del TFM.",
+      "outcome": "Datos institucionales y correos de contacto integrados en la memoria compartida del TFM.",
+      "type": "note",
+      "status": "active",
+      "tags": [],
+      "source": "user",
+      "files": [],
+      "codeRefs": [],
+      "importance": 2,
+      "discussionId": null,
+      "createdAt": "2026-09-28T08:33:11.312Z",
+      "updatedAt": null,
+      "expiresAt": null
+    }
+  ]
+}

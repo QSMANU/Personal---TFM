@@ -1,0 +1,60 @@
+{
+  "entries": [
+    {
+      "id": "de4a43d6-a44c-4db4-a5c1-6ed0cb93f44a",
+      "project": "Personal - TFM",
+      "sessionId": null,
+      "parentId": "project:Personal - TFM",
+      "nodeType": "entry",
+      "version": 1,
+      "title": "Resumen de sesión - 2026-09-25",
+      "content": "Proyecto: Personal - TFM.\n\nEstado al recuperar el contexto:\n- No había entradas previas guardadas en context-mcp.\n- No había planes activos.\n- El grafo de código todavía no está construido.\n- En esta conversación no se han realizado cambios de código, archivos, configuración ni decisiones técnicas previas.\n\nAcción realizada:\n- Se inicializó/recuperó la memoria persistente del proyecto mediante context.resume.\n- A petición del usuario, se guardó esta compactación como punto de partida para futuras sesiones.",
+      "why": "",
+      "outcome": "",
+      "type": "compaction",
+      "status": "active",
+      "tags": [
+        "session-summary",
+        "compaction",
+        "project-state"
+      ],
+      "source": "ai-summary",
+      "files": [],
+      "codeRefs": [],
+      "importance": 5,
+      "discussionId": null,
+      "createdAt": "2026-09-25T15:09:06.828Z",
+      "updatedAt": null,
+      "expiresAt": null
+    },
+    {
+      "id": "292d902b-8ab5-4a52-831b-4b5be084518e",
+      "project": "Personal - TFM",
+      "sessionId": null,
+      "parentId": "project:Personal - TFM",
+      "nodeType": "entry",
+      "version": 2,
+      "title": "Resumen acumulado del proyecto - 2026-09-26",
+      "content": "Resumen exclusivo del proyecto Personal - TFM:\n\n- Se activó y verificó la memoria persistente de context-mcp para la raíz C:\\Users\\QsManu-Movil\\Documents\\ChatGPT\\Personal - TFM.\n- El 2026-09-25 se guardó la primera compactación como punto de partida; antes de ella no existían recuerdos ni planes activos.\n- No se han realizado todavía cambios en código, documentos ni archivos del proyecto.\n- No hay planes activos y el grafo de código de este proyecto aún no está construido.\n- Se identificó que el texto aportado por el usuario es una guía operativa para agentes: obliga a recuperar memoria, guardar hitos, gestionar planes y consultar el grafo antes de leer código. La guía no es la base de datos ni el servidor; solo son instrucciones para el cliente/agente.\n- Se inspeccionó la conexión local de context-mcp. Codex lo inicia con `npx -y context-mcp-server@latest`.\n- Antigravity ya contiene esa misma definición en C:\\Users\\QsManu-Movil\\.gemini\\config\\mcp_config.json.\n- Claude Desktop contiene una definición distinta que ejecuta `ctx mcp serve --stdio` y fija `CTX_PROJECT=Personal - TFM`, pero `ctx` no se encuentra en el PATH comprobado. Se recomienda reemplazarla por el lanzamiento mediante npx para compartir la misma implementación que Codex y Antigravity.\n- Se verificó que `cmd.exe /d /c npx --version` funciona y que `npx -y context-mcp-server@latest` inicia el servidor.\n\nEste resumen pertenece únicamente a Personal - TFM. No se guardó, actualizó ni compactó memoria de ningún otro proyecto.",
+      "why": "",
+      "outcome": "",
+      "type": "compaction",
+      "status": "active",
+      "tags": [
+        "session-summary",
+        "compaction",
+        "personal-tfm",
+        "context-mcp",
+        "configuration"
+      ],
+      "source": "ai-summary",
+      "files": [],
+      "codeRefs": [],
+      "importance": 5,
+      "discussionId": null,
+      "createdAt": "2026-09-26T06:03:01.098Z",
+      "updatedAt": "2026-09-26T06:05:05.707Z",
+      "expiresAt": null
+    }
+  ]
+}
