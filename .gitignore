@@ -1,0 +1,24 @@
+# Temporary Microsoft Office files
+~$*
+
+# Local temporary and backup files
+*.tmp
+*.temp
+*.bak
+*.swp
+*.swo
+
+# Local secrets and environment overrides
+.env
+.env.*
+!.env.example
+*.local
+
+# Operating-system metadata
+Thumbs.db
+.DS_Store
+
+# Local render/cache directories
+__pycache__/
+.cache/
+tmp/

@@ -204,6 +204,187 @@
       "createdAt": "2026-09-28T10:27:36.885Z",
       "updatedAt": null,
       "expiresAt": null
+    },
+    {
+      "id": "ba3de726-8d47-4f72-8961-aab25969df23",
+      "project": "Personal - TFM",
+      "sessionId": null,
+      "parentId": "project:Personal - TFM",
+      "nodeType": "entry",
+      "version": 2,
+      "title": "Último cambio verificado en Git: simplificación del encabezado de instalación",
+      "content": "Git contiene el commit 88c930591895bb18a6b40ed01eeca2a801322a77, mensaje 'Update', que renombró en README.md el encabezado '🚀 Guía de Instalación Rápida (Para Pablo / Nuevo Equipo)' por '🚀 Guía de Instalación Rápida'. El árbol de trabajo estaba limpio y main coincidía con origin/main. La atribución anterior a Claude fue incorrecta: el usuario indica que este cambio provino de Antigravity. El commit solo registra a QSMANU y la entrada previa del MCP usa source 'user', por lo que no existe evidencia técnica suficiente para identificar automáticamente el cliente que realizó el cambio. context-mcp conserva notas y resúmenes, no necesariamente el texto literal ni el agente autor de cada modificación.",
+      "why": "Distinguir la última nota persistida por context-mcp del cambio más reciente del repositorio y evitar atribuirlo al asistente equivocado.",
+      "outcome": "Se verificó el commit 88c9305 y se corrigió la atribución: el usuario indica que provino de Antigravity; Git y context-mcp no registran evidencia técnica concluyente del cliente autor.",
+      "type": "note",
+      "status": "active",
+      "tags": [
+        "git",
+        "antigravity",
+        "readme",
+        "ultimo-cambio",
+        "atribucion-corregida"
+      ],
+      "source": "cli",
+      "files": [
+        {
+          "path": "c:/Users/QsManu-Movil/Documents/ChatGPT/Personal - TFM/README.md"
+        }
+      ],
+      "codeRefs": [],
+      "importance": 4,
+      "discussionId": null,
+      "createdAt": "2026-09-28T10:43:05.123Z",
+      "updatedAt": "2026-09-28T10:44:03.431Z",
+      "expiresAt": null
+    },
+    {
+      "id": "75455330-4437-4d45-af5a-52fbd59189d9",
+      "project": "Personal - TFM",
+      "sessionId": null,
+      "parentId": "project:Personal - TFM",
+      "nodeType": "entry",
+      "version": 1,
+      "title": "Revisión de Claude sobre la sección 2.1 no registrada en la memoria",
+      "content": "El usuario indica que pidió a Claude revisar el contenido de la sección 2.1 'Contexto del problema', perteneciente a la sección 2 'Contexto y estado del arte', proponer cambios y aportar imágenes que pudieran referenciarse en el TFM. Se buscó por palabras clave y semánticamente en toda la memoria de context-mcp. Solo existe el proyecto 'Personal - TFM' y ninguna entrada contiene esta revisión. También se revisaron los archivos y los últimos commits del repositorio: no hay documentos, imágenes ni commits relacionados con la sección 2.1. Por tanto, la respuesta pudo quedar únicamente en el historial local de Claude o Claude no ejecutó la acción obligatoria context save.",
+      "why": "Documentar una tarea realizada o solicitada en Claude que no quedó persistida en context-mcp ni en el repositorio.",
+      "outcome": "No se encontró la respuesta, las sugerencias ni las imágenes solicitadas a Claude sobre la sección 2.1.",
+      "type": "note",
+      "status": "active",
+      "tags": [
+        "claude",
+        "seccion-2.1",
+        "contexto-del-problema",
+        "memoria-faltante"
+      ],
+      "source": "user",
+      "files": [],
+      "codeRefs": [],
+      "importance": 2,
+      "discussionId": null,
+      "createdAt": "2026-09-28T10:45:46.072Z",
+      "updatedAt": null,
+      "expiresAt": null
+    },
+    {
+      "id": "d4c6e0bc-7176-42bf-92ca-52c9f5441b68",
+      "project": "Personal - TFM",
+      "sessionId": null,
+      "parentId": "project:Personal - TFM",
+      "nodeType": "entry",
+      "version": 1,
+      "title": "Protocolo común para persistir revisiones académicas y documentos",
+      "content": "Se ampliaron las instrucciones de los tres clientes. Toda revisión o redacción de secciones, búsqueda de bibliografía o imágenes, decisión metodológica, diseño experimental y análisis de feedback debe terminar con context.save. La nota debe contener hallazgos, cambios, fuentes, figuras, dudas y archivos suficientes para que otro cliente continúe. Se definió un modelo de dos capas: el repositorio conserva PDF, Word, presentaciones, datos y figuras; context-mcp conserva el índice factual, resumen, procedencia, versión, páginas, citas y decisiones. No se deben releer todos los PDF al iniciar cada turno, sino usar resume/search y abrir solo los documentos relevantes. README.md también distingue cómo se cargan las reglas en Codex, ChatGPT Project, Claude Code/Desktop y Antigravity, y propone las carpetas docs/, assets/figures/ y notes/reviews/.",
+      "why": "Evitar que revisiones como la sección 2.1 queden únicamente en el historial local de un asistente y definir cómo compartir PDF, fuentes e imágenes.",
+      "outcome": "ChatGPT/Codex, Claude y Antigravity tienen reglas explícitas para guardar resultados académicos sustantivos y registrar documentos mediante rutas, resúmenes, procedencia y páginas relevantes.",
+      "type": "note",
+      "status": "active",
+      "tags": [
+        "memoria",
+        "documentos",
+        "pdf",
+        "revisiones-academicas",
+        "chatgpt",
+        "claude",
+        "antigravity"
+      ],
+      "source": "file",
+      "files": [
+        {
+          "path": "c:/Users/QsManu-Movil/Documents/ChatGPT/Personal - TFM/AGENTS.md"
+        },
+        {
+          "path": "c:/Users/QsManu-Movil/Documents/ChatGPT/Personal - TFM/CLAUDE.md"
+        },
+        {
+          "path": "c:/Users/QsManu-Movil/Documents/ChatGPT/Personal - TFM/CHATGPT.md"
+        },
+        {
+          "path": "c:/Users/QsManu-Movil/Documents/ChatGPT/Personal - TFM/ANTIGRAVITY.md"
+        },
+        {
+          "path": "c:/Users/QsManu-Movil/Documents/ChatGPT/Personal - TFM/README.md"
+        }
+      ],
+      "codeRefs": [],
+      "importance": 4,
+      "discussionId": null,
+      "createdAt": "2026-09-28T10:50:22.709Z",
+      "updatedAt": null,
+      "expiresAt": null
+    },
+    {
+      "id": "10c4f1df-7614-4a70-9571-6f3fe274e70b",
+      "project": "Personal - TFM",
+      "sessionId": null,
+      "parentId": "project:Personal - TFM",
+      "nodeType": "entry",
+      "version": 1,
+      "title": "Ubicación documental y configuración necesaria en clientes Windows",
+      "content": "La estructura recomendada es: docs/normativa/ para reglamento, guía, rúbrica, plantilla, calendario y protocolo grupal; docs/tfm/propuesta/ para formulario, PPT y materiales iniciales; docs/tfm/memoria/ para el documento editable; docs/tfm/entregas/ para versiones presentadas; docs/reuniones/ para actas y feedback; docs/fuentes/ para artículos que puedan almacenarse legalmente; assets/figures/ para figuras e imágenes con procedencia; notes/reviews/ para revisiones extensas de asistentes. En cada Windows se debe clonar/pull y ejecutar setup-sync.bat. Codex local carga AGENTS.md automáticamente al abrir la carpeta como raíz. ChatGPT Project cloud requiere añadir instrucciones y fuentes. Claude Desktop requiere instrucciones de proyecto y Project Knowledge; Claude Code usa CLAUDE.md desde la raíz. Antigravity debe abrir la carpeta como proyecto y configurar context-mcp manualmente en Settings > Customizations > Open MCP Config porque setup-sync.ps1 no lo hace actualmente. Se corrigieron AGENTS.md y CLAUDE.md para derivar rootPath del clon local y no reutilizar la ruta de Manuel en el equipo de Pablo.",
+      "why": "Definir una fuente de verdad compartida para normativa y trabajo del TFM, y evitar configuraciones incompletas o rutas no portables entre Manuel y Pablo.",
+      "outcome": "Se acordó usar docs/normativa para reglas oficiales, docs/tfm para el trabajo propio, docs/fuentes y assets/figures para fuentes y figuras, y notes/reviews para revisiones. Se detectó que setup-sync configura Claude Desktop y Codex, pero no Antigravity ni las instrucciones de proyectos cloud.",
+      "type": "note",
+      "status": "active",
+      "tags": [
+        "documentos",
+        "windows",
+        "configuracion",
+        "chatgpt",
+        "claude",
+        "antigravity",
+        "rootpath"
+      ],
+      "source": "file",
+      "files": [
+        {
+          "path": "c:/Users/QsManu-Movil/Documents/ChatGPT/Personal - TFM/AGENTS.md"
+        },
+        {
+          "path": "c:/Users/QsManu-Movil/Documents/ChatGPT/Personal - TFM/CLAUDE.md"
+        },
+        {
+          "path": "c:/Users/QsManu-Movil/Documents/ChatGPT/Personal - TFM/README.md"
+        },
+        {
+          "path": "c:/Users/QsManu-Movil/Documents/ChatGPT/Personal - TFM/setup-sync.ps1"
+        }
+      ],
+      "codeRefs": [],
+      "importance": 4,
+      "discussionId": null,
+      "createdAt": "2026-09-28T10:53:59.399Z",
+      "updatedAt": null,
+      "expiresAt": null
+    },
+    {
+      "id": "d0222ea6-8bf3-4757-bb5f-08f8fb04eedc",
+      "project": "Personal - TFM",
+      "sessionId": null,
+      "parentId": "project:Personal - TFM",
+      "nodeType": "entry",
+      "version": 1,
+      "title": "Antigravity automatizado y base de conocimiento reforzada",
+      "content": "Cambios locales verificados: integración automática de Antigravity en %USERPROFILE%/.gemini/config/mcp_config.json; backups antes de editar configuraciones; incorporación independiente de MCP y confianza del proyecto en Codex; PROJECT_STATE.md y docs/INDEX.md como mapas rápidos; README por categorías documentales; .gitattributes y .gitignore; instrucciones AGENTS/CLAUDE/CHATGPT/ANTIGRAVITY actualizadas para consultar y mantener los índices. Sintaxis PowerShell correcta y git diff --check sin errores. El instalador no se ejecutó, por lo que aún no se tocaron configuraciones reales fuera del repositorio. Los cambios no están comprometidos ni publicados.",
+      "why": "Facilitar que Codex/ChatGPT, Claude Desktop y Antigravity compartan memoria factual y documentos del TFM de forma consistente.",
+      "outcome": "setup-sync.ps1 ahora configura context-mcp en Antigravity además de Claude y Codex, preserva configuraciones existentes y crea copias de seguridad. Se añadieron estado del proyecto, índice documental, carpetas estándar, reglas Git y protocolos de actualización.",
+      "type": "note",
+      "status": "active",
+      "tags": [
+        "antigravity",
+        "context-mcp",
+        "shared-memory",
+        "setup",
+        "knowledge-base"
+      ],
+      "source": "ai-summary",
+      "files": [],
+      "codeRefs": [],
+      "importance": 2,
+      "discussionId": null,
+      "createdAt": "2026-09-28T11:03:42.993Z",
+      "updatedAt": null,
+      "expiresAt": null
     }
   ]
 }
