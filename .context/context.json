@@ -487,6 +487,52 @@
       "createdAt": "2026-09-29T08:55:45.832Z",
       "updatedAt": "2026-09-29T08:55:45.832Z",
       "expiresAt": null
+    },
+    {
+      "id": "6e4c5965-36e5-4bd5-b5cb-819b38ccd0b0",
+      "project": "Personal - TFM",
+      "sessionId": null,
+      "parentId": "project:Personal - TFM",
+      "nodeType": "entry",
+      "version": 1,
+      "title": "Configuración MCP, Figura 2 y memoria publicadas en origin/main",
+      "content": "El usuario confirmó expresamente la publicación directa en la rama compartida main. Se creó el commit 764dc5e (`docs: add corrected coverage figure and shared memory`) con `.context/context.json`, `.context/summary.json`, `assets/figures/README.md` y `assets/figures/Fig_contexto_matriz_cobertura_v2.png`. Este commit se publicó junto con 26b4fa2 (`fix: stabilize context MCP client setup`) mediante `git push origin main`. Git confirmó `a07b301..764dc5e main -> main`, y la comprobación posterior mostró que HEAD y origin/main coincidían exactamente en `764dc5e361b349e9eb86a35d0b18748eb47cdebd`. La Figura 2 no se había descartado: se mantuvo separada del commit técnico para conservar commits temáticamente claros y después se publicó en su propio commit académico.",
+      "why": "Dejar constancia compartida de que las configuraciones verificadas y las actualizaciones académicas pendientes ya están disponibles para el otro autor mediante Git.",
+      "outcome": "Se publicaron en origin/main los commits 26b4fa2 y 764dc5e; la rama local y la remota quedaron alineadas en 764dc5e antes de registrar esta nota final.",
+      "type": "note",
+      "status": "active",
+      "tags": [
+        "git",
+        "push",
+        "context-mcp",
+        "figura-2",
+        "sincronizacion"
+      ],
+      "source": "cli",
+      "files": [
+        {
+          "path": "C:\\Users\\QsManu-Movil\\Documents\\ChatGPT\\Personal - TFM\\assets\\figures\\Fig_contexto_matriz_cobertura_v2.png",
+          "purpose": "Figura 2 corregida y publicada"
+        },
+        {
+          "path": "C:\\Users\\QsManu-Movil\\Documents\\ChatGPT\\Personal - TFM\\assets\\figures\\README.md",
+          "purpose": "Procedencia y uso académico de la figura"
+        },
+        {
+          "path": "C:\\Users\\QsManu-Movil\\Documents\\ChatGPT\\Personal - TFM\\setup-sync.ps1",
+          "purpose": "Configuración MCP estable publicada"
+        },
+        {
+          "path": "C:\\Users\\QsManu-Movil\\Documents\\ChatGPT\\Personal - TFM\\verify-context-mcp.mjs",
+          "purpose": "Verificador MCP publicado"
+        }
+      ],
+      "codeRefs": [],
+      "importance": 4,
+      "discussionId": null,
+      "createdAt": "2026-09-29T09:00:17.628Z",
+      "updatedAt": null,
+      "expiresAt": null
     }
   ]
 }
