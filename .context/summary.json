@@ -55,6 +55,32 @@
       "createdAt": "2026-09-26T06:03:01.098Z",
       "updatedAt": "2026-09-26T06:05:05.707Z",
       "expiresAt": null
+    },
+    {
+      "id": "5007082b-f6bc-4382-8d5e-585cf70ee399",
+      "project": "Personal - TFM",
+      "sessionId": null,
+      "parentId": "project:Personal - TFM",
+      "nodeType": "entry",
+      "version": 1,
+      "title": "Compacted 11 entries — 2026-09-28",
+      "content": "## Session summary — Personal - TFM · auto-compaction\n\n**23 context entries** across 13 topic(s).\n\n### figura-2\n- **Figura 2 corregida: legibilidad y cobertura parcial de Kılıçaslan** _(file, 2026-09-28)_\n  Nota: la clasificación es una valoración cualitativa de los autores y la fila del TFM expresa alcance previsto, no resultados.\n- **Rizvi 2025 y Trott-Rivière 2024 en la Figura 2** _(web, 2026-09-28)_\n  Recomendación gráfica: renombrar la columna como Adecuación etaria y legibilidad; marcar Kılıçaslan como cobertura parcial, no completa, ...\n\n### miao\n- **Ubicación y carga de Miao y Holmes 2023** _(web, 2026-09-28)_\n  Guidance for generative AI in education and research se ubica principalmente en 2.1, no como evidencia de que la revisión humana quedó im...\n\n### referencias\n- **Selección de diccionarios, IAT y embeddings para las referencias** _(web, 2026-09-28)_\n  Merriam-Webster para LLM, RAE para inteligencia artificial y FundéuRAE para PLN no deben formar parte de 2.1: son fuentes lexicográficas ...\n\n### word\n- **Carga campo por campo en Word de las referencias de la sección 2.1** _(web, 2026-09-28)_\n  Advertencias: activar Mostrar todos los campos bibliográficos; si Word no muestra DOI, agregarlo manualmente como URL DOI en la bibliogra...\n- **Word instalado no ofrece APA 7** _(web, 2026-09-28)_\n  Alternativas: instalar Zotero, cuyo complemento de Word se incluye e instala normalmente de forma automática, seleccionar APA 7 en Docume...\n- **Cómo obtener Caliskan et al. (2017) en Word** _(ai-summary, 2026-09-28)_\n  lo decide el estilo: APA 7 lo usa desde la primera cita para tres o más autores; APA 6 enumera los tres en la primera cita.\n\n### seccion-2.1\n- **Reescritura propuesta de 2.1 centrada en exámenes de secundaria** _(web, 2026-09-28)_\n  La versión propuesta define como unidad de análisis el texto de exámenes de secundaria antes de su aplicación, no las respuestas del alum...\n\n### claude\n- **Procedimiento para guardar trabajo de Claude en context-mcp** _(ai-summary, 2026-09-28)_\n  En Claude Desktop, las reglas deben estar en Project Instructions; CLAUDE.md se carga automáticamente en Claude Code, no necesariamente e...\n- **Revisión de Claude recibida para la sección 2.1 Contexto del problema** _(user, 2026-09-28)_\n  (11) Se proporcionó una guía de carga campo por campo en Word para artículos, congresos, informes, documentos web, libros y herramientas ...\n\n### antigravity\n- **Antigravity automatizado y base de conocimiento reforzada** _(ai-summary, 2026-09-28)_\n  Cambios locales verificados: integración automática de Antigravity en %USERPROFILE%/.gemini/config/mcp_config.json; backups antes de edit...\n\n### documentos\n- **Ubicación documental y configuración necesaria en clientes Windows** _(file, 2026-09-28)_\n  La estructura recomendada es: docs/normativa/ para reglamento, guía, rúbrica, plantilla, calendario y protocolo grupal; docs/tfm/propuest...\n\n### memoria\n- **Protocolo común para persistir revisiones académicas y documentos** _(file, 2026-09-28)_\n  README.md también distingue cómo se cargan las reglas en Codex, ChatGPT Project, Claude Code/Desktop y Antigravity, y propone las carpeta...\n\n### git\n- **Último cambio verificado en Git: simplificación del encabezado de instalación** _(cli, 2026-09-28)_\n  El commit solo registra a QSMANU y la entrada previa del MCP usa source 'user', por lo que no existe evidencia técnica suficiente para id...\n\n### general\n- **Sincronización y corrección de context-mcp para ChatGPT, Claude y Antigravity** _(user, 2026-09-26)_\n  Se alineó la configuración de context-mcp en Antigravity, Claude Desktop y ChatGPT/Codex para compartir memoria centralizada en ~/.contex...\n- **Enlace de memoria context-mcp a Git (.context) para sincronización con Pablo** _(user, 2026-09-28)_\n  Se enlazó la memoria de context-mcp directamente con la carpeta .context dentro del repositorio Git del TFM mediante un Junction NTFS.\n- **Documentación de repositorio, README completo, CHATGPT.md y ANTIGRAVITY.md** _(user, 2026-09-28)_\n  Se crearon los archivos de directivas específicas CHATGPT.md y ANTIGRAVITY.md, y se completó exhaustivamente el README.md con la guía de ...\n- **Configuración de Git con cuenta personal QSMANU y commit inicial** _(user, 2026-09-28)_\n  Se configuró Git de forma local en el repositorio para usar la cuenta QSMANU con el correo QSMANU@users.noreply.github.com, aislando por ...\n- **Datos institucionales y de contacto de los autores (UNIR)** _(user, 2026-09-28)_\n  Título del TFM: Framework Inteligente para la Auditoría Ética y Pedagógica de Contenido Educativo mediante Modelos de Lenguaje y Técnicas...\n  _…and 1 more general entries_\n\n### tfm\n- **Instrucciones Maestras del Proyecto — TFM** _(user, 2026-09-26)_\n  Contexto del proyecto - Título provisional: [TÍTULO] - Máster: [MÁSTER] - Modalidad: GRUPAL (Manuel Di Nucci y Pablo Siegrist) - Director...\n\n### session-summary\n- **Resumen acumulado del proyecto - 2026-09-26** _(ai-summary, 2026-09-26)_\n  Resumen exclusivo ...",
+      "why": "",
+      "outcome": "",
+      "type": "compaction",
+      "status": "active",
+      "tags": [
+        "compaction",
+        "auto"
+      ],
+      "source": "auto",
+      "files": [],
+      "codeRefs": [],
+      "importance": 5,
+      "discussionId": null,
+      "createdAt": "2026-09-28T17:52:33.819Z",
+      "updatedAt": null,
+      "expiresAt": null
     }
   ]
 }

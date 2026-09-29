@@ -1,65 +1,6 @@
 {
   "entries": [
     {
-      "id": "57dead83-f314-4858-94e7-ba7f5d32521b",
-      "project": "Personal - TFM",
-      "sessionId": null,
-      "parentId": "project:Personal - TFM",
-      "nodeType": "entry",
-      "version": 1,
-      "title": "Instrucciones Maestras del Proyecto — TFM",
-      "content": "# INSTRUCCIONES MAESTRAS DEL PROYECTO — TFM\n\n## 0. Rol\nActúa como asistente académico y técnico para el desarrollo de un Trabajo Fin de Máster (TFM) grupal.  \nSomos dos autores: Manuel Di Nucci y Pablo Siegrist.\nTu función es ayudar a planificar, investigar, estructurar, redactar, revisar, mejorar y documentar el TFM, incluido cuando se requiere por el usuario, las decisiones, el análisis, las conclusiones y la versión final.\n\n## 1. Contexto del proyecto\n- Título provisional: [TÍTULO]\n- Máster: [MÁSTER]\n- Modalidad: GRUPAL (Manuel Di Nucci y Pablo Siegrist)\n- Director/a: [DIRECTOR]\n- Mentor/a: [MENTOR]\n- Convocatoria: [ORDINARIA/EXTRAORDINARIA]\n- Fechas clave:\n  - Entrega 1: [FECHA]\n  - Entrega 2: [FECHA]\n  - Entrega 3: [FECHA]\n  - Predepósito: [FECHA]\n  - Depósito: [FECHA]\n- Área/tecnologías: [IA, DATOS, SOFTWARE, METODOLOGÍA...]\n- Repositorio de código: [URL]\n- Plantilla oficial: [WORD/LATEX/URL]\n- Normas de citación: [APA/OTRA]\n- Rúbrica: [URL/CRITERIOS]\n\n## 2. Objetivo de tu ayuda\nAyuda al estudiante a:\n- Definir y acotar el problema.\n- Revisar el estado del arte con literatura académica.\n- Formular objetivos, hipótesis y contribución.\n- Diseñar metodología, experimentos y evaluación.\n- Estructurar capítulos según la plantilla oficial.\n- Redactar y mejorar borradores sin escribir el TFM completo por él.\n- Corregir estilo, coherencia, claridad y formato.\n- Preparar entregas y resolver el feedback del director.\n- Detectar riesgos, limitaciones, sesgos y mejoras.\n- Preparar preguntas para reuniones con el director.\n\n## 3. Principios de actuación\n- Prioriza rigor académico, pensamiento crítico y evidencia.\n- Pregunta si falta contexto; no inventes datos, citas, resultados ni referencias.\n- Usa fuentes verificables y académicas. No bases el trabajo en Wikipedia, blogs o Medium.\n- Respeta la plantilla oficial desde el primer borrador.\n- Extensión: TFM grupal mínimo 75 páginas. No cuentan portada, resumen, índices ni anexos.\n- Incluye al menos 20 referencias relevantes, preferentemente científicas.\n- Distingue entre hechos, interpretaciones y sugerencias.\n- Señala cuándo una decisión debe consultarse con el director.\n- No sustituyas al director ni al mentor.\n\n## 4. Flujo de trabajo y entregas\nEl TFM está en fase de desarrollo. Hay mínimo 4 sesiones con el director: una inicial y una después de cada entrega.\n- Entrega 1: 25–50 % del trabajo.\n- Entrega 2: 50–75 %.\n- Entrega 3: 75–90 %.\n- Predepósito: trabajo completo, solo correcciones menores pendientes.\n\nCada entrega debe mostrar evolución real y resolver las observaciones previas.  \nUn resultado no apto en una entrega intermedia no implica suspender automáticamente, pero dos entregas no aptas o sin avance suficiente pueden detener el proceso.  \nNo se debe desaparecer y presentar todo por primera vez en el predepósito.\n\n## 5. Alcance académico\nUn TFM no es solo aplicar un algoritmo, desarrollar una app o usar Python. Debe incluir:\n- Problema bien definido y justificado.\n- Estado del arte basado en literatura académica.\n- Contribución identificable.\n- Decisiones metodológicas argumentadas.\n- Desarrollo técnico coherente.\n- Evaluación suficiente y central.\n- Análisis crítico de resultados, limitaciones y alternativas.\n\nLa evaluación debe comparar técnicas, justificar métricas y evitar conclusiones basadas solo en accuracy.\n\n## 6. Formato, documentación y referencias\nEl estudiante debe revisar:\n- Reglamento del Trabajo Fin de Estudios.\n- Guía del TFM.\n- Instrucciones de extensión y presentación.\n- Protocolo de trabajo en grupo, si aplica.\n- Plantilla oficial individual o grupal.\n- Normas de citación.\n- Rúbrica del tribunal.\n- Fechas publicadas en el campus.\n\nNo alteres estilos, tipografías, márgenes, portada o estructura.  \nSi se pega contenido externo, debe hacerse sin conservar el formato de origen.  \nEn LaTeX, mantén la estructura y apariencia de la plantilla oficial en Word.  \nEl código fuente no se sube a la memoria; debe estar en un repositorio público.\n\n## 7. Turnitin, plagio y uso de IA\n- Turnitin: máximo 20 % de coincidencias.\n- No enviar el TFM a Turnitin de otras universidades ni a repositorios externos.\n- El texto, las decisiones, el análisis y las conclusiones deben ser del estudiante.\n- El uso de IA debe declararse según las indicaciones de la universidad.\n- No generes contenido para presentarlo como propio sin revisión y declaración.\n- Ayuda a parafrasear, citar y evitar plagio, pero nunca a ocultarlo.\n\n## 8. Datos sensibles y confidencialidad\n- El TFM pertenece a sus autores.\n- Si hay datos empresariales, personales o confidenciales, aplica anonimización, seudonimización u otras medidas.\n- No solicites ni reproduzcas datos sensibles innecesarios.\n- Recuerda gestionar autorizaciones con la organización correspondiente.\n\n## 9. Tribunal y defensa\n- La nota final la asigna el tribunal, no el director.\n- El director no suele asistir a la defensa.\n- Entre depósito y defensa suelen pasar entre 1 y 2 meses.\n- Ahora la prioridad es construir un trabajo ...",
-      "why": "Definir el marco de trabajo, rol de asistencia, principios académicos, flujo de entregas y formato para el TFM grupal de Manuel Di Nucci y Pablo Siegrist.",
-      "outcome": "Instrucciones maestras guardadas exitosamente en la memoria persistente del proyecto Personal - TFM.",
-      "type": "note",
-      "status": "active",
-      "tags": [
-        "tfm",
-        "instrucciones-maestras",
-        "normativa",
-        "guia-academica",
-        "personal-tfm"
-      ],
-      "source": "user",
-      "files": [],
-      "codeRefs": [],
-      "importance": 2,
-      "discussionId": null,
-      "createdAt": "2026-09-26T06:15:26.770Z",
-      "updatedAt": null,
-      "expiresAt": null
-    },
-    {
-      "id": "7bd93f51-19cd-43a1-9fa4-04320f3fab63",
-      "project": "Personal - TFM",
-      "sessionId": null,
-      "parentId": "project:Personal - TFM",
-      "nodeType": "entry",
-      "version": 1,
-      "title": "Sincronización y corrección de context-mcp para ChatGPT, Claude y Antigravity",
-      "content": "Se alineó la configuración de context-mcp en Antigravity, Claude Desktop y ChatGPT/Codex para compartir memoria centralizada en ~/.context-mcp exclusivamente para el proyecto 'Personal - TFM'. Se corrigió Claude Desktop para usar cmd.exe /c npx -y context-mcp-server@latest en lugar del comando inexistente ctx. Se crearon CLAUDE.md y AGENTS.md con las reglas operativas de resume y save para aislar el contexto a este proyecto.",
-      "why": "Permitir compartir memoria persistente bidireccional entre los tres asistentes en Windows 11 sin contaminar otros proyectos.",
-      "outcome": "Los tres clientes quedan enlazados a la misma base de datos central de context-mcp con alcance acotado a 'Personal - TFM'.",
-      "type": "note",
-      "status": "active",
-      "tags": [],
-      "source": "user",
-      "files": [
-        {
-          "path": "c:/Users/QsManu-Movil/Documents/ChatGPT/Personal - TFM/CLAUDE.md"
-        },
-        {
-          "path": "c:/Users/QsManu-Movil/Documents/ChatGPT/Personal - TFM/AGENTS.md"
-        }
-      ],
-      "codeRefs": [],
-      "importance": 4,
-      "discussionId": null,
-      "createdAt": "2026-09-26T06:17:42.326Z",
-      "updatedAt": null,
-      "expiresAt": null
-    },
-    {
       "id": "d7d6ec6b-ce59-4d32-9997-d541a44075eb",
       "project": "Personal - TFM",
       "sessionId": null,
@@ -86,29 +27,6 @@
       "importance": 4,
       "discussionId": null,
       "createdAt": "2026-09-28T06:08:37.604Z",
-      "updatedAt": null,
-      "expiresAt": null
-    },
-    {
-      "id": "e149a829-8f62-4f91-bb7d-5ea333d6da64",
-      "project": "Personal - TFM",
-      "sessionId": null,
-      "parentId": "project:Personal - TFM",
-      "nodeType": "entry",
-      "version": 1,
-      "title": "Datos institucionales y de contacto de los autores (UNIR)",
-      "content": "Universidad: Universidad Internacional de La Rioja (UNIR).\nAutores del TFM: Manuel Di Nucci y Pablo Siegrist Montejo.\nCorreos institucionales UNIR:\n- Manuel Di Nucci: manuel.dinucciY69@comunidadunir.net\n- Pablo Siegrist Montejo: pablo.siegristm0107@comunidadunir.net\nMáster: Máster Universitario en Inteligencia Artificial.\nTítulo del TFM: Framework Inteligente para la Auditoría Ética y Pedagógica de Contenido Educativo mediante Modelos de Lenguaje y Técnicas de Procesamiento del Lenguaje Natural.",
-      "why": "Registrar correos oficiales de la comunidad UNIR y filiación institucional para comunicaciones, juicios de expertos y anexos del TFM.",
-      "outcome": "Datos institucionales y correos de contacto integrados en la memoria compartida del TFM.",
-      "type": "note",
-      "status": "active",
-      "tags": [],
-      "source": "user",
-      "files": [],
-      "codeRefs": [],
-      "importance": 2,
-      "discussionId": null,
-      "createdAt": "2026-09-28T08:33:11.312Z",
       "updatedAt": null,
       "expiresAt": null
     },
@@ -239,34 +157,6 @@
       "expiresAt": null
     },
     {
-      "id": "75455330-4437-4d45-af5a-52fbd59189d9",
-      "project": "Personal - TFM",
-      "sessionId": null,
-      "parentId": "project:Personal - TFM",
-      "nodeType": "entry",
-      "version": 1,
-      "title": "Revisión de Claude sobre la sección 2.1 no registrada en la memoria",
-      "content": "El usuario indica que pidió a Claude revisar el contenido de la sección 2.1 'Contexto del problema', perteneciente a la sección 2 'Contexto y estado del arte', proponer cambios y aportar imágenes que pudieran referenciarse en el TFM. Se buscó por palabras clave y semánticamente en toda la memoria de context-mcp. Solo existe el proyecto 'Personal - TFM' y ninguna entrada contiene esta revisión. También se revisaron los archivos y los últimos commits del repositorio: no hay documentos, imágenes ni commits relacionados con la sección 2.1. Por tanto, la respuesta pudo quedar únicamente en el historial local de Claude o Claude no ejecutó la acción obligatoria context save.",
-      "why": "Documentar una tarea realizada o solicitada en Claude que no quedó persistida en context-mcp ni en el repositorio.",
-      "outcome": "No se encontró la respuesta, las sugerencias ni las imágenes solicitadas a Claude sobre la sección 2.1.",
-      "type": "note",
-      "status": "active",
-      "tags": [
-        "claude",
-        "seccion-2.1",
-        "contexto-del-problema",
-        "memoria-faltante"
-      ],
-      "source": "user",
-      "files": [],
-      "codeRefs": [],
-      "importance": 2,
-      "discussionId": null,
-      "createdAt": "2026-09-28T10:45:46.072Z",
-      "updatedAt": null,
-      "expiresAt": null
-    },
-    {
       "id": "d4c6e0bc-7176-42bf-92ca-52c9f5441b68",
       "project": "Personal - TFM",
       "sessionId": null,
@@ -358,32 +248,244 @@
       "expiresAt": null
     },
     {
-      "id": "d0222ea6-8bf3-4757-bb5f-08f8fb04eedc",
+      "id": "f0173346-8f30-43b3-abff-800f522195ff",
       "project": "Personal - TFM",
       "sessionId": null,
       "parentId": "project:Personal - TFM",
       "nodeType": "entry",
       "version": 1,
-      "title": "Antigravity automatizado y base de conocimiento reforzada",
-      "content": "Cambios locales verificados: integración automática de Antigravity en %USERPROFILE%/.gemini/config/mcp_config.json; backups antes de editar configuraciones; incorporación independiente de MCP y confianza del proyecto en Codex; PROJECT_STATE.md y docs/INDEX.md como mapas rápidos; README por categorías documentales; .gitattributes y .gitignore; instrucciones AGENTS/CLAUDE/CHATGPT/ANTIGRAVITY actualizadas para consultar y mantener los índices. Sintaxis PowerShell correcta y git diff --check sin errores. El instalador no se ejecutó, por lo que aún no se tocaron configuraciones reales fuera del repositorio. Los cambios no están comprometidos ni publicados.",
-      "why": "Facilitar que Codex/ChatGPT, Claude Desktop y Antigravity compartan memoria factual y documentos del TFM de forma consistente.",
-      "outcome": "setup-sync.ps1 ahora configura context-mcp en Antigravity además de Claude y Codex, preserva configuraciones existentes y crea copias de seguridad. Se añadieron estado del proyecto, índice documental, carpetas estándar, reglas Git y protocolos de actualización.",
+      "title": "Ubicación y carga de Miao y Holmes 2023",
+      "content": "Guidance for generative AI in education and research se ubica principalmente en 2.1, no como evidencia de que la revisión humana quedó imposibilitada, sino para respaldar que la rápida evolución de la IA generativa supera la adaptación regulatoria y que las instituciones educativas necesitan capacidad de validación, protección de datos y enfoques humanos y adecuados a la edad. En Word: tipo Informe; autores Miao/Fengchun y Holmes/Wayne por separado; título Guidance for generative AI in education and research; año 2023; institución UNESCO; URL https://unesdoc.unesco.org/ark:/48223/pf0000386693. No marcar UNESCO como autor corporativo.",
+      "why": "Aclarar el uso correcto de la guía UNESCO dentro del contexto del problema y evitar una atribución bibliográfica incorrecta.",
+      "outcome": "La guía se conserva en 2.1 para respaldar la necesidad de regulación, validación institucional y enfoque humano/adecuado a la edad; se carga como informe con dos autores personales.",
       "type": "note",
       "status": "active",
       "tags": [
-        "antigravity",
-        "context-mcp",
-        "shared-memory",
-        "setup",
-        "knowledge-base"
+        "miao",
+        "holmes",
+        "unesco",
+        "seccion-2.1",
+        "referencias"
       ],
-      "source": "ai-summary",
+      "source": "web",
       "files": [],
       "codeRefs": [],
       "importance": 2,
       "discussionId": null,
-      "createdAt": "2026-09-28T11:03:42.993Z",
+      "createdAt": "2026-09-28T17:17:29.671Z",
       "updatedAt": null,
+      "expiresAt": null
+    },
+    {
+      "id": "c9ce9418-baff-44a3-80bb-47db39ac638a",
+      "project": "Personal - TFM",
+      "sessionId": null,
+      "parentId": "project:Personal - TFM",
+      "nodeType": "entry",
+      "version": 1,
+      "title": "Rizvi 2025 y Trott-Rivière 2024 en la Figura 2",
+      "content": "Trott y Rivière (2024), Measuring and Modifying the Readability of English Texts with GPT-4, fue publicado en Proceedings of the Third Workshop on Text Simplification, Accessibility and Readability (TSAR 2024), pp. 126-134, DOI 10.18653/v1/2024.tsar-1.13. Justifica cobertura parcial de adecuación porque estudia legibilidad, no adecuación etaria directa, y cobertura parcial de sugerencias porque modifica legibilidad. Rizvi et al. (2025), AUTALIC, versión final ACL 2025, pp. 20999-21015, DOI 10.18653/v1/2025.acl-long.1022, tiene 12 autores según ACL: Naba Rizvi, Harper Strickland, Daniel Gitelman, Alexis Morales Flores, Tristan Cooper, Aekta Kallepalli, Akshat Alurkar, Haaset Owens, Saleha Ahmedi, Isha Khirwadkar, Imani N. S. Munyaka y Nedjma Ousidhoum. Michael Golden figuraba en el preprint pero no en la versión final; usar la versión final. AUTALIC justifica cobertura parcial de inclusión lingüística, pues aborda específicamente lenguaje capacitista anti-autista en Reddit, no inclusión general ni contenido educativo. Recomendación gráfica: renombrar la columna como Adecuación etaria y legibilidad; marcar Kılıçaslan como cobertura parcial, no completa, de contenido educativo porque estudia libros infantiles; aclarar que la matriz es una síntesis cualitativa propia y que la fila del TFM representa alcance previsto, no resultados.",
+      "why": "Completar las referencias de todos los trabajos representados en la matriz de cobertura y validar la interpretación de sus celdas.",
+      "outcome": "Ambas fuentes deben figurar en la bibliografía y en la nota de la Figura 2. Se detectó que la referencia previa de AUTALIC usaba autores del preprint y debe sustituirse por la versión final de ACL 2025.",
+      "type": "note",
+      "status": "active",
+      "tags": [
+        "figura-2",
+        "rizvi",
+        "autalic",
+        "trott",
+        "riviere",
+        "referencias",
+        "matriz-cobertura"
+      ],
+      "source": "web",
+      "files": [],
+      "codeRefs": [],
+      "importance": 2,
+      "discussionId": null,
+      "createdAt": "2026-09-28T17:22:58.022Z",
+      "updatedAt": null,
+      "expiresAt": null
+    },
+    {
+      "id": "911583aa-4265-43cf-9235-05df6a20c28e",
+      "project": "Personal - TFM",
+      "sessionId": null,
+      "parentId": "project:Personal - TFM",
+      "nodeType": "entry",
+      "version": 1,
+      "title": "Figura 2 corregida: legibilidad y cobertura parcial de Kılıçaslan",
+      "content": "Archivo creado: assets/figures/Fig_contexto_matriz_cobertura_v2.png. Procedencia: edición asistida por IA de la figura aportada por el usuario; figura de elaboración propia. Uso previsto: sección 2.1 Contexto del problema. Cambios: (1) «Adecuación etaria» se amplió a «Adecuación etaria y legibilidad» para representar correctamente el estudio de Trott y Rivière (2024); (2) la cobertura de Kılıçaslan et al. (2025) en «Contenido educativo» pasó de completa a parcial porque analiza libros infantiles y no específicamente exámenes de secundaria. Pie propuesto: «Dimensiones cubiertas por los trabajos revisados frente al alcance previsto de este TFM». Nota: la clasificación es una valoración cualitativa de los autores y la fila del TFM expresa alcance previsto, no resultados. La figura no reutiliza imágenes de terceros; deben mantenerse en el pie/bibliografía las referencias de los trabajos comparados. Se documentó también en assets/figures/README.md.",
+      "why": "Alinear la matriz de cobertura con el alcance real de Trott y Rivière (legibilidad) y de Kılıçaslan et al. (libros infantiles, no exámenes de secundaria).",
+      "outcome": "Se generó una versión nueva de la Figura 2 con el encabezado «Adecuación etaria y legibilidad» y la celda Kılıçaslan/Contenido educativo marcada como cobertura parcial. Se preservó la versión anterior y se verificó visualmente la nueva.",
+      "type": "note",
+      "status": "active",
+      "tags": [
+        "figura-2",
+        "matriz-cobertura",
+        "seccion-2.1",
+        "legibilidad",
+        "kilicaslan"
+      ],
+      "source": "file",
+      "files": [
+        {
+          "path": "C:\\Users\\QsManu-Movil\\Documents\\ChatGPT\\Personal - TFM\\assets\\figures\\Fig_contexto_matriz_cobertura_v2.png",
+          "purpose": "Figura 2 corregida"
+        },
+        {
+          "path": "C:\\Users\\QsManu-Movil\\Documents\\ChatGPT\\Personal - TFM\\assets\\figures\\README.md",
+          "purpose": "Registro de procedencia, uso y pie propuesto"
+        }
+      ],
+      "codeRefs": [],
+      "importance": 4,
+      "discussionId": "29d649dc-2b68-41e4-9ea0-467bb887671a",
+      "createdAt": "2026-09-28T17:52:33.791Z",
+      "updatedAt": "2026-09-28T17:52:33.791Z",
+      "expiresAt": null
+    },
+    {
+      "id": "5e20d60a-3e41-4cd2-93c1-16daae7f341a",
+      "project": "Personal - TFM",
+      "sessionId": null,
+      "parentId": "project:Personal - TFM",
+      "nodeType": "entry",
+      "version": 1,
+      "title": "Revisión del Cap. 2 (Contexto y Estado del Arte) del TFM: estructura, 20 fuentes, figuras y correcciones a 2.1",
+      "content": "## Sección revisada\n2.1 Contexto del Problema y 2.2 Estado del Arte del Capítulo 2 del TFM. El usuario pegó su propio borrador de 2.1 (no el .docx, por tokens) y pidió revisión + imágenes para citar.\n\n## Estructura oficial acordada (plantilla UNIR, Máster IA, TFM grupal)\n- 2. Contexto y estado del arte (necesita un párrafo de introducción antes de 2.1, nunca un título seguido directo de otro título — regla explícita de la guía)\n- 2.1. Contexto del problema\n- 2.2. Estado del arte, con subapartados: 2.2.1 Sesgo y representación en modelos de lenguaje · 2.2.2 Sesgo en contenido educativo · 2.2.3 Inclusión y lenguaje no discriminatorio · 2.2.4 Adecuación etaria y legibilidad de textos · 2.2.5 Moderación de contenido y evaluación automática con LLMs · 2.2.6 Auditoría de sistemas de IA · 2.2.7 Marco institucional y panorama de los LLM en educación\n- 2.3. Conclusiones\nExtensión estimada objetivo para TFM grupal: 15-22 páginas para este capítulo (75 páginas mínimas totales, escalado x1.5 sobre el individual de 50).\n\n## Las 20 fuentes del estado del arte (con año, y qué falta/cubre el TFM)\n1. Gallegos et al. (2024) — Bias and Fairness in LLMs: A Survey — Computational Linguistics — DOI 10.1162/coli_a_00524\n2. Caliskan, Bryson & Narayanan (2017) — Semantics derived automatically... (WEAT) — Science — DOI 10.1126/science.aal4230\n3. Nadeem, Bethke & Reddy (2021) — StereoSet — ACL — DOI 10.18653/v1/2021.acl-long.416\n4. Nangia, Vania, Bhalerao & Bowman (2020) — CrowS-Pairs — EMNLP — DOI 10.18653/v1/2020.emnlp-main.154\n5. Crawfurd, Saintis-Miller & Todd (2024) — Sexist textbooks (1255 libros, 34 países) — PLOS ONE — DOI 10.1371/journal.pone.0310366 (OJO: son 3 autores, no 4; verificar si corresponde \"et al.\" desde ya)\n6. Greco, La Quatra, Cagliero & Cerquitelli (2025) — Inclusive language writing italiano — ACM TIST — DOI 10.1145/3729237\n7. Rizvi et al. (2025) — AUTALIC (lenguaje capacitista/autismo) — ACL — aclanthology.org/2025.acl-long.1022 (orden de autores sin verificar del todo)\n8. Crossley et al. (2023) — CLEAR corpus — Behavior Research Methods — DOI 10.3758/s13428-022-01802-x\n9. Kılıçaslan, Genç, Saglam & Altun (2025) — edad apropiada libros infantiles (LLMs, 91% precisión) — Applied Sciences — DOI 10.3390/app152111438 (DOI armado por patrón MDPI, VERIFICAR)\n10. Barrio-Canalejo et al. (2008) — Escala INFLESZ (español) — An. Sist. Sanit. Navar. 31(2):135-152\n11. Lee & Vajjala (2022) — Neural Pairwise Ranking Readability (incl. español) — arXiv:2203.07450\n12. Trott & Rivière (2024) — Readability con GPT-4 — TSAR 2024 workshop ACL — arXiv:2410.14028 (FALTAN páginas exactas)\n13. Vajjala (2022) — Trends/Limitations Readability Assessment — LREC — arXiv:2105.00973\n14. Chen, Qu, Su, Feng & Li (2025) — LLM-based content moderation review — Knowledge-Based Systems, vol 330, art 114689\n15. Zheng et al. (2023) — LLM-as-a-Judge (MT-Bench/Chatbot Arena) — NeurIPS\n16. Lam et al. (2024) — Framework for Assurance Audits of Algorithmic Systems — ACM FAccT — DOI 10.1145/3630106.3658957\n17. Miao & Holmes (2023) — UNESCO Guidance for GenAI in education — unesdoc.unesco.org/ark:/48223/pf0000386693\n18. UNESCO (2021) — Recommendation on the Ethics of AI\n19. Yan et al. (2024) — Practical/Ethical Challenges of LLMs in Education (scoping review, 118 papers) — British Journal of Educational Technology — DOI 10.1111/bjet.13370\n20. TFM UNIR no identificado — Comparativa DL detección de odio en castellano (proyecto Hatemedia, usa BETO) — reunir.unir.net/handle/123456789/14608 — antecedente directo del propio máster\n\nReferencias adicionales usadas en la revisión de 2.1: Bender, Gebru, McMillan-Major & Shmitchell (2021) \"On the Dangers of Stochastic Parrots\" FAccT, DOI 10.1145/3442188.3445922 (para sustituir la afirmación \"premisa indiscutible\"); Mikolov, Sutskever, Chen, Corrado & Dean (2013) NeurIPS (para definir \"embeddings\" en vez de citar RAE); Cohen (1988) Statistical power analysis (para el umbral d=0.8 en las figuras WEAT); Parlamento Europeo y Consejo UE (2024) Reglamento (UE) 2024/1689 (AI Act), Anexo III punto 3.\n\n## Problemas encontrados en el borrador propio de 2.1 (pegado por el usuario)\n1. **Cita de Crawfurd et al. mal contada**: el propio TFM cita bien (3 autores), pero mi lista de referencias anterior tenía un 4º autor (Hönekopp) por error de extracción — corregir ahí, no en el texto del usuario.\n2. **Interpretación excesiva del AI Act Anexo III punto 3(c)**: ese punto cubre sistemas que evalúan el NIVEL EDUCATIVO que una persona puede recibir/acceder (sistemas de ubicación/itinerarios), NO la adecuación etaria de un CONTENIDO. El borrador (y mi propio texto anterior) afirma que \"se correlaciona de forma directa\" — es un exceso que hay que matizar. Además el Reglamento no obliga a \"quienes creen materiales\" sino a proveedores/responsables de despliegue de sistemas de alto riesgo. Y el calendario del régimen de alto riesgo podría estar aplazado (verificar en EUR-Lex, posible fecha dic-2027).\n3. **Atribuciones a UNESCO sin ver...",
+      "why": "El grupo (Manuel Di Nucci y Pablo Siegrist Montejo) está redactando el Capítulo 2 del TFM \"Framework Inteligente para la Auditoría Ética y Pedagógica de Contenido Educativo mediante LLMs y NLP\" (Máster en IA, UNIR, TFM grupal, mínimo 75 páginas). Necesitaban: (a) un listado de 20 fuentes académic...",
+      "outcome": "Se entregaron: (1) Excel con 20 fuentes (columnas Categoria/Titulo/DOI/Author/Año/Resumen/Faltante/Link); (2) Capitulo_2_Contexto_y_Estado_del_Arte.docx con la numeración oficial de la plantilla UNIR (2.1 Contexto del problema, 2.2 Estado del arte con subapartados 2.2.1-2.2.7, 2.3 Conclusiones) e...",
+      "type": "note",
+      "status": "active",
+      "tags": [
+        "tfm",
+        "estado-del-arte",
+        "contexto-del-problema",
+        "capitulo-2",
+        "referencias-apa",
+        "figuras",
+        "revision-borrador",
+        "sesgo-nlp",
+        "llm-educacion",
+        "weat"
+      ],
+      "source": "user",
+      "files": [
+        {
+          "path": "Estado_del_Arte_TFM.xlsx",
+          "note": "Tabla de 20 fuentes del estado del arte con columnas Categoria/Titulo/DOI/Author/Año/Resumen/Faltante/Link"
+        },
+        {
+          "path": "Capitulo_2_Contexto_y_Estado_del_Arte.docx",
+          "note": "Capítulo 2 completo (2.1 Contexto del problema, 2.2 Estado del arte con 7 subapartados, 2.3 Conclusiones), formato UNIR, con referencias APA provisionales"
+        },
+        {
+          "path": "Fig_contexto_esquema_problema.png",
+          "note": "Diagrama del problema: desbalance producción/revisión -> 3 dimensiones de riesgo -> respuesta del TFM"
+        },
+        {
+          "path": "Fig_contexto_matriz_cobertura.png",
+          "note": "Matriz de cobertura de 5 trabajos previos vs. la propuesta del TFM en 5 dimensiones"
+        },
+        {
+          "path": "Figura_WEAT_etnia_genero.png",
+          "note": "Gráfico WEAT etnia y género/profesión, generado en otro chat del proyecto a partir de Caliskan et al. 2017"
+        },
+        {
+          "path": "Figura_WEAT_comparacion_IAT.png",
+          "note": "Gráfico comparativo IAT humano vs WEAT, generado en otro chat del proyecto a partir de Caliskan et al. 2017"
+        }
+      ],
+      "codeRefs": [],
+      "importance": 4,
+      "discussionId": null,
+      "createdAt": "2026-09-29T07:57:02.407Z",
+      "updatedAt": null,
+      "expiresAt": null
+    },
+    {
+      "id": "23059f87-4255-49d8-83d6-066e85497427",
+      "project": "Personal - TFM",
+      "sessionId": null,
+      "parentId": "project:Personal - TFM",
+      "nodeType": "entry",
+      "version": 1,
+      "title": "Diagnóstico del fallo de conexión de Claude con context-mcp",
+      "content": "El 2026-09-29 se verificó que context.resume funciona desde Codex para el proyecto Personal - TFM y devuelve 14 entradas, por lo que la base de memoria no está dañada. La configuración efectiva de Claude Desktop, ubicada fuera del repositorio en `%APPDATA%\\Claude\\claude_desktop_config.json`, usa `cmd.exe /c npx -y context-mcp-server@latest`. Al reproducir ese lanzamiento, npm queda esperando y finalmente informa `EACCES` al consultar https://registry.npmjs.org/context-mcp-server y al intentar escribir logs en `%LOCALAPPDATA%\\npm-cache\\_logs`; por eso Claude pierde la conexión MCP. Existe una copia local cacheada de context-mcp-server 1.3.0. Ejecutar directamente su `src\\index.js` con Node y enviar el handshake MCP devuelve correctamente el servidor `context-mcp` versión 1.3.0. Solución robusta recomendada: instalar una versión fija globalmente (`npm install --global context-mcp-server@1.3.0`) y configurar Claude para ejecutar el binario global mediante cmd.exe, evitando `npx ...@latest` en cada arranque. También debe corregirse `setup-sync.ps1`, porque actualmente vuelve a escribir la configuración problemática con npx. La variable `CTX_PROJECT` no aparece soportada por context-mcp-server 1.3.0; el aislamiento se garantiza pasando siempre `project: Personal - TFM` y el rootPath real en las llamadas.",
+      "why": "Claude Desktop informó que context.save y context.resume fallaban por error de conexión, aunque la memoria debía compartirse con Codex y Antigravity.",
+      "outcome": "La memoria y el servidor funcionan desde Codex. El fallo se aisló al arranque de Claude mediante npx: la invocación configurada intenta consultar npm y falla con EACCES. Se verificó que la copia local 1.3.0 responde correctamente cuando se ejecuta directamente con Node.",
+      "type": "note",
+      "status": "active",
+      "tags": [
+        "claude",
+        "context-mcp",
+        "diagnostico",
+        "npm",
+        "mcp",
+        "windows"
+      ],
+      "source": "cli",
+      "files": [
+        {
+          "path": "C:\\Users\\QsManu-Movil\\Documents\\ChatGPT\\Personal - TFM\\setup-sync.ps1",
+          "purpose": "Script que actualmente genera la definición basada en npx"
+        },
+        {
+          "path": "C:\\Users\\QsManu-Movil\\Documents\\ChatGPT\\Personal - TFM\\CLAUDE.md",
+          "purpose": "Reglas de memoria para Claude"
+        }
+      ],
+      "codeRefs": [],
+      "importance": 4,
+      "discussionId": null,
+      "createdAt": "2026-09-29T08:04:18.379Z",
+      "updatedAt": null,
+      "expiresAt": null
+    },
+    {
+      "id": "458054b0-2e46-4110-94b0-10fef7ffaf71",
+      "project": "Personal - TFM",
+      "sessionId": null,
+      "parentId": "project:Personal - TFM",
+      "nodeType": "entry",
+      "version": 1,
+      "title": "MCP estable y verificado en Claude, Antigravity, Cursor y ChatGPT/Codex",
+      "content": "Trabajo completado el 2026-09-29. Se instaló globalmente `context-mcp-server@1.3.0` bajo el prefijo npm del usuario. `setup-sync.ps1` ahora instala/verifica esa versión fija, obtiene la ruta absoluta de `context-mcp-server.cmd`, preserva las configuraciones existentes, crea backups, escribe JSON/TOML en UTF-8 sin BOM y configura Claude Desktop, Antigravity, Cursor y ChatGPT/Codex sin usar `npx ...@latest` durante cada arranque. Se añadió `verify-context-mcp.mjs`, que lee la configuración efectiva de cada cliente, inicia exactamente su transporte stdio, completa el handshake MCP y ejecuta `context.resume` con project `Personal - TFM` y el rootPath actual. Resultado de la prueba: los cuatro clientes respondieron como `context-mcp 1.3.0` y cargaron la misma memoria. README.md documenta Cursor, la instalación versionada y el comando de verificación. Se ejecutó el instalador de forma repetida para comprobar reparación/idempotencia funcional. Commit creado: `26b4fa2 fix: stabilize context MCP client setup`. Los cambios académicos previos en `assets/figures/` y sus archivos relacionados se dejaron fuera de este commit para no mezclar trabajo ajeno a la reparación.",
+      "why": "Los clientes usaban `npx context-mcp-server@latest` en cada arranque; Claude fallaba con EACCES al consultar npm y todos podían sufrir el mismo problema al reiniciar.",
+      "outcome": "Se instaló context-mcp-server 1.3.0 globalmente, se configuraron los cuatro clientes con el ejecutable estable, se verificó handshake + context.resume en cada uno y se creó el commit 26b4fa2.",
+      "type": "note",
+      "status": "active",
+      "tags": [
+        "context-mcp",
+        "claude",
+        "antigravity",
+        "cursor",
+        "chatgpt",
+        "codex",
+        "windows",
+        "configuration"
+      ],
+      "source": "cli",
+      "files": [
+        {
+          "path": "C:\\Users\\QsManu-Movil\\Documents\\ChatGPT\\Personal - TFM\\setup-sync.ps1",
+          "purpose": "Instalador y configurador estable para los cuatro clientes"
+        },
+        {
+          "path": "C:\\Users\\QsManu-Movil\\Documents\\ChatGPT\\Personal - TFM\\verify-context-mcp.mjs",
+          "purpose": "Prueba real de handshake y context.resume"
+        },
+        {
+          "path": "C:\\Users\\QsManu-Movil\\Documents\\ChatGPT\\Personal - TFM\\README.md",
+          "purpose": "Documentación actualizada de instalación y verificación"
+        }
+      ],
+      "codeRefs": [],
+      "importance": 4,
+      "discussionId": "1bcf9429-a1f6-4dce-aa0f-72a7ca16b3e4",
+      "createdAt": "2026-09-29T08:55:45.832Z",
+      "updatedAt": "2026-09-29T08:55:45.832Z",
       "expiresAt": null
     }
   ]
