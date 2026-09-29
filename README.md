@@ -8,7 +8,7 @@
 
 ## 🧠 Sistema de Memoria Compartida para IAs (MCP + Git)
 
-Este proyecto está integrado con **`context-mcp-server`**, un sistema de memoria persistente y factual para asistentes de Inteligencia Artificial (**Antigravity**, **Claude Desktop** y **ChatGPT**).
+Este proyecto está integrado con **`context-mcp-server`**, un sistema de memoria persistente y factual para asistentes de Inteligencia Artificial (**Antigravity**, **Claude Desktop**, **ChatGPT/Codex** y **Cursor**).
 
 Toda la memoria (decisiones técnicas, directivas del TFM, estado del proyecto y resúmenes de sesión) se guarda en la carpeta [`.context/`](./.context) dentro de este repositorio. Esto permite que **ambos autores compartan el mismo contexto y avances de IA en tiempo real** utilizando Git (`push` / `pull`).
 
@@ -32,10 +32,17 @@ Haz **doble clic en el archivo [`setup-sync.bat`](./setup-sync.bat)** (o ejecuta
 El script automatizado se encargará de:
 1. Enlazar la carpeta `.context/` de Git con la base de datos local de `context-mcp`.
 2. Registrar el proyecto `Personal - TFM` en tu equipo.
-3. Configurar automáticamente **Claude Desktop**, **Antigravity** y **ChatGPT/Codex** con el servidor MCP cuando detecte cada cliente.
-4. Crear copias de respaldo de las configuraciones existentes antes de modificarlas.
+3. Instalar globalmente la versión fijada de `context-mcp-server`, evitando depender de `npx ...@latest` y de la red cada vez que se abre un cliente.
+4. Configurar automáticamente **Claude Desktop**, **Antigravity**, **ChatGPT/Codex** y **Cursor** con el servidor MCP cuando detecte cada cliente.
+5. Crear copias de respaldo de las configuraciones existentes antes de modificarlas.
 
-Después de ejecutarlo, reinicia los clientes que estuvieran abiertos y comprueba que pueden llamar a `context.resume` para el proyecto `Personal - TFM`.
+Después de ejecutarlo, valida las cuatro configuraciones desde la raíz del repositorio:
+
+```bash
+node verify-context-mcp.mjs
+```
+
+La comprobación inicia cada definición MCP, completa el handshake y ejecuta `context.resume` contra `Personal - TFM`. Finalmente, reinicia los clientes que estuvieran abiertos.
 
 ---
 
@@ -49,6 +56,7 @@ Cada asistente cuenta con su propio archivo de directivas:
 | **Claude Desktop** | [`CLAUDE.md`](./CLAUDE.md) | Copiar las reglas en las instrucciones del Proyecto y habilitar el MCP. |
 | **Antigravity** | [`ANTIGRAVITY.md`](./ANTIGRAVITY.md) / [`AGENTS.md`](./AGENTS.md) | Carga automática nativa por jerarquía de reglas. |
 | **ChatGPT/Codex sobre esta carpeta** | [`AGENTS.md`](./AGENTS.md) / [`CHATGPT.md`](./CHATGPT.md) | Codex carga `AGENTS.md`; `CHATGPT.md` documenta la configuración. |
+| **Cursor** | [`AGENTS.md`](./AGENTS.md) | El MCP se registra en `~/.cursor/mcp.json`; abre esta carpeta como proyecto. |
 | **Proyecto de ChatGPT web/escritorio** | [`CHATGPT.md`](./CHATGPT.md) | Copiar las reglas en las Instrucciones del Proyecto y añadir los documentos necesarios. |
 
 ### Instrucción Maestra para ChatGPT y Claude (Project Instructions)
@@ -155,5 +163,6 @@ Al abrir su asistente, su IA sabrá inmediatamente todas las decisiones y avance
 ├── CHATGPT.md              # Guía de configuración para ChatGPT
 ├── setup-sync.bat          # Lanzador de instalación en 1 clic para Windows
 ├── setup-sync.ps1          # Script PowerShell de enlace y configuración MCP
+├── verify-context-mcp.mjs  # Prueba handshake + context.resume en los cuatro clientes
 └── README.md               # Este documento
 ```

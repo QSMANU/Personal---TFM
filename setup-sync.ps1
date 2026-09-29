@@ -4,6 +4,57 @@
 #>
 
 $ErrorActionPreference = "Stop"
+$ContextMcpVersion = "1.3.0"
+
+function Write-Utf8NoBom {
+    param(
+        [Parameter(Mandatory = $true)][string]$Path,
+        [Parameter(Mandatory = $true)][string]$Content
+    )
+
+    $utf8NoBom = New-Object System.Text.UTF8Encoding($false)
+    [System.IO.File]::WriteAllText($Path, $Content, $utf8NoBom)
+}
+
+function Install-ContextMcpRuntime {
+    param([Parameter(Mandatory = $true)][string]$Version)
+
+    if (!(Get-Command npm -ErrorAction SilentlyContinue)) {
+        throw "No se encontro 'npm' en PATH. Instala Node.js 18 o superior antes de continuar."
+    }
+
+    $npmPrefix = (& cmd.exe /d /c npm config get prefix | Select-Object -Last 1).Trim()
+    if ([string]::IsNullOrWhiteSpace($npmPrefix)) {
+        throw "No se pudo determinar el prefijo global de npm."
+    }
+
+    $packageJson = Join-Path $npmPrefix "node_modules\context-mcp-server\package.json"
+    $installedVersion = $null
+    if (Test-Path -LiteralPath $packageJson) {
+        try {
+            $installedVersion = (Get-Content -LiteralPath $packageJson -Raw | ConvertFrom-Json).version
+        } catch {
+            $installedVersion = $null
+        }
+    }
+
+    if ($installedVersion -ne $Version) {
+        Write-Host "[INFO] Instalando context-mcp-server@$Version de forma global..." -ForegroundColor Yellow
+        & cmd.exe /d /c npm install --global "context-mcp-server@$Version"
+        if ($LASTEXITCODE -ne 0) {
+            throw "npm no pudo instalar context-mcp-server@$Version (codigo $LASTEXITCODE)."
+        }
+    } else {
+        Write-Host "[OK] context-mcp-server@$Version ya esta instalado globalmente." -ForegroundColor Green
+    }
+
+    $serverCommand = Join-Path $npmPrefix "context-mcp-server.cmd"
+    if (!(Test-Path -LiteralPath $serverCommand)) {
+        throw "No se encontro el ejecutable esperado: $serverCommand"
+    }
+
+    return $serverCommand
+}
 
 function Backup-ConfigFile {
     param([Parameter(Mandatory = $true)][string]$Path)
@@ -19,7 +70,8 @@ function Backup-ConfigFile {
 function Set-ContextMcpInJsonConfig {
     param(
         [Parameter(Mandatory = $true)][string]$ConfigFile,
-        [Parameter(Mandatory = $true)][string]$ClientName
+        [Parameter(Mandatory = $true)][string]$ClientName,
+        [Parameter(Mandatory = $true)][string]$ServerCommand
     )
 
     $configDir = Split-Path -Parent $ConfigFile
@@ -47,8 +99,8 @@ function Set-ContextMcpInJsonConfig {
     }
 
     $mcpDefinition = [PSCustomObject]@{
-        command = "cmd.exe"
-        args = @("/c", "npx", "-y", "context-mcp-server@latest")
+        command = "$env:SystemRoot\System32\cmd.exe"
+        args = @("/d", "/c", $ServerCommand)
     }
 
     $existingServer = $config.mcpServers.PSObject.Properties["context-mcp"]
@@ -59,7 +111,7 @@ function Set-ContextMcpInJsonConfig {
     }
 
     Backup-ConfigFile -Path $ConfigFile
-    $config | ConvertTo-Json -Depth 20 | Set-Content -LiteralPath $ConfigFile -Encoding UTF8
+    Write-Utf8NoBom -Path $ConfigFile -Content ($config | ConvertTo-Json -Depth 20)
     Write-Host "[OK] $ClientName configurado correctamente con context-mcp." -ForegroundColor Green
 }
 
@@ -74,11 +126,14 @@ Write-Host "  Configurador de Memoria de IA compartida para el TFM    " -Foregro
 Write-Host "==========================================================" -ForegroundColor Cyan
 Write-Host "Ruta del proyecto: $projectRoot" -ForegroundColor Yellow
 
-foreach ($requiredCommand in @("git", "node", "npx")) {
+foreach ($requiredCommand in @("git", "node", "npm")) {
     if (!(Get-Command $requiredCommand -ErrorAction SilentlyContinue)) {
         Write-Host "[AVISO] No se encontro '$requiredCommand' en PATH. Instala el requisito antes de usar los asistentes." -ForegroundColor Yellow
     }
 }
+
+$contextMcpCommand = Install-ContextMcpRuntime -Version $ContextMcpVersion
+Write-Host "[OK] Runtime MCP estable: $contextMcpCommand" -ForegroundColor Green
 
 # 1. Asegurar directorios
 if (!(Test-Path $projectsDir)) {
@@ -141,7 +196,7 @@ if (!$found) {
 }
 
 Backup-ConfigFile -Path $projectsJsonPath
-$projectsData | ConvertTo-Json -Depth 5 | Set-Content -LiteralPath $projectsJsonPath -Encoding UTF8
+Write-Utf8NoBom -Path $projectsJsonPath -Content ($projectsData | ConvertTo-Json -Depth 5)
 Write-Host "[OK] projects.json actualizado con la ruta de este equipo." -ForegroundColor Green
 
 # 4. Configurar Claude Desktop si existe
@@ -149,7 +204,7 @@ $claudeConfigDir = Join-Path $env:APPDATA "Claude"
 $claudeConfigFile = Join-Path $claudeConfigDir "claude_desktop_config.json"
 if (Test-Path $claudeConfigDir) {
     try {
-        Set-ContextMcpInJsonConfig -ConfigFile $claudeConfigFile -ClientName "Claude Desktop"
+        Set-ContextMcpInJsonConfig -ConfigFile $claudeConfigFile -ClientName "Claude Desktop" -ServerCommand $contextMcpCommand
     } catch {
         Write-Host "[AVISO] No se pudo actualizar claude_desktop_config.json automáticamente: $_" -ForegroundColor Yellow
     }
@@ -162,7 +217,7 @@ $antigravityHome = Join-Path $env:USERPROFILE ".gemini"
 $antigravityConfigFile = Join-Path $antigravityHome "config\mcp_config.json"
 if (Test-Path -LiteralPath $antigravityHome) {
     try {
-        Set-ContextMcpInJsonConfig -ConfigFile $antigravityConfigFile -ClientName "Antigravity"
+        Set-ContextMcpInJsonConfig -ConfigFile $antigravityConfigFile -ClientName "Antigravity" -ServerCommand $contextMcpCommand
     } catch {
         Write-Host "[AVISO] No se pudo actualizar mcp_config.json de Antigravity automaticamente: $_" -ForegroundColor Yellow
     }
@@ -170,33 +225,61 @@ if (Test-Path -LiteralPath $antigravityHome) {
     Write-Host "[INFO] Antigravity no parece instalado; se omite su configuracion." -ForegroundColor DarkGray
 }
 
-# 6. Configurar Codex / ChatGPT si existe
+# 6. Configurar Cursor si existe
+$cursorDir = Join-Path $env:USERPROFILE ".cursor"
+$cursorConfigFile = Join-Path $cursorDir "mcp.json"
+if (Test-Path -LiteralPath $cursorDir) {
+    try {
+        Set-ContextMcpInJsonConfig -ConfigFile $cursorConfigFile -ClientName "Cursor" -ServerCommand $contextMcpCommand
+    } catch {
+        Write-Host "[AVISO] No se pudo actualizar mcp.json de Cursor automaticamente: $_" -ForegroundColor Yellow
+    }
+} else {
+    Write-Host "[INFO] Cursor no parece instalado; se omite su configuracion." -ForegroundColor DarkGray
+}
+
+# 7. Configurar Codex / ChatGPT si existe
 $codexDir = Join-Path $env:USERPROFILE ".codex"
 $codexConfigFile = Join-Path $codexDir "config.toml"
 if (Test-Path $codexDir) {
     try {
         $content = ""
+        $hasUtf8Bom = $false
         if (Test-Path $codexConfigFile) {
             $content = Get-Content $codexConfigFile -Raw
+            $bytes = [System.IO.File]::ReadAllBytes($codexConfigFile)
+            $hasUtf8Bom = $bytes.Length -ge 3 -and $bytes[0] -eq 0xEF -and $bytes[1] -eq 0xBB -and $bytes[2] -eq 0xBF
         }
-        $updatedContent = $content
-        if ($updatedContent -notmatch "\[mcp_servers\.context-mcp\]") {
-            $updatedContent += @"
+        $serverPathToml = $contextMcpCommand.Replace("\", "\\")
+        $cmdPathToml = "$env:SystemRoot\System32\cmd.exe".Replace("\", "\\")
+        $serverBlock = @"
+[mcp_servers.context-mcp]
+command = "$cmdPathToml"
+args    = ["/d", "/c", "$serverPathToml"]
+default_tools_approval_mode = "prompt"
+"@
+        $serverPattern = '(?ms)^\[mcp_servers\.context-mcp\]\r?\n.*?(?=^\[|\z)'
+        if ($content -match $serverPattern) {
+            $updatedContent = [regex]::Replace($content, $serverPattern, "$serverBlock`r`n")
+        } else {
+            $updatedContent = $content + @"
 
 [mcp_servers.context-mcp]
-command = "npx"
-args    = ["-y", "context-mcp-server@latest"]
+command = "$cmdPathToml"
+args    = ["/d", "/c", "$serverPathToml"]
 default_tools_approval_mode = "prompt"
+"@
+        }
 
-[mcp_servers.context-mcp.tools.context]
-approval_mode = "approve"
+        foreach ($toolName in @("context", "search", "codegraph_query")) {
+            $toolSection = "[mcp_servers.context-mcp.tools.$toolName]"
+            if ($updatedContent -notmatch [regex]::Escape($toolSection)) {
+                $updatedContent += @"
 
-[mcp_servers.context-mcp.tools.search]
-approval_mode = "approve"
-
-[mcp_servers.context-mcp.tools.codegraph_query]
+$toolSection
 approval_mode = "approve"
 "@
+            }
         }
 
         $projectSection = "[projects.'$($projectRoot.ToLower())']"
@@ -208,9 +291,9 @@ trust_level = "trusted"
 "@
         }
 
-        if ($updatedContent -ne $content) {
+        if ($updatedContent -ne $content -or $hasUtf8Bom) {
             Backup-ConfigFile -Path $codexConfigFile
-            Set-Content -LiteralPath $codexConfigFile -Value $updatedContent -Encoding UTF8
+            Write-Utf8NoBom -Path $codexConfigFile -Content $updatedContent
             Write-Host "[OK] ChatGPT/Codex configurado correctamente con context-mcp." -ForegroundColor Green
         } else {
             Write-Host "[OK] ChatGPT/Codex ya estaba configurado." -ForegroundColor Green
