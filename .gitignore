@@ -1,0 +1,14 @@
+# Dependencias
+node_modules/
+
+# Artefactos de ejecución del instalador (manifiesto, log, JSON temporales con rutas absolutas)
+state/
+
+# Logs y temporales
+*.log
+*.tmp
+
+# Basura de Windows / editores
+Thumbs.db
+desktop.ini
+*.swp
