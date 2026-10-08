@@ -306,5 +306,97 @@ trust_level = "trusted"
 }
 
 Write-Host "`nTodo listo! La memoria de la IA ahora lee y escribe directamente desde Git." -ForegroundColor Cyan
+
+# 8. Configurar Kimchi Studio si existe
+$kimchiHarnessDir = Join-Path $env:USERPROFILE ".config\kimchi\harness"
+$kimchiMcpFile   = Join-Path $kimchiHarnessDir "mcp.json"
+$kimchiTrustFile = Join-Path $kimchiHarnessDir "trust.json"
+$kimchiDesktopDir = Join-Path $env:USERPROFILE ".config\kimchi\desktop"
+$kimchiProjectsFile = Join-Path $kimchiDesktopDir "projects.json"
+
+if (Test-Path -LiteralPath $kimchiHarnessDir) {
+    try {
+        # --- mcp.json ---
+        $kimchiMcp = [PSCustomObject]@{ mcpServers = [PSCustomObject]@{} }
+        if (Test-Path -LiteralPath $kimchiMcpFile) {
+            try { $kimchiMcp = (Get-Content -LiteralPath $kimchiMcpFile -Raw) | ConvertFrom-Json } catch {}
+        }
+        if (-not $kimchiMcp.PSObject.Properties["mcpServers"]) {
+            $kimchiMcp | Add-Member -MemberType NoteProperty -Name "mcpServers" -Value ([PSCustomObject]@{})
+        }
+        $kimchiMcpDef = [PSCustomObject]@{
+            command = "$env:SystemRoot\System32\cmd.exe"
+            args    = @("/d", "/c", "npx -y context-mcp-server@latest")
+        }
+        if ($kimchiMcp.mcpServers.PSObject.Properties["context-mcp"]) {
+            $kimchiMcp.mcpServers."context-mcp" = $kimchiMcpDef
+        } else {
+            $kimchiMcp.mcpServers | Add-Member -MemberType NoteProperty -Name "context-mcp" -Value $kimchiMcpDef
+        }
+        Backup-ConfigFile -Path $kimchiMcpFile
+        Write-Utf8NoBom -Path $kimchiMcpFile -Content ($kimchiMcp | ConvertTo-Json -Depth 10)
+
+        # --- trust.json ---
+        $trustData = [PSCustomObject]@{}
+        if (Test-Path -LiteralPath $kimchiTrustFile) {
+            try { $trustData = (Get-Content -LiteralPath $kimchiTrustFile -Raw) | ConvertFrom-Json } catch {}
+        }
+        if (-not $trustData.PSObject.Properties["$projectRoot"]) {
+            $trustData | Add-Member -MemberType NoteProperty -Name $projectRoot -Value $true
+        }
+        Write-Utf8NoBom -Path $kimchiTrustFile -Content ($trustData | ConvertTo-Json -Depth 5)
+
+        # --- projects.json ---
+        if (Test-Path -LiteralPath $kimchiDesktopDir) {
+            $kimchiProjects = [PSCustomObject]@{ version = 2; projects = @() }
+            if (Test-Path -LiteralPath $kimchiProjectsFile) {
+                try { $kimchiProjects = (Get-Content -LiteralPath $kimchiProjectsFile -Raw) | ConvertFrom-Json } catch {}
+            }
+            $alreadyRegistered = $kimchiProjects.projects | Where-Object { $_.folderPath -eq $projectRoot }
+            if (-not $alreadyRegistered) {
+                $newEntry = [PSCustomObject]@{
+                    id         = "personal-tfm-$(([System.Environment]::MachineName).ToLower())"
+                    name       = "Personal - TFM"
+                    repository = "https://github.com/QSMANU/Personal---TFM"
+                    folderPath = $projectRoot
+                    createdAt  = [long]([DateTimeOffset]::UtcNow.ToUnixTimeMilliseconds())
+                    updatedAt  = [long]([DateTimeOffset]::UtcNow.ToUnixTimeMilliseconds())
+                }
+                $kimchiProjects.projects += $newEntry
+                Write-Utf8NoBom -Path $kimchiProjectsFile -Content ($kimchiProjects | ConvertTo-Json -Depth 10)
+            }
+        }
+
+        Write-Host "[OK] Kimchi Studio configurado correctamente con context-mcp." -ForegroundColor Green
+    } catch {
+        Write-Host "[AVISO] No se pudo configurar Kimchi Studio automaticamente: $_" -ForegroundColor Yellow
+    }
+} else {
+    Write-Host "[INFO] Kimchi Studio no parece instalado; se omite su configuracion." -ForegroundColor DarkGray
+}
+
+# 9. DeepSeek Harness — ya usa .mcp.json en la raiz del proyecto (incluido en el repo)
+$deepseekInstalled = Test-Path -LiteralPath (Join-Path $env:LOCALAPPDATA "Programs\DeepSeek Harness")
+if ($deepseekInstalled) {
+    $mcpJsonDst = Join-Path $projectRoot ".mcp.json"
+    if (-not (Test-Path -LiteralPath $mcpJsonDst)) {
+        $mcpJsonContent = @'
+{
+  "mcpServers": {
+    "context-mcp": {
+      "type": "stdio",
+      "command": "cmd.exe",
+      "args": ["/c", "npx", "-y", "context-mcp-server@latest"]
+    }
+  }
+}
+'@
+        Write-Utf8NoBom -Path $mcpJsonDst -Content $mcpJsonContent
+    }
+    Write-Host "[OK] DeepSeek Harness configurado (.mcp.json presente en la raiz del proyecto)." -ForegroundColor Green
+} else {
+    Write-Host "[INFO] DeepSeek Harness no parece instalado; se omite su configuracion." -ForegroundColor DarkGray
+}
+
 Write-Host "Reinicia los clientes de IA que estuvieran abiertos y verifica context.resume." -ForegroundColor Cyan
 Write-Host "Antes de trabajar ejecuta git pull; al terminar guarda, confirma y sube los cambios.`n" -ForegroundColor Green

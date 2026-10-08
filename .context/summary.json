@@ -81,6 +81,58 @@
       "createdAt": "2026-09-28T17:52:33.819Z",
       "updatedAt": null,
       "expiresAt": null
+    },
+    {
+      "id": "869f29c6-a5ca-4202-9732-b8c36a8d2f22",
+      "project": "Personal - TFM",
+      "sessionId": null,
+      "parentId": "project:Personal - TFM",
+      "nodeType": "entry",
+      "version": 1,
+      "title": "Compacted 11 entries — 2026-10-03",
+      "content": "## Session summary — Personal - TFM · auto-compaction\n\n**24 context entries** across 11 topic(s).\n\n### tfm\n- **Evaluación y recomendaciones para el Capítulo 3 (Objetivos y Metodología) del TFM** _(user, 2026-10-02)_\n  Destaca positivamente el rigor en prevención de fuga de datos (data leakage) particionando por examen completo, la consideración del cont...\n- **Reformulación natural de H1 adaptada al estilo del autor** _(user, 2026-10-02)_\n  Se detectó y aclaró una precaución clave de cara al tribunal: la IA no debe formularse como que 'supera a los docentes' (los docentes son...\n- **Aclaración conceptual y reformulación de H1 (NLP/LLM vs reglas léxicas)** _(user, 2026-10-02)_\n  - 'Concordancia interanotador con la referencia docente': nivel de acuerdo medible (Krippendorff/Fleiss) entre las decisiones del sistema...\n- **Revisión del Cap. 2 (Contexto y Estado del Arte) del TFM: estructura, 20 fuentes, figuras y correcciones a 2.1** _(user, 2026-09-29)_\n  TFM UNIR no identificado — Comparativa DL detección de odio en castellano (proyecto Hatemedia, usa BETO) — reunir.unir.net/handle/1234567...\n- **Campos para Administrador de Fuentes de Word (10 referencias Cap. 3)** _(user, 2026-10-03)_\n  Mapeo de las 10 referencias bibliográficas de metodología y evaluación del TFM (APA 7) desglosadas en los campos nativos del 'Administrad...\n  _…and 1 more tfm entries_\n\n### claude\n- **Claude cloud no puede usar el MCP local por stdio** _(cli, 2026-09-29)_\n  El 2026-09-29 se repitió `node verify-context-mcp.mjs`: Claude Desktop, Antigravity, Cursor y ChatGPT/Codex completaron el handshake con ...\n- **Claude falla por usar una sesión cloud, no por el MCP local** _(cli, 2026-09-29)_\n  Para context-mcp local se requiere una superficie compatible que ejecute el conector local; para claude.ai o conectores web se necesita d...\n- **Diagnóstico del fallo de conexión de Claude con context-mcp** _(cli, 2026-09-29)_\n  La configuración efectiva de Claude Desktop, ubicada fuera del repositorio en `%APPDATA%\\Claude\\claude_desktop_config.json`, usa `cmd.exe...\n\n### git\n- **Último cambio verificado en Git: simplificación del encabezado de instalación** _(cli, 2026-09-28)_\n  El commit solo registra a QSMANU y la entrada previa del MCP usa source 'user', por lo que no existe evidencia técnica suficiente para id...\n- **Configuración MCP, Figura 2 y memoria publicadas en origin/main** _(cli, 2026-09-29)_\n  Se creó el commit 764dc5e (`docs: add corrected coverage figure and shared memory`) con `.context/context.json`, `.context/summary.json`,...\n\n### context-mcp\n- **MCP estable y verificado en Claude, Antigravity, Cursor y ChatGPT/Codex** _(cli, 2026-09-29)_\n  Se añadió `verify-context-mcp.mjs`, que lee la configuración efectiva de cada cliente, inicia exactamente su transporte stdio, completa e...\n\n### compaction\n- **Compacted 11 entries — 2026-09-28** _(auto, 2026-09-28)_\n  - **Enlace de memoria context-mcp a Git (.context) para sincronización con Pablo** _(user, 2026-09-28)_   Se enlazó la memoria de context...\n\n### figura-2\n- **Figura 2 corregida: legibilidad y cobertura parcial de Kılıçaslan** _(file, 2026-09-28)_\n  Nota: la clasificación es una valoración cualitativa de los autores y la fila del TFM expresa alcance previsto, no resultados.\n- **Rizvi 2025 y Trott-Rivière 2024 en la Figura 2** _(web, 2026-09-28)_\n  Recomendación gráfica: renombrar la columna como Adecuación etaria y legibilidad; marcar Kılıçaslan como cobertura parcial, no completa, ...\n\n### miao\n- **Ubicación y carga de Miao y Holmes 2023** _(web, 2026-09-28)_\n  Guidance for generative AI in education and research se ubica principalmente en 2.1, no como evidencia de que la revisión humana quedó im...\n\n### documentos\n- **Ubicación documental y configuración necesaria en clientes Windows** _(file, 2026-09-28)_\n  La estructura recomendada es: docs/normativa/ para reglamento, guía, rúbrica, plantilla, calendario y protocolo grupal; docs/tfm/propuest...\n\n### memoria\n- **Protocolo común para persistir revisiones académicas y documentos** _(file, 2026-09-28)_\n  README.md también distingue cómo se cargan las reglas en Codex, ChatGPT Project, Claude Code/Desktop y Antigravity, y propone las carpeta...\n\n### general\n- **Enlace de memoria context-mcp a Git (.context) para sincronización con Pablo** _(user, 2026-09-28)_\n  Se enlazó la memoria de context-mcp directamente con la carpeta .context dentro del repositorio Git del TFM mediante un Junction NTFS.\n- **Configuración de Git con cuenta personal QSMANU y commit inicial** _(user, 2026-09-28)_\n  Se configuró Git de forma local en el repositorio para usar la cuenta QSMANU con el correo QSMANU@users.noreply.github.com, aislando por ...\n- **Documentación de repositorio, README completo, CHATGPT.md y ANTIGRAVITY.md** _(user, 2026-09-28)_\n  Se crearon los archivos de directivas específicas CHATGPT.md y ANTIGRAVITY.md, y se completó exhaustivamente el README.md con la guía de ...\n- **Sincronización inicial exitosa en GitHub QSMANU/Person...",
+      "why": "",
+      "outcome": "",
+      "type": "compaction",
+      "status": "active",
+      "tags": [
+        "compaction",
+        "auto"
+      ],
+      "source": "auto",
+      "files": [],
+      "codeRefs": [],
+      "importance": 5,
+      "discussionId": null,
+      "createdAt": "2026-10-03T06:59:44.551Z",
+      "updatedAt": null,
+      "expiresAt": null
+    },
+    {
+      "id": "1cacfa10-3938-45e2-a20a-6294346651a1",
+      "project": "Personal - TFM",
+      "sessionId": null,
+      "parentId": "project:Personal - TFM",
+      "nodeType": "entry",
+      "version": 1,
+      "title": "Compacted 11 entries — 2026-10-05",
+      "content": "## Session summary — Personal - TFM · auto-compaction\n\n**25 context entries** across 7 topic(s).\n\n### tfm\n- **Evaluación y recomendaciones para el Capítulo 3 (Objetivos y Metodología) del TFM** _(user, 2026-10-02)_\n  Destaca positivamente el rigor en prevención de fuga de datos (data leakage) particionando por examen completo, la consideración del cont...\n- **Aclaración conceptual y reformulación de H1 (NLP/LLM vs reglas léxicas)** _(user, 2026-10-02)_\n  - 'Concordancia interanotador con la referencia docente': nivel de acuerdo medible (Krippendorff/Fleiss) entre las decisiones del sistema...\n- **Versión \"primera entrega\" del TFM (Contexto, Estado del Arte, Objetivos y Metodología) — doc completo guardado** _(user, 2026-10-05)_\n  - Capítulo 2 \"Contexto y estado del arte\":   - 2.1 Contexto del Problema, con subapartados (Heading 3): \"Contexto educativo y relevancia ...\n- **Auditoría global del borrador consolidado del TFM (40 páginas)** _(user, 2026-10-03)_\n  Revisión y auditoría del borrador consolidado completo del TFM (40 páginas en PDF): - Estructura: Portada oficial UNIR, Índices (general,...\n- **Reformulación natural de H1 adaptada al estilo del autor** _(user, 2026-10-02)_\n  Se detectó y aclaró una precaución clave de cara al tribunal: la IA no debe formularse como que 'supera a los docentes' (los docentes son...\n  _…and 2 more tfm entries_\n\n### general\n- **Título y fuente finales para gráfico de antecedentes** _(ai-summary, 2026-10-04)_\n  Título: Selección de antecedentes y dimensiones abordadas en relación con la propuesta del TFM.\n- **Sustituciones concretas propuestas para capítulos 2 y 3 del DOCX vigente** _(ai-summary, 2026-10-03)_\n  H3: El profesorado que utilice los informes del prototipo empleará menos tiempo medio por examen y detectará una mayor proporción de los ...\n- **Cambios exactos propuestos para el DOCX del 3 de octubre** _(ai-summary, 2026-10-03)_\n  2.2 reemplazar párrafo búsqueda con fechas efectivas y bases realmente usadas, ventana 2017–2026 con fuentes fundacionales anteriores, in...\n- **Evaluaciones externas atribuidas a Antigravity y DeepSeek** _(user, 2026-10-03)_\n  DeepSeek añade supuestos encabezados Conclusions, Hipótesis y Fase1 duplicados y erratas iInteligencia, ye, ighoyen; no encontrados en ex...\n- **Lista consolidada de cambios a realizar en borrador 2026-10-03** _(ai-summary, 2026-10-03)_\n  Fase2 definir cantidades reales, estratos y docentes; partición por examen y grupos de duplicados/variantes/textos compartidos sin garant...\n  _…and 4 more general entries_\n\n### compaction\n- **Compacted 11 entries — 2026-10-03** _(auto, 2026-10-03)_\n  ### general - **Enlace de memoria context-mcp a Git (.context) para sincronización con Pablo** _(user, 2026-09-28)_   Se enlazó la memori...\n- **Compacted 11 entries — 2026-09-28** _(auto, 2026-09-28)_\n  - **Enlace de memoria context-mcp a Git (.context) para sincronización con Pablo** _(user, 2026-09-28)_   Se enlazó la memoria de context...\n\n### claude\n- **Claude falla por usar una sesión cloud, no por el MCP local** _(cli, 2026-09-29)_\n  Para context-mcp local se requiere una superficie compatible que ejecute el conector local; para claude.ai o conectores web se necesita d...\n- **Claude cloud no puede usar el MCP local por stdio** _(cli, 2026-09-29)_\n  El 2026-09-29 se repitió `node verify-context-mcp.mjs`: Claude Desktop, Antigravity, Cursor y ChatGPT/Codex completaron el handshake con ...\n- **Diagnóstico del fallo de conexión de Claude con context-mcp** _(cli, 2026-09-29)_\n  El 2026-09-29 se verificó que context.resume funciona desde Codex para el proyecto Personal - TFM y devuelve 14 entradas, por lo que la b...\n\n### git\n- **Configuración MCP, Figura 2 y memoria publicadas en origin/main** _(cli, 2026-09-29)_\n  Se creó el commit 764dc5e (`docs: add corrected coverage figure and shared memory`) con `.context/context.json`, `.context/summary.json`,...\n\n### context-mcp\n- **MCP estable y verificado en Claude, Antigravity, Cursor y ChatGPT/Codex** _(cli, 2026-09-29)_\n  Se añadió `verify-context-mcp.mjs`, que lee la configuración efectiva de cada cliente, inicia exactamente su transporte stdio, completa e...\n\n### session-summary\n- **Resumen acumulado del proyecto - 2026-09-26** _(ai-summary, 2026-09-26)_\n  Resumen exclusivo del proyecto Personal - TFM: - Se activó y verificó la memoria persistente de context-mcp para la raíz C:\\Users\\QsManu-...\n- **Resumen de sesión - 2026-09-25** _(ai-summary, 2026-09-25)_\n  - A petición del usuario, se guardó esta compactación como punto de partida para futuras sesiones.\n\n**Key terms:** `del`, `para`, `con`, `por`, `2026`, `mcp`, `context`, `tfm`, `claude`, `sin`",
+      "why": "",
+      "outcome": "",
+      "type": "compaction",
+      "status": "active",
+      "tags": [
+        "compaction",
+        "auto"
+      ],
+      "source": "auto",
+      "files": [],
+      "codeRefs": [],
+      "importance": 5,
+      "discussionId": null,
+      "createdAt": "2026-10-05T07:08:31.125Z",
+      "updatedAt": null,
+      "expiresAt": null
     }
   ]
 }

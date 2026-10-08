@@ -1,0 +1,39 @@
+Versión gráfica solicitada por el usuario; sustituye la propuesta visual tabular sin eliminarla.
+Destino: ILU 12, sección 2.3 del DOCX 2026-10-04. No insertada en Word.
+Fuente: mismos 13 antecedentes del archivo Fig_antecedentes_conclusiones_2026-10-04_fuente.txt.
+Nota para el pie: Síntesis cualitativa del alcance descrito en los trabajos. Los símbolos indican aspectos abordados y relaciones parciales con las dimensiones amplias, no medidas de rendimiento. No evaluado se refiere al alcance resumido, no a incapacidad demostrada. Los rombos del TFM indican alcance previsto pendiente de validación empírica.
+Legibilidad y edad comercial se marcan como parciales respecto a adecuación educativa; inclusión específica de género/capacitismo también parcial. Reformulación indica que se realiza esa tarea, no que se garantice su fidelidad. Irigoyen reconoce evaluación explícita del ajuste al nivel y sesgo ideológico como relación parcial con sesgo cultural/representación. Estas clasificaciones son interpretación de los autores, no resultados cuantitativos publicados.
+Procedencia: rediseño asistido mediante herramienta integrada image_gen, a partir de figura propia suministrada. Fecha 2026-10-04. No se reproducen figuras originales de artículos. Conservar citas académicas en pie y bibliografía. Licencia de la imagen inicial no verificada independientemente.
+Prompt:
+Redesign the supplied research dot-matrix infographic into an elegant, serious academic GRAPHIC, NOT A TABLE. User explicitly rejects tables: absolutely no cell borders, no spreadsheet rectangles, no large blocks of prose. Preserve core visual concept of circles comparing papers across columns, but improve editorial sophistication. White background, crisp typography, generous whitespace, restrained palette midnight navy and teal with terracotta for proposal. High-resolution tall portrait canvas approx 2400x3200. No figure title or citation block inside image. Use 5 slim pale vertical column lanes with rounded ends (very faint), thin group separators only, attractive small abstract line icons above column headings if room. Left 38% for author/year and short gray subtitle. Right 62% for five circle columns, equal spacing. Five headings (wrap cleanly): "Sesgo y\nrepresentación", "Inclusión\nlingüística", "Adecuación\ny legibilidad", "Material\neducativo", "Reformulación". Three groups marked by small uppercase teal labels, not huge colored bars: "SESGO E INCLUSIÓN", "LEGIBILIDAD Y ADECUACIÓN", "EVALUACIÓN EDUCATIVA". Icons/circles remain primary visual information. No 3D, gradients, shadows, textures, decorative arrows, or radar chart.
+
+Exact glyph semantics: F=full dark teal circle, P=half teal circle with left half filled and right half white, O=small hollow light gray circle. All same circle size. This is qualitative coverage of the broad dimensions, NOT performance or rankings. Render each sequence in exact column order (5 symbols per row):
+GROUP 1:
+"Crawfurd et al. (2024)" subtitle "Género en libros de texto · inglés" = P O O F O
+"Greco et al. (2025)" subtitle "Escritura inclusiva · italiano" = O F O O F
+"Nunziatini y Diego (2024)" subtitle "Postedición de traducciones · español" = O P O O F
+"Kharitonova et al. (2025)" subtitle "Racismo y sexismo en foros · español" = P P O O O
+"Rizvi et al. (2025)" subtitle "Capacitismo en Reddit · inglés" = O P O O O
+GROUP 2:
+"Trott y Rivière (2024)" subtitle "Legibilidad y reescritura · inglés" = O O P O F
+"Aissa et al. (2025)" subtitle "Complejidad para adultos · multilingüe" = O O P P O
+"Uçar et al. (2024)" subtitle "Curso de ESO en textos · multilingüe" = O O P F O
+"Palma y Soto (2025)" subtitle "Complejidad escolar · español" = O O P F O
+"Reyes Peralta et al. (2025)" subtitle "Complejidad y juicio docente · español" = O O P F O
+"Kılıçaslan et al. (2025)" subtitle "Edad recomendada en libros · turco" = O O P P O
+GROUP 3:
+"Moore et al. (2024)" subtitle "Calidad y equidad de preguntas" = P O O F O
+"Irigoyen et al. (2026)" subtitle "Riesgo en explicaciones educativas" = P O F F O
+
+Final visually separated proposal row in very pale terracotta rounded band:
+"Este TFM · propuesta"
+subtitle "Exámenes de ESO en castellano"
+All five symbols are terracotta OUTLINED DIAMONDS, NOT full circles. These diamonds mean intended scope, not achieved.
+Below row small text: "Análisis conjunto, contexto didáctico y apoyo a la revisión docente."
+
+Bottom legend on two clean lines with actual sample symbols:
+full teal circle "Abordado"; half teal circle "Parcial"; hollow gray circle "No evaluado*"; outlined terracotta diamond "Previsto".
+Footnote exact: "*Según el alcance descrito en los trabajos revisados."
+Final note exact: "Síntesis cualitativa. El TFM aún requiere validación empírica."
+
+Required accuracy: exactly 13 author rows and 1 proposal row; every 5-symbol sequence must be exact; no dropped/duplicated rows. Preserve Spanish accents and author names especially Kılıçaslan, Uçar, Rivière. Text legible when printed, no text overlapping adjacent header. The graphic must feel like a polished scholarly visual comparison, close to original circle-chart style, NOT a text table.

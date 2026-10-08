@@ -1,5 +1,19 @@
 # Figuras e imágenes
 
+## Versión gráfica preferida — 2026-10-04
+
+- `Fig_antecedentes_grafico_2026-10-04.png`: diagrama de círculos con 13 antecedentes y rombos para alcance propuesto del TFM. Preferido por el usuario frente al formato de tabla.
+- Procedencia, criterios y prompt: `Fig_antecedentes_grafico_2026-10-04_procedencia.txt`; fuentes académicas en `Fig_antecedentes_conclusiones_2026-10-04_fuente.txt`.
+- Sustituye visualmente la propuesta tabular; ambas se conservan. Insertar en ILU 12 de 2.3 con numeración automática.
+
+## Comparación ampliada para conclusiones 2.3 — 2026-10-04
+
+- Archivo: `Fig_antecedentes_conclusiones_2026-10-04.png`.
+- Fuente, nota, procedencia, selección y prompt: `Fig_antecedentes_conclusiones_2026-10-04_fuente.txt`.
+- Destino: marcador «ILU 12» en el DOCX recibido el 2026-10-04; no insertado aún en Word.
+- Incluye 13 antecedentes y una fila de alcance previsto del TFM. Compara aportación, material y límite de transferencia, sin declarar superioridad empírica del TFM.
+- La versión anterior se conserva como histórica.
+
 Cada figura debe conservar, como mínimo:
 
 - archivo original o editable;

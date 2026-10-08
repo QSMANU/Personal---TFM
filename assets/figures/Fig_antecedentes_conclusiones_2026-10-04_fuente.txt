@@ -1,0 +1,40 @@
+Título: Selección de antecedentes, aportaciones y límites respecto a la propuesta del TFM.
+
+Fuente: Elaboración propia a partir de Crawfurd et al. (2024), Greco et al. (2025), Nunziatini y Diego (2024), Kharitonova et al. (2025), Rizvi et al. (2025), Trott y Rivière (2024), Aissa et al. (2025), Uçar et al. (2024), Palma y Soto (2025), Reyes Peralta et al. (2025), Kılıçaslan et al. (2025), Moore et al. (2024) e Irigoyen et al. (2026).
+
+Nota: Comparación cualitativa de una selección de antecedentes. Los límites indican diferencias de alcance o aspectos pendientes de validación para el caso de estudio, no una valoración global de la calidad de cada trabajo. La fila del TFM recoge el alcance previsto, no resultados empíricos ni superioridad demostrada.
+
+Ubicación: marcador ILU 12, sección 2.3. Insertar título automático en Word; ILU 12 es un marcador y no determina necesariamente la numeración final.
+
+Procedencia: síntesis a partir del DOCX recibido el 2026-10-04 y la imagen aportada por el usuario, ampliada con edición de imágenes integrada de OpenAI. No se reproducen figuras de los artículos; se parafrasean aportaciones. No se ha verificado titularidad de la imagen original aportada. Selección: estudios empíricos aplicados relacionados directamente con las tres dimensiones; las fuentes fundacionales, revisiones generales y normativa siguen en el texto. No es revisión exhaustiva.
+
+Fuentes primarias consultadas en esta edición (2026-10-04): https://arxiv.org/abs/2607.01934 ; https://aclanthology.org/2025.emnlp-demos.6/ ; https://aclanthology.org/2024.eamt-1.48/ . El DOI de Moore devolvió error de acceso; su fila se apoya en la descripción del DOCX. Otros estudios se sintetizan a partir de sus apartados en la versión del DOCX guardada. No se auditaron nuevamente todos los artículos.
+
+Archivo: Fig_antecedentes_conclusiones_2026-10-04.png
+Modo: herramienta integrada image_gen; sin edición del DOCX.
+
+Prompt de generación:
+Use case: infographic-diagram, edit/redesign of attached academic comparison figure for a Spanish master's thesis. Use attached image as visual style reference (white background, dark charcoal typography, restrained forest green accents and pale orange TFM row), but replace the circle matrix with an exquisitely legible TEXT comparison table. Portrait canvas, high resolution approximately 2400x3200, generous padding, crisp flat vector-like typography, no texture. No title or figure number: those go in Word externally. Four columns of widths 24%,24%,24%,28%: "Trabajo" | "Aporte principal" | "Material evaluado" | "Límite para este TFM". Green header with white text, thin gray dividers, subtle alternating row fills, left aligned wrapped text. Exactly 13 research rows plus one orange final proposal row. All text verbatim, preserving accents and Turkish characters. Each row 2-3 text lines, enough vertical spacing. Do not use circles/checkmarks or suggest our untested proposal is proven superior. The limitations refer to transfer to our target, not general inferiority. Exact row data:
+
+Crawfurd et al. (2024) | Sesgo de género y representación | Libros de texto en inglés | No evalúa exámenes ni las tres dimensiones
+Greco et al. (2025) | Detección y reformulación inclusiva | Comunicaciones administrativas en italiano | Transferencia a exámenes en castellano no validada
+Nunziatini y Diego (2024) | Corrección de marcas de género | Traducciones técnicas al español | Posibles cambios de significado y terminología
+Kharitonova et al. (2025) | Detección de racismo y sexismo | Diálogos de foros en castellano | Categorías y contexto distintos del examen
+Rizvi et al. (2025) | Detección contextual de capacitismo | Reddit en inglés; autismo | Ámbito específico; desacuerdo entre evaluadores
+Trott y Rivière (2024) | Medición y modificación de legibilidad | Pasajes en inglés | No comprueba fidelidad de las reescrituras
+Aissa et al. (2025) | Diagnóstico de complejidad textual | Textos para adultos; español, portugués y francés | Niveles no validados para cursos de ESO
+Uçar et al. (2024) | Clasificación por curso de ESO | Textos de ciencias; español, euskera e inglés | Pérdida de rendimiento en corpus externos
+Palma y Soto (2025) | Clasificación con LLM y rasgos lingüísticos | Textos escolares chilenos en español | Agrupaciones de cursos distintas de ESO
+Reyes Peralta et al. (2025) | Complejidad textual y juicio docente | Textos de ciencias de enseñanza media chilena | No contrasta comprensión del alumnado
+Kılıçaslan et al. (2025) | Predicción de edad recomendada | Libros infantiles en turco | Referencia comercial de edad, no comprensión
+Moore et al. (2024) | Evaluación educativa mediante rúbricas | Preguntas evaluadas por personas y LLM | No valida la auditoría conjunta propuesta
+Irigoyen et al. (2026) | Auditoría multidimensional explicable | Explicaciones educativas de ScienceQA | Analiza explicaciones, no exámenes de ESO en castellano
+
+Final row pale orange, dark brown text and bold first cell:
+Este TFM (propuesta) | Sesgo y representación; inclusión; adecuación al nivel | Exámenes de ESO en castellano: Lengua e Historia | Evidencias y recomendaciones; utilidad docente por validar
+
+Small clear footer BELOW table, two lines:
+"Comparación cualitativa de una selección de antecedentes."
+"El TFM muestra alcance previsto, no resultados ni superioridad demostrada."
+
+Do not add a reference list, no invented numbers, no logos. The final row must not be truncated. All 14 rows and headers required. Avoid crowding by using a sufficiently tall portrait canvas. Every research row equal typographic importance. This is a publication-ready scientific summary.

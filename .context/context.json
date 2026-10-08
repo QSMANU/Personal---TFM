@@ -1,536 +1,435 @@
 {
   "entries": [
     {
-      "id": "d7d6ec6b-ce59-4d32-9997-d541a44075eb",
+      "id": "417cbbb3-425e-4db2-b25c-86539563655b",
       "project": "Personal - TFM",
       "sessionId": null,
       "parentId": "project:Personal - TFM",
       "nodeType": "entry",
       "version": 1,
-      "title": "Enlace de memoria context-mcp a Git (.context) para sincronización con Pablo",
-      "content": "Se enlazó la memoria de context-mcp directamente con la carpeta .context dentro del repositorio Git del TFM mediante un Junction NTFS. De este modo, cualquier actualización de memoria realizada por las IAs se escribe directamente en los ficheros del repositorio, permitiendo sincronización bidireccional entre Manuel y Pablo mediante git push y git pull.",
-      "why": "Permitir que Manuel y Pablo compartan y actualicen la memoria de sus asistentes de IA mediante Git.",
-      "outcome": "Memoria de context-mcp versionada en Git y lista para sincronizarse con Pablo.",
+      "title": "Última versión DOCX 2026-10-03 conservada y revisada",
+      "content": "Archivo origen aportado en Downloads: Contexto, Estado del Arte, Objetivos y Metodologia.docx. Copia canónica intacta en docs/tfm/memoria/2026-10-03/ del root Personal - TFM. SHA256 ambos 89B9501F14EA257CC451E5BD13C6CFA94833E8BB4A6A765D6D88E17D044AD087. Leído cuerpo completo, tablas, ecuaciones OMML y campos. No se editaron contenidos. Render falló por ausencia de soffice.exe; no afirmar revisión visual ni páginas. Vacíos excluidos deliberadamente. Buen desarrollo crítico en 2.2.2 y 2.2.3 y conexión objetivos/fases. Alcance propuesto en documento: cuatro cursos ESO, Lengua Castellana y Literatura y Geografía e Historia, castellano; aún diseño, no ejecución ni aprobación director.\nRevisión priorizada: 2.2 búsqueda con marcador de bases/Tabla X, fechas búsqueda confundidas con ventana publicación, dice español pero cadenas inglesas, criterios excluyen preprints/TFM que sí utiliza y excepciones cronológicas incompletas. Registrar búsqueda real. 2.2.1 sintaxis rota IAT/WEAT, duplicación heredan/amplifican, Nadeem et al truncado, más de una década desde 2017 incorrecto en 2026, alto porcentaje sin base; distinguir embeddings estáticos de LLM. 2.1 afirmaciones revisión editorial/docente no probadas por Crawfurd; ejemplo un origen cultural aislado no demuestra sesgo; evitar clasificación regulatoria categórica sin revisar finalidad. AIriskEval-edu (https://arxiv.org/abs/2607.01934) confirmado: 1639 explicaciones/170 preguntas, cinco dimensiones y localización/justificación; antecedente próximo, añadir comparación y diferenciar exámenes castellanos e intervención docente. Ficha dice aceptado ICCST2026; referencia arXiv sigue válida para versión consultada.\nCap3: H1 muy cercano y supera con claridad sin definición. H2 >50% coste/latencia y <3% variación precisar métrica Macro-F1, puntos porcentuales, comparación mismo LLM/datos/hardware y coste completo. Medir recall del cribado y falsos negativos descartados. Faltan tamaños corpus/docentes, positivos por categoría, potencia o justificación piloto y análisis estadístico H3 con agrupación docente/examen. Partición documento no garantiza ausencia total de fuga: detectar variantes/textos repetidos, agrupar procedencia, no descartar contaminación preentrenamiento. Definir ciego (docentes saben si reciben informe), unidades fragmento/ítem/examen, representación agregada, rúbrica contextual sin marcar automáticamente masculino genérico ni absolver toda fuente histórica con tarea sintáctica. Alinear alpha, Fleiss en tabla, Cohen y F1 interanotador; medir acuerdo antes consenso y por dimensiones/severidad. INFLESZ en preguntas breves no extrapolable automáticamente. Contexto curricular debe tener fuente identificada. Evaluación de reformulación debe comprobar respuesta correcta, objetivo, dificultad, fidelidad y nuevos errores, no solo SUS/TAM o aceptación. Cinco repeticiones temperatura0 no garantizan determinismo. Sobreconfianza mediante errores intencionales requiere protocolo separado, denominador, consentimiento y explicación final según reglas institucionales.\nBibliografía: AIAct tres entradas, Europea P.E. y eglamento erróneos. Miao F.&. omite Holmes. DOI duplicado Artstein/Davis/Krippendorff. Rizvi autores invertidos Harper S./Daniel G., Morales Flores y Muyaka incorrectos; ACL https://aclanthology.org/2025.acl-long.1022/ confirma Strickland H., Gitelman D., Morales Flores A., Munyaka I.N.S. Yan autores invertidos confirmado Monash https://research.monash.edu/en/publications/practical-and-ethical-challenges-of-large-language-models-in-educ/: Sha L., Zhao L., Li Y., Martinez-Maldonado R., Chen G., Li X., Jin Y., Gašević D. Cohen1988 citado y ausente. Anthropic2025 pies vs2026 lista. Fuente matriz omite Kılıçaslan. Figura7 sin fuente en texto extraído, comprobar imagen. Índice matriz3 vs cuerpo2, salto a4 y campo SEQ reinicio6; índice tablas está configurado con Figura, corregir Tabla. No auditadas exhaustivamente todas cifras/DOIs/licencias. Prioridad final: operacionalizar experimentos y rubricar contexto; reparar 2.2.1 y búsqueda; corregir referencias/campos.",
+      "why": "Usuario declara última versión y solicita revisión solo del contenido desarrollado.",
+      "outcome": "Copia intacta archivada y verificada por SHA256; catálogo y estado actualizados. Revisión textual y estructural realizada, sin render disponible.",
       "type": "note",
       "status": "active",
       "tags": [],
-      "source": "user",
-      "files": [
-        {
-          "path": "c:/Users/QsManu-Movil/Documents/ChatGPT/Personal - TFM/CLAUDE.md"
-        },
-        {
-          "path": "c:/Users/QsManu-Movil/Documents/ChatGPT/Personal - TFM/AGENTS.md"
-        }
-      ],
-      "codeRefs": [],
-      "importance": 4,
-      "discussionId": null,
-      "createdAt": "2026-09-28T06:08:37.604Z",
-      "updatedAt": null,
-      "expiresAt": null
-    },
-    {
-      "id": "7db1bbe9-cd3e-49a4-93fb-190f5e4a1be9",
-      "project": "Personal - TFM",
-      "sessionId": null,
-      "parentId": "project:Personal - TFM",
-      "nodeType": "entry",
-      "version": 1,
-      "title": "Configuración de Git con cuenta personal QSMANU y commit inicial",
-      "content": "Se configuró Git de forma local en el repositorio para usar la cuenta QSMANU con el correo QSMANU@users.noreply.github.com, aislando por completo la cuenta laboral. Se creó el commit inicial con la memoria y las instrucciones en la rama main apuntando al remoto https://github.com/QSMANU/Personal---TFM.git.",
-      "why": "Evitar usar la cuenta corporativa de trabajo y preparar la sincronización con Pablo vía GitHub.",
-      "outcome": "Commit inicial generado localmente con el usuario QSMANU y listo para subir al repositorio de GitHub.",
-      "type": "note",
-      "status": "active",
-      "tags": [],
-      "source": "user",
-      "files": [
-        {
-          "path": "c:/Users/QsManu-Movil/Documents/ChatGPT/Personal - TFM/CLAUDE.md"
-        },
-        {
-          "path": "c:/Users/QsManu-Movil/Documents/ChatGPT/Personal - TFM/AGENTS.md"
-        }
-      ],
-      "codeRefs": [],
-      "importance": 4,
-      "discussionId": null,
-      "createdAt": "2026-09-28T09:58:34.798Z",
-      "updatedAt": null,
-      "expiresAt": null
-    },
-    {
-      "id": "cc138e87-6618-4c5e-9328-70af9e37c514",
-      "project": "Personal - TFM",
-      "sessionId": null,
-      "parentId": "project:Personal - TFM",
-      "nodeType": "entry",
-      "version": 1,
-      "title": "Sincronización inicial exitosa en GitHub QSMANU/Personal---TFM",
-      "content": "Se completó la sincronización con GitHub en el repositorio privado https://github.com/QSMANU/Personal---TFM.git. Se autenticó mediante Personal Access Token (PAT) de QSMANU, se integró el commit inicial de GitHub (LICENSE y README.md) y se subieron los ficheros .context/ (memoria persistente), CLAUDE.md, AGENTS.md y los scripts setup-sync.bat y setup-sync.ps1. La rama main quedó limpia y sincronizada con origin/main.",
-      "why": "Dejar la memoria y la infraestructura de agentes disponible en la nube para ambos autores del TFM.",
-      "outcome": "El repositorio de GitHub quedó 100% actualizado y listo para que Pablo lo clone y use setup-sync.bat.",
-      "type": "note",
-      "status": "active",
-      "tags": [],
-      "source": "user",
-      "files": [
-        {
-          "path": "c:/Users/QsManu-Movil/Documents/ChatGPT/Personal - TFM/CLAUDE.md"
-        },
-        {
-          "path": "c:/Users/QsManu-Movil/Documents/ChatGPT/Personal - TFM/AGENTS.md"
-        }
-      ],
-      "codeRefs": [],
-      "importance": 4,
-      "discussionId": null,
-      "createdAt": "2026-09-28T10:08:49.959Z",
-      "updatedAt": null,
-      "expiresAt": null
-    },
-    {
-      "id": "23319eec-79fc-464a-b52b-a3f9f9d9b8e4",
-      "project": "Personal - TFM",
-      "sessionId": null,
-      "parentId": "project:Personal - TFM",
-      "nodeType": "entry",
-      "version": 1,
-      "title": "Documentación de repositorio, README completo, CHATGPT.md y ANTIGRAVITY.md",
-      "content": "Se crearon los archivos de directivas específicas CHATGPT.md y ANTIGRAVITY.md, y se completó exhaustivamente el README.md con la guía de instalación rápida en 1 clic para Pablo, instrucciones para cada asistente y el flujo de trabajo diario vía Git. Todo quedó sincronizado en GitHub.",
-      "why": "Facilitar la comprensión, descarga, configuración y uso del sistema compartido a ambos integrantes del TFM.",
-      "outcome": "Documentación completa y directivas individuales para cada cliente disponibles en el repositorio.",
-      "type": "note",
-      "status": "active",
-      "tags": [],
-      "source": "user",
-      "files": [
-        {
-          "path": "c:/Users/QsManu-Movil/Documents/ChatGPT/Personal - TFM/README.md"
-        },
-        {
-          "path": "c:/Users/QsManu-Movil/Documents/ChatGPT/Personal - TFM/CHATGPT.md"
-        },
-        {
-          "path": "c:/Users/QsManu-Movil/Documents/ChatGPT/Personal - TFM/ANTIGRAVITY.md"
-        }
-      ],
-      "codeRefs": [],
-      "importance": 4,
-      "discussionId": null,
-      "createdAt": "2026-09-28T10:27:36.885Z",
-      "updatedAt": null,
-      "expiresAt": null
-    },
-    {
-      "id": "ba3de726-8d47-4f72-8961-aab25969df23",
-      "project": "Personal - TFM",
-      "sessionId": null,
-      "parentId": "project:Personal - TFM",
-      "nodeType": "entry",
-      "version": 2,
-      "title": "Último cambio verificado en Git: simplificación del encabezado de instalación",
-      "content": "Git contiene el commit 88c930591895bb18a6b40ed01eeca2a801322a77, mensaje 'Update', que renombró en README.md el encabezado '🚀 Guía de Instalación Rápida (Para Pablo / Nuevo Equipo)' por '🚀 Guía de Instalación Rápida'. El árbol de trabajo estaba limpio y main coincidía con origin/main. La atribución anterior a Claude fue incorrecta: el usuario indica que este cambio provino de Antigravity. El commit solo registra a QSMANU y la entrada previa del MCP usa source 'user', por lo que no existe evidencia técnica suficiente para identificar automáticamente el cliente que realizó el cambio. context-mcp conserva notas y resúmenes, no necesariamente el texto literal ni el agente autor de cada modificación.",
-      "why": "Distinguir la última nota persistida por context-mcp del cambio más reciente del repositorio y evitar atribuirlo al asistente equivocado.",
-      "outcome": "Se verificó el commit 88c9305 y se corrigió la atribución: el usuario indica que provino de Antigravity; Git y context-mcp no registran evidencia técnica concluyente del cliente autor.",
-      "type": "note",
-      "status": "active",
-      "tags": [
-        "git",
-        "antigravity",
-        "readme",
-        "ultimo-cambio",
-        "atribucion-corregida"
-      ],
-      "source": "cli",
-      "files": [
-        {
-          "path": "c:/Users/QsManu-Movil/Documents/ChatGPT/Personal - TFM/README.md"
-        }
-      ],
-      "codeRefs": [],
-      "importance": 4,
-      "discussionId": null,
-      "createdAt": "2026-09-28T10:43:05.123Z",
-      "updatedAt": "2026-09-28T10:44:03.431Z",
-      "expiresAt": null
-    },
-    {
-      "id": "d4c6e0bc-7176-42bf-92ca-52c9f5441b68",
-      "project": "Personal - TFM",
-      "sessionId": null,
-      "parentId": "project:Personal - TFM",
-      "nodeType": "entry",
-      "version": 1,
-      "title": "Protocolo común para persistir revisiones académicas y documentos",
-      "content": "Se ampliaron las instrucciones de los tres clientes. Toda revisión o redacción de secciones, búsqueda de bibliografía o imágenes, decisión metodológica, diseño experimental y análisis de feedback debe terminar con context.save. La nota debe contener hallazgos, cambios, fuentes, figuras, dudas y archivos suficientes para que otro cliente continúe. Se definió un modelo de dos capas: el repositorio conserva PDF, Word, presentaciones, datos y figuras; context-mcp conserva el índice factual, resumen, procedencia, versión, páginas, citas y decisiones. No se deben releer todos los PDF al iniciar cada turno, sino usar resume/search y abrir solo los documentos relevantes. README.md también distingue cómo se cargan las reglas en Codex, ChatGPT Project, Claude Code/Desktop y Antigravity, y propone las carpetas docs/, assets/figures/ y notes/reviews/.",
-      "why": "Evitar que revisiones como la sección 2.1 queden únicamente en el historial local de un asistente y definir cómo compartir PDF, fuentes e imágenes.",
-      "outcome": "ChatGPT/Codex, Claude y Antigravity tienen reglas explícitas para guardar resultados académicos sustantivos y registrar documentos mediante rutas, resúmenes, procedencia y páginas relevantes.",
-      "type": "note",
-      "status": "active",
-      "tags": [
-        "memoria",
-        "documentos",
-        "pdf",
-        "revisiones-academicas",
-        "chatgpt",
-        "claude",
-        "antigravity"
-      ],
       "source": "file",
       "files": [
         {
-          "path": "c:/Users/QsManu-Movil/Documents/ChatGPT/Personal - TFM/AGENTS.md"
+          "path": "docs/tfm/memoria/2026-10-03/Contexto, Estado del Arte, Objetivos y Metodologia.docx"
         },
         {
-          "path": "c:/Users/QsManu-Movil/Documents/ChatGPT/Personal - TFM/CLAUDE.md"
+          "path": "docs/INDEX.md"
         },
         {
-          "path": "c:/Users/QsManu-Movil/Documents/ChatGPT/Personal - TFM/CHATGPT.md"
-        },
-        {
-          "path": "c:/Users/QsManu-Movil/Documents/ChatGPT/Personal - TFM/ANTIGRAVITY.md"
-        },
-        {
-          "path": "c:/Users/QsManu-Movil/Documents/ChatGPT/Personal - TFM/README.md"
+          "path": "PROJECT_STATE.md"
         }
       ],
       "codeRefs": [],
       "importance": 4,
       "discussionId": null,
-      "createdAt": "2026-09-28T10:50:22.709Z",
+      "createdAt": "2026-10-03T07:27:47.178Z",
       "updatedAt": null,
       "expiresAt": null
     },
     {
-      "id": "10c4f1df-7614-4a70-9571-6f3fe274e70b",
+      "id": "698a7430-c476-4439-9cfe-bcfa9c9f46dd",
       "project": "Personal - TFM",
       "sessionId": null,
       "parentId": "project:Personal - TFM",
       "nodeType": "entry",
       "version": 1,
-      "title": "Ubicación documental y configuración necesaria en clientes Windows",
-      "content": "La estructura recomendada es: docs/normativa/ para reglamento, guía, rúbrica, plantilla, calendario y protocolo grupal; docs/tfm/propuesta/ para formulario, PPT y materiales iniciales; docs/tfm/memoria/ para el documento editable; docs/tfm/entregas/ para versiones presentadas; docs/reuniones/ para actas y feedback; docs/fuentes/ para artículos que puedan almacenarse legalmente; assets/figures/ para figuras e imágenes con procedencia; notes/reviews/ para revisiones extensas de asistentes. En cada Windows se debe clonar/pull y ejecutar setup-sync.bat. Codex local carga AGENTS.md automáticamente al abrir la carpeta como raíz. ChatGPT Project cloud requiere añadir instrucciones y fuentes. Claude Desktop requiere instrucciones de proyecto y Project Knowledge; Claude Code usa CLAUDE.md desde la raíz. Antigravity debe abrir la carpeta como proyecto y configurar context-mcp manualmente en Settings > Customizations > Open MCP Config porque setup-sync.ps1 no lo hace actualmente. Se corrigieron AGENTS.md y CLAUDE.md para derivar rootPath del clon local y no reutilizar la ruta de Manuel en el equipo de Pablo.",
-      "why": "Definir una fuente de verdad compartida para normativa y trabajo del TFM, y evitar configuraciones incompletas o rutas no portables entre Manuel y Pablo.",
-      "outcome": "Se acordó usar docs/normativa para reglas oficiales, docs/tfm para el trabajo propio, docs/fuentes y assets/figures para fuentes y figuras, y notes/reviews para revisiones. Se detectó que setup-sync configura Claude Desktop y Codex, pero no Antigravity ni las instrucciones de proyectos cloud.",
+      "title": "Evaluaciones externas atribuidas a Antigravity y DeepSeek",
+      "content": "Adjunto 1 atribuido por usuario a Antigravity: C:/Users/QsManu-Movil/.codex/attachments/bb39f261-c38d-4c01-b3be-d622cddcf265/Pasted text.txt. Adjunto 2 atribuido a DeepSeek: C:/Users/QsManu-Movil/.codex/attachments/f9e75753-0a5e-4a3c-bcef-1a68e7e11007/Pasted text.txt. Ambos señalan numeración figuras, marcadores búsqueda y Tabla X, frase Nadeem truncada, Miao sin verbo, redundancia heredan/amplifican, referencias AIAct triplicadas, Holmes omitido, DOIs duplicados. Antigravity llama metodología intachable; valoración no compartida por revisión propia porque faltan criterios H1/H2, tamaños, análisis H3 y evaluación de cribado. DeepSeek añade supuestos encabezados Conclusions, Hipótesis y Fase1 duplicados y erratas iInteligencia, ye, ighoyen; no encontrados en extracción completa del DOCX canónico de 2026-10-03, posiblemente otra representación/versión; no borrar nada sin verificar. DeepSeek cuestiona referencia 2.2.1 para reproducción asociaciones, pero el apartado sí trata ese tema: no hay error demostrado. Sus afirmaciones sobre cursiva y numeración automática requieren revisión visual, no verificada por Codex al faltar renderizador. No aceptar originalidad del desacople como demostrada. Vacíos deliberados fuera del alcance solicitado; completar 2.3 no corrección actual obligatoria. No añadir Scopus/WoS si no consultadas. Mantener plantilla institucional sobre preferencias editoriales genéricas para título Referencias. Siguiente paso sugerido: priorizar hallazgos verificados y coherencia metodológica, antes de cambios automáticos por consenso de asistentes.",
+      "why": "Usuario aporta dos revisiones del borrador para tenerlas como contexto.",
+      "outcome": "Leídas y atribuidas; no se aceptan sus afirmaciones como verificadas ni se modifica el DOCX.",
       "type": "note",
       "status": "active",
-      "tags": [
-        "documentos",
-        "windows",
-        "configuracion",
-        "chatgpt",
-        "claude",
-        "antigravity",
-        "rootpath"
-      ],
-      "source": "file",
+      "tags": [],
+      "source": "user",
       "files": [
         {
-          "path": "c:/Users/QsManu-Movil/Documents/ChatGPT/Personal - TFM/AGENTS.md"
-        },
-        {
-          "path": "c:/Users/QsManu-Movil/Documents/ChatGPT/Personal - TFM/CLAUDE.md"
-        },
-        {
-          "path": "c:/Users/QsManu-Movil/Documents/ChatGPT/Personal - TFM/README.md"
-        },
-        {
-          "path": "c:/Users/QsManu-Movil/Documents/ChatGPT/Personal - TFM/setup-sync.ps1"
+          "path": "docs/tfm/memoria/2026-10-03/Contexto, Estado del Arte, Objetivos y Metodologia.docx",
+          "purpose": "Documento canónico revisado previamente"
         }
       ],
       "codeRefs": [],
       "importance": 4,
       "discussionId": null,
-      "createdAt": "2026-09-28T10:53:59.399Z",
+      "createdAt": "2026-10-03T07:34:51.478Z",
       "updatedAt": null,
       "expiresAt": null
     },
     {
-      "id": "f0173346-8f30-43b3-abff-800f522195ff",
+      "id": "4625ed95-781b-4ec5-ae1d-f6a9bafae306",
       "project": "Personal - TFM",
       "sessionId": null,
       "parentId": "project:Personal - TFM",
       "nodeType": "entry",
       "version": 1,
-      "title": "Ubicación y carga de Miao y Holmes 2023",
-      "content": "Guidance for generative AI in education and research se ubica principalmente en 2.1, no como evidencia de que la revisión humana quedó imposibilitada, sino para respaldar que la rápida evolución de la IA generativa supera la adaptación regulatoria y que las instituciones educativas necesitan capacidad de validación, protección de datos y enfoques humanos y adecuados a la edad. En Word: tipo Informe; autores Miao/Fengchun y Holmes/Wayne por separado; título Guidance for generative AI in education and research; año 2023; institución UNESCO; URL https://unesdoc.unesco.org/ark:/48223/pf0000386693. No marcar UNESCO como autor corporativo.",
-      "why": "Aclarar el uso correcto de la guía UNESCO dentro del contexto del problema y evitar una atribución bibliográfica incorrecta.",
-      "outcome": "La guía se conserva en 2.1 para respaldar la necesidad de regulación, validación institucional y enfoque humano/adecuado a la edad; se carga como informe con dos autores personales.",
+      "title": "Lista consolidada de cambios a realizar en borrador 2026-10-03",
+      "content": "Plan editorial consolidado: 2.1 corregir oración Miao/Holmes, citas narrativas, uniformar dimensiones (sesgo cultural y de género; inclusión lingüística; adecuación al nivel educativo), rebajar afirmaciones no respaldadas sobre protocolos docentes/editoriales. 2.2 describir fechas reales búsqueda y ventana publicaciones por separado, eliminar marcador bases/Tabla X sin inventar bases; admitir explícitamente fuentes fundacionales previas y preprints/TFM diferenciados. 2.2.1 reescribir conexión IAT/WEAT, quitar duplicación heredan, corregir sentó bases, más de una década y alto porcentaje no demostrado; completar Nadeem solo tras verificar fuente o quitar oración truncada. Matriz2 añadir Kılıçaslan a fuente y comparar AIriskEval-edu o acotar selección. Cap3 usar P1-P3 consistentemente. H1 comparación contra reglas respecto consenso docente en MacroF1, no afirmación cercano docentes sin umbral. H2 explicitar mismo LLM/corpus, ahorro completo y tres puntos porcentuales MacroF1 si autores adoptan ese criterio (0.80 a0.77), separar coste/latencia; umbral es hipótesis no resultado. H3 definir muestras y análisis antes de afirmar significación. Fase1 definir unidad fragmento/ítem/examen, representación agregada, masculino genérico contextual, cita histórica no exención automática. Fase2 definir cantidades reales, estratos y docentes; partición por examen y grupos de duplicados/variantes/textos compartidos sin garantía total fuga; especificar cegamiento; alpha antes consenso por dimensión, retirar Fleiss si no se usa. Fase3/4 evaluar recall filtro, riesgos descartados, comparación cuatro sistemas reglas/local/LLM/híbrido; fuente curricular explícita; limitación INFLESZ texto breve; severidad ordinal, acuerdo, estabilidad no determinismo y evaluación fidelidad reformulación. Fase5 tamaños, asignación y análisis por docente/examen; errores artificiales separados del rendimiento ordinario, protocolo estudio sobreconfianza. Bibliografía: unificar AIAct, Miao/Holmes, autores Rizvi/Yan, DOI duplicados, Cohen ausente, Anthropic años, no cambiar encabezado institucional sin normativa. Figuras secuencias e índice, índice tablas usa Figura, título matriz breve y nota separada. No borrar encabezados supuestamente duplicados de DeepSeek sin verificación, no completar secciones vacías por esta revisión.",
+      "why": "Usuario solicita instrucciones concretas tras comparar revisiones.",
+      "outcome": "Lista priorizada por sección con correcciones directas y decisiones metodológicas pendientes; no modificado DOCX.",
       "type": "note",
       "status": "active",
-      "tags": [
-        "miao",
-        "holmes",
-        "unesco",
-        "seccion-2.1",
-        "referencias"
+      "tags": [],
+      "source": "ai-summary",
+      "files": [
+        {
+          "path": "docs/tfm/memoria/2026-10-03/Contexto, Estado del Arte, Objetivos y Metodologia.docx"
+        }
       ],
-      "source": "web",
+      "codeRefs": [],
+      "importance": 4,
+      "discussionId": null,
+      "createdAt": "2026-10-03T08:03:58.225Z",
+      "updatedAt": null,
+      "expiresAt": null
+    },
+    {
+      "id": "a54f1f4f-f1d6-4ac4-b053-5e39e1e362f1",
+      "project": "Personal - TFM",
+      "sessionId": null,
+      "parentId": "project:Personal - TFM",
+      "nodeType": "entry",
+      "version": 1,
+      "title": "Cambios exactos propuestos para el DOCX del 3 de octubre",
+      "content": "Guía para versión 2026-10-03. No se modifica DOCX ni se asume aceptación de cambios de diseño. Sustituciones propuestas: unificar dimensiones como sesgo cultural y de género, inclusión lingüística y adecuación al nivel educativo (definir representación dentro de primera); PLN uniforme, P1–P3 en tabla en vez RQ. 2.1 corregir Miao a Miao y Holmes (2023) señalan..., moderar generalizaciones no respaldadas sobre protocolos revisión docente/editorial, ejemplo cultural contextualizar sin equiparar origen único a sesgo; quitar comparación secundaria/adultos atribuida sin respaldo a Caliskan. 2.2 reemplazar párrafo búsqueda con fechas efectivas y bases realmente usadas, ventana 2017–2026 con fuentes fundacionales anteriores, incluir explícitamente preprints/TFM diferenciados; dejar datos reales por completar. 2.2.1 sustituir todo cuerpo por explicación coherente IAT humano (Greenwald), WEAT embeddings estáticos (Caliskan), limitación extrapolación y revisión LLM (Gallegos); conservar figuras con pies corregidos y quitar Nadeem truncado hasta revisión de fuente. 3 introducción abreviar. H1: Macro-F1 superior a reglas sobre consenso docente, sin muy cercano docentes ni supera claramente. H2 mantener >50% coste y tiempo con disminución Macro-F1 menor 0.03 puntos frente mismo LLM para todo material; definición escala 0–1/3 puntos porcentuales y condiciones completas de cómputo. H3 comparar tiempo/recall con control sin promesa significación; tratar utilidad como medida secundaria, diseñar análisis. OE2 recopilar anonimizar anotar documentar. Rúbrica: masculino genérico no discriminación automática, fuente histórica requiere interpretación contextual no exención por análisis sintáctico; delimitar fragmento/ítem/examen, representación agregada. Partición60/20/20 por grupos de documentos similares, deduplicación y fuente; mitigar no garantizar fuga. Anotación independiente ciega salidas sistema y otros jueces; alpha antes consenso y adjudicación. Tabla quitar Fleiss si no usado. Fase3 auditar recall filtro y descartados, contexto curricular explícito, INFLESZ contextual en textos breves, evitar dictamina riesgo genuino. Fase4 definir F1 por dimensión y macro, Cohen sistema-consenso, estabilidad no determinismo; rúbrica reformulación conserva respuesta/objetivo/significado/dificultad y nuevos errores. Fase5 recomienda medir aceptación de falsos positivos naturales y retirar inyección deliberada salvo protocolo separado; no interpretar cero FP como cero sobreconfianza. Tamaños exámenes/docentes, pruebas estadísticas y fuentes curriculares pendientes de decisión concreta, no inventar. Figuras: arreglar campo indice tablas actualmente Figura; SEQ reinicio6; fuente matriz incluir Kilicaslan y nota separar de título; verificar Cohen1988 ausente, Anthropic2025/2026. Referencias: consolidar AIAct reinsertando citas antes eliminar duplicados; Miao/Holmes separados; autores Rizvi y Yan corregidos desde fuentes oficiales ya verificadas; DOI prefijo una vez. No borrar encabezados duplicados alegados por DeepSeek sin comprobar ni rellenar secciones vacías.",
+      "why": "Usuario pide localizar qué cambiar, texto sustituto y razón, sin editar aún el Word.",
+      "outcome": "Guía de sustituciones preparada; cambios metodológicos son propuestas y datos de muestra/búsqueda quedan pendientes, no inventados.",
+      "type": "note",
+      "status": "active",
+      "tags": [],
+      "source": "ai-summary",
+      "files": [
+        {
+          "path": "docs/tfm/memoria/2026-10-03/Contexto, Estado del Arte, Objetivos y Metodologia.docx"
+        }
+      ],
+      "codeRefs": [],
+      "importance": 4,
+      "discussionId": null,
+      "createdAt": "2026-10-03T08:10:15.167Z",
+      "updatedAt": null,
+      "expiresAt": null
+    },
+    {
+      "id": "0be12b7b-72a8-4850-97e2-e8a5c699e61f",
+      "project": "Personal - TFM",
+      "sessionId": null,
+      "parentId": "project:Personal - TFM",
+      "nodeType": "entry",
+      "version": 1,
+      "title": "Sustituciones concretas propuestas para capítulos 2 y 3 del DOCX vigente",
+      "content": "Propuestas editoriales concretas sobre versión 2026-10-03. Mantener vacíos fuera de revisión y no eliminar supuestos duplicados no verificados. 2.1: tras cifra matrícula sustituir generalizaciones sobre protocolos por alcance poblacional que no estima prevalencia; reparar Miao y Holmes señalan; eliminar párrafo En la práctica... que atribuye protocolos a Crawfurd; ejemplo de comprensión lectora con experiencia socioeconómica ajena al objetivo y vocabulario innecesario, no asumir sesgo por nombre cultural; reparar Como resultado... revisión realizada. 2.2: describir corpus documental como revisión narrativa con publicaciones recientes y trabajos fundacionales anteriores, distinguir preprints/TFM de peer-reviewed; añadir obligatoriamente registro real de fechas, recursos, cadenas y criterios, no inventar bases. 2.2.1: sustituir dos primeros párrafos por explicación IAT/WEAT, embeddings estáticos y asociaciones de género/origen con Caliskan2017; cierre indicando antecedente metodológico y necesidad de evaluación específica de LLM, eliminar Nadeem truncado hasta desarrollar fuente. 2.2.3 añadir contraste explícito con AIriskEval-edu, confirmado arxiv2607.01934, para justificar diferencia de exámenes castellanos y apoyo docente. Figura matriz selección de antecedentes, nota aparte y fuente Kılıçaslan.\nCap3 reemplazar introducción verbosa por presentación preguntas, hipótesis, objetivos y cinco fases. Normalizar PLN, P1-P3, nombres de tres dimensiones: sesgo cultural y representación desigual; inclusión lingüística; adecuación al nivel educativo. H1 propuesta exacta: El prototipo obtendrá un Macro-F1 superior al de un sistema de referencia basado en reglas léxicas para detectar riesgos en las tres dimensiones, tomando como referencia las etiquetas consensuadas por docentes expertos. H2 propuesta: La arquitectura híbrida reducirá en más del 50 % tanto el coste medio como el tiempo medio de procesamiento por examen respecto a aplicar el mismo LLM a todo el material, con una disminución de Macro-F1 inferior a 0,03 puntos en la escala de 0 a 1. Es propuesta de operacionalización (3 puntos porcentuales, no resultado ni umbral aprobado). H3: El profesorado que utilice los informes del prototipo empleará menos tiempo medio por examen y detectará una mayor proporción de los riesgos de referencia que el profesorado que realice la revisión sin asistencia. Utilidad percibida separada.\n3.4.1: género gramatical solo no equivale a riesgo; contextualizar colectivo/uso/finalidad; fuente histórica puede contener lenguaje discriminatorio pero uso educativo no recibe exención automática por actividad sintáctica; rúbrica valora necesidad y contexto. Añadir unidad ítem + evidencia fragmento, y representación agregada aparte. 3.4.2: sustituir garantizar ausencia total por reducir fuga; agrupación examen y variantes/textos compartidos, mantener60/20/20 aproximado por grupos; protocolo dos docentes independientes sin acceso predicciones ni etiquetas ajenas, alpha antes consenso, adjudicación y conservación desacuerdos. Pendientes reales: N exámenes, ítems, positivos, docentes, distribución curso/materia; no inventados. 3.4.3: origen contexto curricular por documento oficial/version/curso y objetivos docentes, declarar información insuficiente; INFLESZ indicador complementario no conversión directa a edad ni aplicación sin mínima longitud justificada. 3.4.4: definir Macro-F1 media F1 positivo por dimensión a nivel ítem, representación agregada aparte; documentar etiquetas sin positivos y no ocultar falta cobertura. Cohen por dimensión contra consenso, alpha entre docentes por dimensión antes consenso, retirar Fleiss tabla si no se justifica; severidad ordinal separada. Evaluar recall filtro y falsos negativos, no equiparar descarte a ausencia de riesgo. Medir H2 extremo a extremo incluyendo etapas locales, misma configuración contexto/comparador; modelos umbrales prompts fijados en validación antes test. Cinco ejecuciones estabilidad no garantía determinismo. Reformulación evaluada por preservación significado/respuesta correcta/objetivo, adecuación y nuevos errores, no solo SUS.\n3.4.5: sobreconfianza propuesta medir aceptación falsos positivos reales contra referencia, retirar introducción intencional de errores para simplificar diseño (cambio metodológico recomendado, no aprobado); definir denominador avisos falsos mostrados y criterio aceptación. Preespecificar N docentes, exámenes, análisis agrupado docente/examen y muestras pequeñas como exploratorio; SUS solo asistida para herramienta. 3.5 validez interna mitigar fuga sin afirmar imposible contaminación; participantes conocen condición, cegar evaluador resultados cuando posible. Bibliografía: reparar nombres Miao/Holmes, autores Rizvi y Yan según fuentes verificadas; unificar AIAct antes borrar registros y reemplazar citas; arreglar prefijos DOI; agregar Cohen1988 si se mantienen figuras; fechas Anthropic según uso real. Campos Word: reconstruir títulos SEQ sin reinicio6, índice...",
+      "why": "Usuario solicita sección, texto a localizar, sustitución exacta y motivo.",
+      "outcome": "Guía de cambios propuesta en chat; no aplicada al DOCX ni adoptada como decisiones experimentales definitivas.",
+      "type": "note",
+      "status": "active",
+      "tags": [],
+      "source": "ai-summary",
+      "files": [
+        {
+          "path": "docs/tfm/memoria/2026-10-03/Contexto, Estado del Arte, Objetivos y Metodologia.docx"
+        },
+        {
+          "path": "docs/INDEX.md"
+        },
+        {
+          "path": "PROJECT_STATE.md"
+        }
+      ],
+      "codeRefs": [],
+      "importance": 4,
+      "discussionId": null,
+      "createdAt": "2026-10-03T08:14:35.298Z",
+      "updatedAt": null,
+      "expiresAt": null
+    },
+    {
+      "id": "0666e63d-96cf-436d-8a4d-5e70931e737c",
+      "project": "Personal - TFM",
+      "sessionId": null,
+      "parentId": "project:Personal - TFM",
+      "nodeType": "entry",
+      "version": 1,
+      "title": "Aclaración práctica de cambios 18 y 28",
+      "content": "Cambio18: insertar tras Nivel léxico y reglas (spaCy/IFSZ/INFLESZ) una cautela: legibilidad indicador complementario, no asignación directa edad/curso; interpretar según longitud y características, en enunciados demasiado breves no emitir dictamen solo por índice. Insertar tras Capa de Razonamiento Profundo y Generación Contextual (LLM) metadatos requeridos: materia, curso y contenido/objetivo evaluado proporcionados por docente, registrar procedencia/version si referencia curricular oficial; marcar información insuficiente cuando no disponible. No supone pedir al LLM que invente currículo. Cambio28: no es párrafo reemplazable sino cerrar número y distribución exámenes/ítems/casos positivos y docentes anotadores/estudio usuario, carga por docente y procedimiento análisis antes de experimentación. Dos roles separados ya propuestos en borrador. Proponer registro pendiente honesto de dimensionamiento según acceso real, piloto para carga anotación y plan antes test. No inventar números, no exigir decisiones inmediatas para seguir redactando; distinguir curso vs objetivos específicos enseñados. Propuestas no aplicadas a DOCX.",
+      "why": "Usuario no entiende dónde insertar contexto curricular/legibilidad ni decisiones de muestra.",
+      "outcome": "Se explican dos inserciones exactas en 3.4.3 y pendientes de planificación; no se fijan números ni cambia alcance.",
+      "type": "note",
+      "status": "active",
+      "tags": [],
+      "source": "ai-summary",
       "files": [],
       "codeRefs": [],
       "importance": 2,
       "discussionId": null,
-      "createdAt": "2026-09-28T17:17:29.671Z",
+      "createdAt": "2026-10-03T08:46:46.398Z",
       "updatedAt": null,
       "expiresAt": null
     },
     {
-      "id": "c9ce9418-baff-44a3-80bb-47db39ac638a",
+      "id": "6eb90c24-dc1a-4e5b-9222-8504eb045143",
       "project": "Personal - TFM",
       "sessionId": null,
       "parentId": "project:Personal - TFM",
       "nodeType": "entry",
       "version": 1,
-      "title": "Rizvi 2025 y Trott-Rivière 2024 en la Figura 2",
-      "content": "Trott y Rivière (2024), Measuring and Modifying the Readability of English Texts with GPT-4, fue publicado en Proceedings of the Third Workshop on Text Simplification, Accessibility and Readability (TSAR 2024), pp. 126-134, DOI 10.18653/v1/2024.tsar-1.13. Justifica cobertura parcial de adecuación porque estudia legibilidad, no adecuación etaria directa, y cobertura parcial de sugerencias porque modifica legibilidad. Rizvi et al. (2025), AUTALIC, versión final ACL 2025, pp. 20999-21015, DOI 10.18653/v1/2025.acl-long.1022, tiene 12 autores según ACL: Naba Rizvi, Harper Strickland, Daniel Gitelman, Alexis Morales Flores, Tristan Cooper, Aekta Kallepalli, Akshat Alurkar, Haaset Owens, Saleha Ahmedi, Isha Khirwadkar, Imani N. S. Munyaka y Nedjma Ousidhoum. Michael Golden figuraba en el preprint pero no en la versión final; usar la versión final. AUTALIC justifica cobertura parcial de inclusión lingüística, pues aborda específicamente lenguaje capacitista anti-autista en Reddit, no inclusión general ni contenido educativo. Recomendación gráfica: renombrar la columna como Adecuación etaria y legibilidad; marcar Kılıçaslan como cobertura parcial, no completa, de contenido educativo porque estudia libros infantiles; aclarar que la matriz es una síntesis cualitativa propia y que la fila del TFM representa alcance previsto, no resultados.",
-      "why": "Completar las referencias de todos los trabajos representados en la matriz de cobertura y validar la interpretación de sus celdas.",
-      "outcome": "Ambas fuentes deben figurar en la bibliografía y en la nota de la Figura 2. Se detectó que la referencia previa de AUTALIC usaba autores del preprint y debe sustituirse por la versión final de ACL 2025.",
+      "title": "DOCX 2026-10-04 y figura ampliada de 13 antecedentes para ILU12",
+      "content": "Nueva versión recibida2026-10-04, hash copia/original119A029BC68441CBD03D36518F98C01665B5C84F28AD1ECB0D46A58AE14BBA3F. Leídos2.2/2.3, marcador ILU12 encontrado tras párrafo comparativo. Figura ahora tabla gráfica cuatro columnas Trabajo/Aporte principal/Material evaluado/Límite para este TFM, 13 antecedentes: Crawfurd, Greco, Nunziatini-Diego, Kharitonova, Rizvi, Trott-Rivière, Aissa, Uçar, Palma-Soto, Reyes Peralta, Kılıçaslan, Moore, Irigoyen, más TFM propuesta naranja. Sustituye círculos ambiguos por alcances textuales; no declara superioridad. Síntesis según DOCX, comprobación primaria adicional Irigoyen arxiv2607.01934, Aissa ACL2025.emnlp-demos.6, Nunziatini ACL2024.eamt-1.48. DOI Moore falló, fila basada en DOCX. Figura creada image_gen integrado a partir imagen usuario, inspeccionada resultado visible:14filas, texto legible. Fuente/nota/prompt completos en txt acompañante. Título sugerido Selección de antecedentes, aportaciones y límites respecto a la propuesta del TFM. Fuente incluye13 estudios. Nota distingue límites de transferencia de calidad, TFM alcance no resultados. Numeración debe ser automática Word; ILU12 es marcador, no asumir número. Documento original sin modificaciones; copia2026-10-03 histórica, índice y estado actualizados. Figura original conservada; no commit/push.",
+      "why": "Usuario pide actualizar matriz con nuevos antecedentes y situarla en conclusiones2.3.",
+      "outcome": "Nueva copia intacta DOCX registrada, figura separada y pie ampliado creados. No insertado en Word.",
       "type": "note",
       "status": "active",
-      "tags": [
-        "figura-2",
-        "rizvi",
-        "autalic",
-        "trott",
-        "riviere",
-        "referencias",
-        "matriz-cobertura"
-      ],
-      "source": "web",
-      "files": [],
-      "codeRefs": [],
-      "importance": 2,
-      "discussionId": null,
-      "createdAt": "2026-09-28T17:22:58.022Z",
-      "updatedAt": null,
-      "expiresAt": null
-    },
-    {
-      "id": "911583aa-4265-43cf-9235-05df6a20c28e",
-      "project": "Personal - TFM",
-      "sessionId": null,
-      "parentId": "project:Personal - TFM",
-      "nodeType": "entry",
-      "version": 1,
-      "title": "Figura 2 corregida: legibilidad y cobertura parcial de Kılıçaslan",
-      "content": "Archivo creado: assets/figures/Fig_contexto_matriz_cobertura_v2.png. Procedencia: edición asistida por IA de la figura aportada por el usuario; figura de elaboración propia. Uso previsto: sección 2.1 Contexto del problema. Cambios: (1) «Adecuación etaria» se amplió a «Adecuación etaria y legibilidad» para representar correctamente el estudio de Trott y Rivière (2024); (2) la cobertura de Kılıçaslan et al. (2025) en «Contenido educativo» pasó de completa a parcial porque analiza libros infantiles y no específicamente exámenes de secundaria. Pie propuesto: «Dimensiones cubiertas por los trabajos revisados frente al alcance previsto de este TFM». Nota: la clasificación es una valoración cualitativa de los autores y la fila del TFM expresa alcance previsto, no resultados. La figura no reutiliza imágenes de terceros; deben mantenerse en el pie/bibliografía las referencias de los trabajos comparados. Se documentó también en assets/figures/README.md.",
-      "why": "Alinear la matriz de cobertura con el alcance real de Trott y Rivière (legibilidad) y de Kılıçaslan et al. (libros infantiles, no exámenes de secundaria).",
-      "outcome": "Se generó una versión nueva de la Figura 2 con el encabezado «Adecuación etaria y legibilidad» y la celda Kılıçaslan/Contenido educativo marcada como cobertura parcial. Se preservó la versión anterior y se verificó visualmente la nueva.",
-      "type": "note",
-      "status": "active",
-      "tags": [
-        "figura-2",
-        "matriz-cobertura",
-        "seccion-2.1",
-        "legibilidad",
-        "kilicaslan"
-      ],
+      "tags": [],
       "source": "file",
       "files": [
         {
-          "path": "C:\\Users\\QsManu-Movil\\Documents\\ChatGPT\\Personal - TFM\\assets\\figures\\Fig_contexto_matriz_cobertura_v2.png",
-          "purpose": "Figura 2 corregida"
+          "path": "docs/tfm/memoria/2026-10-04/Contexto, Estado del Arte, Objetivos y Metodologia.docx"
         },
         {
-          "path": "C:\\Users\\QsManu-Movil\\Documents\\ChatGPT\\Personal - TFM\\assets\\figures\\README.md",
-          "purpose": "Registro de procedencia, uso y pie propuesto"
+          "path": "assets/figures/Fig_antecedentes_conclusiones_2026-10-04.png"
+        },
+        {
+          "path": "assets/figures/Fig_antecedentes_conclusiones_2026-10-04_fuente.txt"
+        },
+        {
+          "path": "assets/figures/README.md"
+        },
+        {
+          "path": "docs/INDEX.md"
+        },
+        {
+          "path": "PROJECT_STATE.md"
         }
       ],
       "codeRefs": [],
       "importance": 4,
-      "discussionId": "29d649dc-2b68-41e4-9ea0-467bb887671a",
-      "createdAt": "2026-09-28T17:52:33.791Z",
-      "updatedAt": "2026-09-28T17:52:33.791Z",
+      "discussionId": "82a5c5d3-ab9e-42c8-a8ac-e9cc142f6237",
+      "createdAt": "2026-10-04T19:51:36.236Z",
+      "updatedAt": "2026-10-04T19:51:36.237Z",
       "expiresAt": null
     },
     {
-      "id": "5e20d60a-3e41-4cd2-93c1-16daae7f341a",
+      "id": "441aa9f1-6320-4ad7-b34c-f6b03377bd6f",
       "project": "Personal - TFM",
       "sessionId": null,
       "parentId": "project:Personal - TFM",
       "nodeType": "entry",
       "version": 1,
-      "title": "Revisión del Cap. 2 (Contexto y Estado del Arte) del TFM: estructura, 20 fuentes, figuras y correcciones a 2.1",
-      "content": "## Sección revisada\n2.1 Contexto del Problema y 2.2 Estado del Arte del Capítulo 2 del TFM. El usuario pegó su propio borrador de 2.1 (no el .docx, por tokens) y pidió revisión + imágenes para citar.\n\n## Estructura oficial acordada (plantilla UNIR, Máster IA, TFM grupal)\n- 2. Contexto y estado del arte (necesita un párrafo de introducción antes de 2.1, nunca un título seguido directo de otro título — regla explícita de la guía)\n- 2.1. Contexto del problema\n- 2.2. Estado del arte, con subapartados: 2.2.1 Sesgo y representación en modelos de lenguaje · 2.2.2 Sesgo en contenido educativo · 2.2.3 Inclusión y lenguaje no discriminatorio · 2.2.4 Adecuación etaria y legibilidad de textos · 2.2.5 Moderación de contenido y evaluación automática con LLMs · 2.2.6 Auditoría de sistemas de IA · 2.2.7 Marco institucional y panorama de los LLM en educación\n- 2.3. Conclusiones\nExtensión estimada objetivo para TFM grupal: 15-22 páginas para este capítulo (75 páginas mínimas totales, escalado x1.5 sobre el individual de 50).\n\n## Las 20 fuentes del estado del arte (con año, y qué falta/cubre el TFM)\n1. Gallegos et al. (2024) — Bias and Fairness in LLMs: A Survey — Computational Linguistics — DOI 10.1162/coli_a_00524\n2. Caliskan, Bryson & Narayanan (2017) — Semantics derived automatically... (WEAT) — Science — DOI 10.1126/science.aal4230\n3. Nadeem, Bethke & Reddy (2021) — StereoSet — ACL — DOI 10.18653/v1/2021.acl-long.416\n4. Nangia, Vania, Bhalerao & Bowman (2020) — CrowS-Pairs — EMNLP — DOI 10.18653/v1/2020.emnlp-main.154\n5. Crawfurd, Saintis-Miller & Todd (2024) — Sexist textbooks (1255 libros, 34 países) — PLOS ONE — DOI 10.1371/journal.pone.0310366 (OJO: son 3 autores, no 4; verificar si corresponde \"et al.\" desde ya)\n6. Greco, La Quatra, Cagliero & Cerquitelli (2025) — Inclusive language writing italiano — ACM TIST — DOI 10.1145/3729237\n7. Rizvi et al. (2025) — AUTALIC (lenguaje capacitista/autismo) — ACL — aclanthology.org/2025.acl-long.1022 (orden de autores sin verificar del todo)\n8. Crossley et al. (2023) — CLEAR corpus — Behavior Research Methods — DOI 10.3758/s13428-022-01802-x\n9. Kılıçaslan, Genç, Saglam & Altun (2025) — edad apropiada libros infantiles (LLMs, 91% precisión) — Applied Sciences — DOI 10.3390/app152111438 (DOI armado por patrón MDPI, VERIFICAR)\n10. Barrio-Canalejo et al. (2008) — Escala INFLESZ (español) — An. Sist. Sanit. Navar. 31(2):135-152\n11. Lee & Vajjala (2022) — Neural Pairwise Ranking Readability (incl. español) — arXiv:2203.07450\n12. Trott & Rivière (2024) — Readability con GPT-4 — TSAR 2024 workshop ACL — arXiv:2410.14028 (FALTAN páginas exactas)\n13. Vajjala (2022) — Trends/Limitations Readability Assessment — LREC — arXiv:2105.00973\n14. Chen, Qu, Su, Feng & Li (2025) — LLM-based content moderation review — Knowledge-Based Systems, vol 330, art 114689\n15. Zheng et al. (2023) — LLM-as-a-Judge (MT-Bench/Chatbot Arena) — NeurIPS\n16. Lam et al. (2024) — Framework for Assurance Audits of Algorithmic Systems — ACM FAccT — DOI 10.1145/3630106.3658957\n17. Miao & Holmes (2023) — UNESCO Guidance for GenAI in education — unesdoc.unesco.org/ark:/48223/pf0000386693\n18. UNESCO (2021) — Recommendation on the Ethics of AI\n19. Yan et al. (2024) — Practical/Ethical Challenges of LLMs in Education (scoping review, 118 papers) — British Journal of Educational Technology — DOI 10.1111/bjet.13370\n20. TFM UNIR no identificado — Comparativa DL detección de odio en castellano (proyecto Hatemedia, usa BETO) — reunir.unir.net/handle/123456789/14608 — antecedente directo del propio máster\n\nReferencias adicionales usadas en la revisión de 2.1: Bender, Gebru, McMillan-Major & Shmitchell (2021) \"On the Dangers of Stochastic Parrots\" FAccT, DOI 10.1145/3442188.3445922 (para sustituir la afirmación \"premisa indiscutible\"); Mikolov, Sutskever, Chen, Corrado & Dean (2013) NeurIPS (para definir \"embeddings\" en vez de citar RAE); Cohen (1988) Statistical power analysis (para el umbral d=0.8 en las figuras WEAT); Parlamento Europeo y Consejo UE (2024) Reglamento (UE) 2024/1689 (AI Act), Anexo III punto 3.\n\n## Problemas encontrados en el borrador propio de 2.1 (pegado por el usuario)\n1. **Cita de Crawfurd et al. mal contada**: el propio TFM cita bien (3 autores), pero mi lista de referencias anterior tenía un 4º autor (Hönekopp) por error de extracción — corregir ahí, no en el texto del usuario.\n2. **Interpretación excesiva del AI Act Anexo III punto 3(c)**: ese punto cubre sistemas que evalúan el NIVEL EDUCATIVO que una persona puede recibir/acceder (sistemas de ubicación/itinerarios), NO la adecuación etaria de un CONTENIDO. El borrador (y mi propio texto anterior) afirma que \"se correlaciona de forma directa\" — es un exceso que hay que matizar. Además el Reglamento no obliga a \"quienes creen materiales\" sino a proveedores/responsables de despliegue de sistemas de alto riesgo. Y el calendario del régimen de alto riesgo podría estar aplazado (verificar en EUR-Lex, posible fecha dic-2027).\n3. **Atribuciones a UNESCO sin ver...",
-      "why": "El grupo (Manuel Di Nucci y Pablo Siegrist Montejo) está redactando el Capítulo 2 del TFM \"Framework Inteligente para la Auditoría Ética y Pedagógica de Contenido Educativo mediante LLMs y NLP\" (Máster en IA, UNIR, TFM grupal, mínimo 75 páginas). Necesitaban: (a) un listado de 20 fuentes académic...",
-      "outcome": "Se entregaron: (1) Excel con 20 fuentes (columnas Categoria/Titulo/DOI/Author/Año/Resumen/Faltante/Link); (2) Capitulo_2_Contexto_y_Estado_del_Arte.docx con la numeración oficial de la plantilla UNIR (2.1 Contexto del problema, 2.2 Estado del arte con subapartados 2.2.1-2.2.7, 2.3 Conclusiones) e...",
+      "title": "Rediseño visual con círculos, 13 estudios y TFM propuesto",
+      "content": "Figura preferida nueva: círculos completos/parciales/vacíos para 13 estudios; columnas Sesgo y representación, Inclusión lingüística, Adecuación y legibilidad, Material educativo, Reformulación. Tres grupos temáticos. TFM rombos naranjas: previsto, no resultado. Mantiene 13 referencias de fuente previa. Símbolos son síntesis cualitativa de alcance, no rendimiento; legibilidad y edad comercial parciales frente a adecuación, reformulación implica tarea no fidelidad demostrada. Archivo procedencia incluye criterios y prompt íntegro, modo image_gen integrado. Inspección visual de salida:13filas+TFM,5columnas,leyenda y notas, sin recortes aparentes. No modificación Word. Preferencia explícita: gráficos visuales con círculos semejantes al original, no tablas convertidas en imágenes.",
+      "why": "Usuario rechaza tabla y pide gráfico semejante a original, serio y más atractivo.",
+      "outcome": "Creada figura gráfica en PNG; no editado DOCX. Tabla anterior conservada como alternativa descartada.",
+      "type": "note",
+      "status": "active",
+      "tags": [],
+      "source": "file",
+      "files": [
+        {
+          "path": "assets/figures/Fig_antecedentes_grafico_2026-10-04.png"
+        },
+        {
+          "path": "assets/figures/Fig_antecedentes_grafico_2026-10-04_procedencia.txt"
+        },
+        {
+          "path": "assets/figures/README.md"
+        }
+      ],
+      "codeRefs": [],
+      "importance": 4,
+      "discussionId": null,
+      "createdAt": "2026-10-04T19:56:44.462Z",
+      "updatedAt": null,
+      "expiresAt": null
+    },
+    {
+      "id": "9b6f4c4e-331e-4a6e-8cb9-55cfc450307c",
+      "project": "Personal - TFM",
+      "sessionId": null,
+      "parentId": "project:Personal - TFM",
+      "nodeType": "entry",
+      "version": 1,
+      "title": "Título y fuente finales para gráfico de antecedentes",
+      "content": "Título: Selección de antecedentes y dimensiones abordadas en relación con la propuesta del TFM. Fuente: Elaboración propia a partir de Crawfurd et al. (2024), Greco et al. (2025), Nunziatini y Diego (2024), Kharitonova et al. (2025), Rizvi et al. (2025), Trott y Rivière (2024), Aissa et al. (2025), Uçar et al. (2024), Palma y Soto (2025), Reyes Peralta et al. (2025), Kılıçaslan et al. (2025), Moore et al. (2024) e Irigoyen et al. (2026). Nota: La cobertura representada es una síntesis cualitativa de los autores sobre el alcance descrito en los trabajos. Los rombos de la fila del TFM indican alcance previsto, no resultados empíricos obtenidos. Numeración a través de título automático Word.",
+      "why": "Usuario solicita pie listo para pegar.",
+      "outcome": "Título y fuente con13antecedentes y nota metodológica entregados; numeración automática sin inventar ordinal.",
+      "type": "note",
+      "status": "active",
+      "tags": [],
+      "source": "ai-summary",
+      "files": [
+        {
+          "path": "assets/figures/Fig_antecedentes_grafico_2026-10-04.png"
+        }
+      ],
+      "codeRefs": [],
+      "importance": 4,
+      "discussionId": null,
+      "createdAt": "2026-10-04T19:58:39.992Z",
+      "updatedAt": null,
+      "expiresAt": null
+    },
+    {
+      "id": "17066ee0-956b-432b-942d-527f4359f8a2",
+      "project": "Personal - TFM",
+      "sessionId": null,
+      "parentId": "project:Personal - TFM",
+      "nodeType": "entry",
+      "version": 1,
+      "title": "Versión \"primera entrega\" del TFM (Contexto, Estado del Arte, Objetivos y Metodología) — doc completo guardado",
+      "content": "## Título del TFM (actualizado en esta versión)\n\"Auditoría asistida de riesgos éticos y pedagógicos en textos educativos en español\" (reemplaza el título provisional anterior \"Framework Inteligente para la Auditoría Ética y Pedagógica de Contenido Educativo mediante Modelos de Lenguaje y Técnicas de Procesamiento del Lenguaje Natural\"). TFM grupal, Máster Universitario en Inteligencia Artificial, UNIR. Autores: Manuel Di Nucci y Pablo Siegrist Montejo.\n\n## Alcance del trabajo\nAuditoría de EXÁMENES de Educación Secundaria Obligatoria (ESO) en castellano, NO contenido educativo general. Estudio experimental limitado a las asignaturas de Lengua Castellana y Literatura y Geografía e Historia. Queda fuera de alcance: evaluación de respuestas del alumnado, calificación automática, asignación de estudiantes a niveles, auditoría de datos de entrenamiento de los LLM.\n\n## Estructura actual del documento\n- Introducción: sigue vacía (texto de plantilla sin completar).\n- Capítulo 2 \"Contexto y estado del arte\":\n  - 2.1 Contexto del Problema, con subapartados (Heading 3): \"Contexto educativo y relevancia del problema\", \"Dimensiones del riesgo en contenido educativo\", \"Modelos del lenguaje en el ámbito educativo\", \"Marco institucional y normativo\", \"Delimitación del trabajo y necesidad de auditoría asistida\".\n  - 2.2 Estado del arte, con subapartados: \"Sesgo y representación en modelos de lenguaje\", \"Lenguaje no inclusivo\", \"Adecuación etaria y legibilidad\".\n  - 2.3 Conclusiones.\n- Capítulo \"Objetivos concretos y metodología de trabajo\":\n  - Hipótesis de Trabajo (P1-P3, H1-H3)\n  - Objetivo general y Objetivos específicos (OE1-OE5)\n  - Metodología del trabajo en 5 fases (Fase 1 a Fase 5, cada una ligada a su OE)\n  - Consideraciones éticas, normativas y amenazas a la validez\n- Capítulo \"Conclusiones y trabajo futuro\": solo encabezados, sin contenido (Conclusiones / Líneas de trabajo futuro).\n- Anexo: Código fuente y datos analizados — sin contenido aún.\n\n## Dimensiones del riesgo (las 3 del TFM) — ATENCIÓN: terminología aún no 100% unificada entre secciones\n- En 2.1: \"Sesgo cultural y de género\" / \"Inclusión lingüística\" / \"Adecuación al nivel educativo\"\n- En Fase 1 (Metodología): \"Sesgo cultural y representación desigual\" / \"Inclusión lingüística\" (ya coincide) / \"Adecuación etaria y complejidad lingüística\"\nPendiente: unificar el nombre de la dimensión 1 y 3 entre 2.1 y Fase 1 (y revisar Objetivo general, que en una versión anterior listaba \"complejidad lingüística\" como un 4º ítem separado de \"adecuación etaria\" — verificar si ya se corrigió).\n\n## Hipótesis (versión actual, ya con criterios cuantificables — mejora respecto a versión anterior que era vaga)\n- H1: el prototipo obtendrá un Macro-F1 superior al de un sistema de referencia basado en reglas léxicas, para detectar riesgos en las tres dimensiones.\n- H2: la arquitectura híbrida reducirá en más del 50% tanto el coste medio como el tiempo medio de procesamiento por examen respecto a aplicar el LLM a todo el material (se contrasta comparando arquitectura híbrida vs. LLM aplicado a todos los ítems).\n- H3: el profesorado que use los informes del prototipo empleará menos tiempo medio por examen y detectará mayor proporción de riesgos (condición asistida vs. control, between-subjects).\n\n## Preguntas de investigación\n- P1 Eficacia de detección: precisión, exhaustividad y Macro-F1 del prototipo vs. referencia docente.\n- P2 Rendimiento y viabilidad: diferencias entre arquitecturas en Macro-F1, estabilidad, tiempo, coste.\n- P3 Utilidad docente: impacto de los informes en tiempo de revisión, detección de riesgos y aceptación de avisos.\n\n## Objetivos específicos (OE1-OE5), cada uno mapeado 1:1 a una Fase metodológica\n- OE1/Fase1: Taxonomía operativa y rúbrica de auditoría, con \"principio de desacople didáctico\" (textos históricos/literarios con sesgos de época no se marcan como problemáticos si forman parte de una consigna de análisis crítico explícita) y validación mediante panel de juicio de expertos docentes.\n- OE2/Fase2: Corpus de exámenes reales de ESO (fuentes públicas/institucionales + centros colaboradores), anonimización RGPD, partición 60/20/20 (train/val/test) por documento completo (anti-leakage), anotación doble ciego por ≥2 docentes. Tamaño definitivo del corpus y número de docentes aún pendiente de concretar.\n- OE3/Fase3: Prototipo modular en Python (FastAPI + protocolo MCP), pipeline de 4 capas: ingesta/preprocesamiento, cribado híbrido (reglas+spaCy / BETO-RoBERTa-BNE), razonamiento LLM, generación de informes. El sistema recibe también materia/curso/objetivos docentes como contexto.\n- OE4/Fase4: Benchmarking con Macro-F1 (clases minoritarias, no accuracy), Kappa de Cohen vs. consenso docente, 5 ejecuciones para estabilidad, métricas de coste/latencia/tokens, taxonomía de errores, comparación arquitectura híbrida vs. LLM-para-todo (para testear H2).\n- OE5/Fase5: Estudio de usuario between-subjects (control vs. asistido) con SUS, TAM, medición de aceptación ...",
+      "why": "Manuel y Pablo subieron la versión del documento \"Contexto__Estado_del_Arte__Objetivos_y_Metodologia.docx\" que van a usar para la primera entrega del TFM, y pidieron guardarla en memoria compartida para que otra sesión/asistente pueda continuar sin releer todo el documento.",
+      "outcome": "Documento almacenado en memoria del proyecto (archivo nativo de Claude) y registrado aquí en context-mcp con el contenido íntegro de las secciones completas (Introducción sigue vacía/plantilla; Contexto y Estado del Arte y Objetivos/Metodología están redactados).",
       "type": "note",
       "status": "active",
       "tags": [
         "tfm",
-        "estado-del-arte",
+        "primera-entrega",
         "contexto-del-problema",
-        "capitulo-2",
-        "referencias-apa",
-        "figuras",
-        "revision-borrador",
-        "sesgo-nlp",
-        "llm-educacion",
-        "weat"
+        "estado-del-arte",
+        "objetivos-y-metodologia",
+        "hipotesis",
+        "corpus-examenes-eso",
+        "auditoria-ia-educativa"
       ],
       "source": "user",
       "files": [
         {
-          "path": "Estado_del_Arte_TFM.xlsx",
-          "note": "Tabla de 20 fuentes del estado del arte con columnas Categoria/Titulo/DOI/Author/Año/Resumen/Faltante/Link"
-        },
-        {
-          "path": "Capitulo_2_Contexto_y_Estado_del_Arte.docx",
-          "note": "Capítulo 2 completo (2.1 Contexto del problema, 2.2 Estado del arte con 7 subapartados, 2.3 Conclusiones), formato UNIR, con referencias APA provisionales"
+          "path": "Contexto__Estado_del_Arte__Objetivos_y_Metodologia.docx",
+          "note": "Documento completo de la primera entrega: Contexto y Estado del Arte + Objetivos y Metodología"
         },
         {
           "path": "Fig_contexto_esquema_problema.png",
-          "note": "Diagrama del problema: desbalance producción/revisión -> 3 dimensiones de riesgo -> respuesta del TFM"
+          "note": "Ilustración 1 del documento"
         },
         {
-          "path": "Fig_contexto_matriz_cobertura.png",
-          "note": "Matriz de cobertura de 5 trabajos previos vs. la propuesta del TFM en 5 dimensiones"
-        },
-        {
-          "path": "Figura_WEAT_etnia_genero.png",
-          "note": "Gráfico WEAT etnia y género/profesión, generado en otro chat del proyecto a partir de Caliskan et al. 2017"
-        },
-        {
-          "path": "Figura_WEAT_comparacion_IAT.png",
-          "note": "Gráfico comparativo IAT humano vs WEAT, generado en otro chat del proyecto a partir de Caliskan et al. 2017"
+          "path": "Fig_metodologia_fases.png",
+          "note": "Diagrama de las 5 fases metodológicas (para posible Ilustración adicional en el capítulo de metodología)"
         }
       ],
       "codeRefs": [],
       "importance": 4,
       "discussionId": null,
-      "createdAt": "2026-09-29T07:57:02.407Z",
+      "createdAt": "2026-10-05T07:08:31.101Z",
       "updatedAt": null,
       "expiresAt": null
     },
     {
-      "id": "23059f87-4255-49d8-83d6-066e85497427",
+      "id": "788f031f-6234-4bd9-a002-66c11407e208",
       "project": "Personal - TFM",
       "sessionId": null,
       "parentId": "project:Personal - TFM",
       "nodeType": "entry",
       "version": 1,
-      "title": "Diagnóstico del fallo de conexión de Claude con context-mcp",
-      "content": "El 2026-09-29 se verificó que context.resume funciona desde Codex para el proyecto Personal - TFM y devuelve 14 entradas, por lo que la base de memoria no está dañada. La configuración efectiva de Claude Desktop, ubicada fuera del repositorio en `%APPDATA%\\Claude\\claude_desktop_config.json`, usa `cmd.exe /c npx -y context-mcp-server@latest`. Al reproducir ese lanzamiento, npm queda esperando y finalmente informa `EACCES` al consultar https://registry.npmjs.org/context-mcp-server y al intentar escribir logs en `%LOCALAPPDATA%\\npm-cache\\_logs`; por eso Claude pierde la conexión MCP. Existe una copia local cacheada de context-mcp-server 1.3.0. Ejecutar directamente su `src\\index.js` con Node y enviar el handshake MCP devuelve correctamente el servidor `context-mcp` versión 1.3.0. Solución robusta recomendada: instalar una versión fija globalmente (`npm install --global context-mcp-server@1.3.0`) y configurar Claude para ejecutar el binario global mediante cmd.exe, evitando `npx ...@latest` en cada arranque. También debe corregirse `setup-sync.ps1`, porque actualmente vuelve a escribir la configuración problemática con npx. La variable `CTX_PROJECT` no aparece soportada por context-mcp-server 1.3.0; el aislamiento se garantiza pasando siempre `project: Personal - TFM` y el rootPath real en las llamadas.",
-      "why": "Claude Desktop informó que context.save y context.resume fallaban por error de conexión, aunque la memoria debía compartirse con Codex y Antigravity.",
-      "outcome": "La memoria y el servidor funcionan desde Codex. El fallo se aisló al arranque de Claude mediante npx: la invocación configurada intenta consultar npm y falla con EACCES. Se verificó que la copia local 1.3.0 responde correctamente cuando se ejecuta directamente con Node.",
+      "title": "Versión declarada para primera entrega — archivo pendiente de conservar",
+      "content": "El 2026-10-05 el usuario indicó que «Contexto, Estado del Arte, Objetivos y Metodologia.docx» corresponde a la versión para la primera entrega. Se ejecutó una comprobación de la ruta C:\\Users\\QsManu-Movil\\Downloads\\Contexto, Estado del Arte, Objetivos y Metodologia.docx y un listado de DOCX en C:\\Users\\QsManu-Movil\\Downloads; ambos devolvieron que el archivo no está disponible. Por tanto, no se copió, no se calculó hash y no se actualizó el catálogo para no atribuir erróneamente la primera entrega a la copia previa de 2026-10-04. La última copia verificable en el repositorio sigue siendo docs/tfm/memoria/2026-10-04/Contexto, Estado del Arte, Objetivos y Metodologia.docx. Cuando se disponga del archivo, se debe archivar una copia intacta bajo docs/tfm/entregas/ con fecha y hash SHA-256, actualizar docs/INDEX.md y PROJECT_STATE.md, y guardar una nota context-mcp con su estado Entregado.",
+      "why": "El usuario identifica una nueva versión del documento como la destinada a la primera entrega.",
+      "outcome": "Se registró la decisión de versión para la primera entrega. No se pudo archivar ni verificar el archivo porque la ruta indicada en Descargas no existe y no hay archivos DOCX en esa carpeta.",
       "type": "note",
       "status": "active",
       "tags": [
-        "claude",
-        "context-mcp",
-        "diagnostico",
-        "npm",
-        "mcp",
-        "windows"
+        "primera-entrega",
+        "documento-pendiente",
+        "versionado",
+        "mcp"
       ],
-      "source": "cli",
+      "source": "user",
       "files": [
         {
-          "path": "C:\\Users\\QsManu-Movil\\Documents\\ChatGPT\\Personal - TFM\\setup-sync.ps1",
-          "purpose": "Script que actualmente genera la definición basada en npx"
-        },
-        {
-          "path": "C:\\Users\\QsManu-Movil\\Documents\\ChatGPT\\Personal - TFM\\CLAUDE.md",
-          "purpose": "Reglas de memoria para Claude"
+          "path": "docs/tfm/memoria/2026-10-04/Contexto, Estado del Arte, Objetivos y Metodologia.docx",
+          "purpose": "Última copia verificable anterior; no equivale a la primera entrega declarada"
         }
       ],
       "codeRefs": [],
       "importance": 4,
       "discussionId": null,
-      "createdAt": "2026-09-29T08:04:18.379Z",
+      "createdAt": "2026-10-05T07:31:28.244Z",
       "updatedAt": null,
       "expiresAt": null
     },
     {
-      "id": "458054b0-2e46-4110-94b0-10fef7ffaf71",
+      "id": "a18a940d-c9e5-4ef6-9d81-e1be39ba2287",
       "project": "Personal - TFM",
       "sessionId": null,
       "parentId": "project:Personal - TFM",
       "nodeType": "entry",
       "version": 1,
-      "title": "MCP estable y verificado en Claude, Antigravity, Cursor y ChatGPT/Codex",
-      "content": "Trabajo completado el 2026-09-29. Se instaló globalmente `context-mcp-server@1.3.0` bajo el prefijo npm del usuario. `setup-sync.ps1` ahora instala/verifica esa versión fija, obtiene la ruta absoluta de `context-mcp-server.cmd`, preserva las configuraciones existentes, crea backups, escribe JSON/TOML en UTF-8 sin BOM y configura Claude Desktop, Antigravity, Cursor y ChatGPT/Codex sin usar `npx ...@latest` durante cada arranque. Se añadió `verify-context-mcp.mjs`, que lee la configuración efectiva de cada cliente, inicia exactamente su transporte stdio, completa el handshake MCP y ejecuta `context.resume` con project `Personal - TFM` y el rootPath actual. Resultado de la prueba: los cuatro clientes respondieron como `context-mcp 1.3.0` y cargaron la misma memoria. README.md documenta Cursor, la instalación versionada y el comando de verificación. Se ejecutó el instalador de forma repetida para comprobar reparación/idempotencia funcional. Commit creado: `26b4fa2 fix: stabilize context MCP client setup`. Los cambios académicos previos en `assets/figures/` y sus archivos relacionados se dejaron fuera de este commit para no mezclar trabajo ajeno a la reparación.",
-      "why": "Los clientes usaban `npx context-mcp-server@latest` en cada arranque; Claude fallaba con EACCES al consultar npm y todos podían sufrir el mismo problema al reiniciar.",
-      "outcome": "Se instaló context-mcp-server 1.3.0 globalmente, se configuraron los cuatro clientes con el ejecutable estable, se verificó handshake + context.resume en cada uno y se creó el commit 26b4fa2.",
+      "title": "Primera entrega archivada y verificada — 2026-10-05",
+      "content": "Archivo de primera entrega: docs/tfm/entregas/2026-10-05-primera-entrega/Contexto, Estado del Arte, Objetivos y Metodologia.docx. Fecha de registro: 2026-10-05. Tamaño: 2.593.326 bytes. SHA-256: 5D33F0C4CB753028D1F24049798A6A4669D6A17343C6EC4A54E87F92B4D1EC20. Se calculó la huella del archivo original proporcionado en Descargas y de la copia archivada; ambas coinciden. Esta copia queda identificada como Entregado y no debe modificarse. Versiones posteriores deben guardarse bajo docs/tfm/memoria/ con fecha propia. Se actualizaron docs/INDEX.md y PROJECT_STATE.md.",
+      "why": "El usuario declaró esta versión como la correspondiente a la primera entrega.",
+      "outcome": "Se archivó una copia inalterable en el repositorio. Su huella SHA-256 coincide con el original de Descargas. El catálogo documental y el estado del proyecto ya reflejan la entrega.",
       "type": "note",
       "status": "active",
       "tags": [
-        "context-mcp",
-        "claude",
-        "antigravity",
-        "cursor",
-        "chatgpt",
-        "codex",
-        "windows",
-        "configuration"
+        "primera-entrega",
+        "entregado",
+        "versionado",
+        "sha256",
+        "tfm"
       ],
-      "source": "cli",
+      "source": "file",
       "files": [
         {
-          "path": "C:\\Users\\QsManu-Movil\\Documents\\ChatGPT\\Personal - TFM\\setup-sync.ps1",
-          "purpose": "Instalador y configurador estable para los cuatro clientes"
+          "path": "docs/tfm/entregas/2026-10-05-primera-entrega/Contexto, Estado del Arte, Objetivos y Metodologia.docx",
+          "purpose": "Copia inalterable de la primera entrega"
         },
         {
-          "path": "C:\\Users\\QsManu-Movil\\Documents\\ChatGPT\\Personal - TFM\\verify-context-mcp.mjs",
-          "purpose": "Prueba real de handshake y context.resume"
+          "path": "docs/INDEX.md",
+          "purpose": "Catálogo documental actualizado"
         },
         {
-          "path": "C:\\Users\\QsManu-Movil\\Documents\\ChatGPT\\Personal - TFM\\README.md",
-          "purpose": "Documentación actualizada de instalación y verificación"
-        }
-      ],
-      "codeRefs": [],
-      "importance": 4,
-      "discussionId": "1bcf9429-a1f6-4dce-aa0f-72a7ca16b3e4",
-      "createdAt": "2026-09-29T08:55:45.832Z",
-      "updatedAt": "2026-09-29T08:55:45.832Z",
-      "expiresAt": null
-    },
-    {
-      "id": "6e4c5965-36e5-4bd5-b5cb-819b38ccd0b0",
-      "project": "Personal - TFM",
-      "sessionId": null,
-      "parentId": "project:Personal - TFM",
-      "nodeType": "entry",
-      "version": 1,
-      "title": "Configuración MCP, Figura 2 y memoria publicadas en origin/main",
-      "content": "El usuario confirmó expresamente la publicación directa en la rama compartida main. Se creó el commit 764dc5e (`docs: add corrected coverage figure and shared memory`) con `.context/context.json`, `.context/summary.json`, `assets/figures/README.md` y `assets/figures/Fig_contexto_matriz_cobertura_v2.png`. Este commit se publicó junto con 26b4fa2 (`fix: stabilize context MCP client setup`) mediante `git push origin main`. Git confirmó `a07b301..764dc5e main -> main`, y la comprobación posterior mostró que HEAD y origin/main coincidían exactamente en `764dc5e361b349e9eb86a35d0b18748eb47cdebd`. La Figura 2 no se había descartado: se mantuvo separada del commit técnico para conservar commits temáticamente claros y después se publicó en su propio commit académico.",
-      "why": "Dejar constancia compartida de que las configuraciones verificadas y las actualizaciones académicas pendientes ya están disponibles para el otro autor mediante Git.",
-      "outcome": "Se publicaron en origin/main los commits 26b4fa2 y 764dc5e; la rama local y la remota quedaron alineadas en 764dc5e antes de registrar esta nota final.",
-      "type": "note",
-      "status": "active",
-      "tags": [
-        "git",
-        "push",
-        "context-mcp",
-        "figura-2",
-        "sincronizacion"
-      ],
-      "source": "cli",
-      "files": [
-        {
-          "path": "C:\\Users\\QsManu-Movil\\Documents\\ChatGPT\\Personal - TFM\\assets\\figures\\Fig_contexto_matriz_cobertura_v2.png",
-          "purpose": "Figura 2 corregida y publicada"
-        },
-        {
-          "path": "C:\\Users\\QsManu-Movil\\Documents\\ChatGPT\\Personal - TFM\\assets\\figures\\README.md",
-          "purpose": "Procedencia y uso académico de la figura"
-        },
-        {
-          "path": "C:\\Users\\QsManu-Movil\\Documents\\ChatGPT\\Personal - TFM\\setup-sync.ps1",
-          "purpose": "Configuración MCP estable publicada"
-        },
-        {
-          "path": "C:\\Users\\QsManu-Movil\\Documents\\ChatGPT\\Personal - TFM\\verify-context-mcp.mjs",
-          "purpose": "Verificador MCP publicado"
+          "path": "PROJECT_STATE.md",
+          "purpose": "Estado del proyecto actualizado"
         }
       ],
       "codeRefs": [],
       "importance": 4,
       "discussionId": null,
-      "createdAt": "2026-09-29T09:00:17.628Z",
+      "createdAt": "2026-10-05T07:33:34.034Z",
+      "updatedAt": null,
+      "expiresAt": null
+    },
+    {
+      "id": "4180783e-25c8-44e4-8b4d-2a86e926a94c",
+      "project": "Personal - TFM",
+      "sessionId": null,
+      "parentId": "project:Personal - TFM",
+      "nodeType": "entry",
+      "version": 1,
+      "title": "Registro y almacenamiento de la Primera Entrega del TFM (46 páginas)",
+      "content": "# Primera Entrega Oficial del TFM (2026-10-05)\n\nSe ha registrado y archivado en la memoria compartida la versión definitiva de la **Primera Entrega** del TFM, estructurada en 46 páginas sobre la plantilla oficial de la UNIR.\n\n## Metadatos consolidados\n- **Título oficial:** *Auditoría asistida de riesgos éticos y pedagógicos en textos educativos en español*\n- **Modalidad:** TFM grupal (Piloto Experimental)\n- **Autores:** Manuel Di Nucci Girino y Pablo Siegrist Montejo\n- **Director:** Juan Rodrigo González Fernández Fernández\n- **Fecha de entrega:** 2026-10-04 / 2026-10-05\n- **Documento de entrega:** `docs/tfm/entregas/2026-10-05-primera-entrega/Contexto, Estado del Arte, Objetivos y Metodologia.docx` (copia inalterable, registrada en `docs/INDEX.md`).\n\n## Estado del contenido en esta entrega\n1. **Preliminares e Índices (págs. 1-4):**\n   - Portada con datos completos de autores, director y título.\n   - Índice general y de figuras (10 ilustraciones correlativas).\n   - Resumen, Abstract y Organización del trabajo en grupo reservados para fases posteriores.\n\n2. **Capítulo 2: Contexto y estado del arte (págs. 5-25):**\n   - **2.1 Contexto del problema:** Subdividido limpiamente en 2.1.1 (Contexto educativo y cifras oficiales de ESO/Bachillerato en España), 2.1.2 (Tres dimensiones del riesgo), 2.1.3 (LLM en educación), 2.1.4 (Marco institucional y normativo: AI Act y UNESCO) y 2.1.5 (Delimitación a exámenes antes de su aplicación).\n   - **2.2 Estado del arte:** Tabla 1 con registro formal de cadenas de búsqueda en Google Scholar y repositorios clave. Subapartados 2.2.1 (Sesgo y representación: IAT y WEAT), 2.2.2 (Lenguaje no inclusivo: UNESCO, Inclusively, postedición y datasets en castellano como EsCorpiusBias) y 2.2.3 (Adecuación etaria y legibilidad: INFLESZ, CLEAR, iRead4Skills, Uçar et al., Kılıçaslan et al. y AIriskEval-edu).\n   - **2.3 Conclusiones del estado del arte (págs. 22-25):** Redacción completa que sintetiza los vacíos de la literatura e incluye la matriz comparativa de antecedentes (Ilustración 10, pág. 24) con 13 trabajos de referencia, justificando la aportación del TFM.\n\n3. **Capítulo 3: Objetivos y metodología de trabajo (págs. 25-37):**\n   - **3.1 Hipótesis y Preguntas:** 3 preguntas de investigación (P1, P2, P3) y 3 hipótesis acotadas y medibles ($H_1$ superior a reglas, $H_2$ híbrido con >50% ahorro y <0,03 puntos de Macro-F1, $H_3$ mejora en revisión docente).\n   - **3.2 y 3.3 Objetivos:** Objetivo general y 5 específicos (OE1 a OE5).\n   - **3.4 Metodología en 5 fases:** Matriz de operacionalización (Tabla pág. 28) y diagrama de fases; Fase 1 con principio de desacople didáctico y validación de rúbrica; Fase 2 con aprovisionamiento dual, anonimización RGPD y partición estricta anti-leakage por documento completo; Fase 3 arquitectura modular híbrida (FastAPI/MCP, spaCy, Transformers y LLM); Fase 4 evaluación cuantitativa con auditoría explícita del recall del filtro local y estabilidad N=5; Fase 5 estudio experimental con docentes (condición control vs. asistida, SUS y TAM).\n   - **3.5 Consideraciones éticas:** Human-in-the-loop, RGPD, AI Act y control de amenazas a la validez.\n\n4. **Referencias bibliográficas (págs. 37-42):**\n   - Limpieza exhaustiva aplicada a autores orientales (Yan et al.) y a colaboradores de Rizvi et al., además de APA 7 riguroso.\n\n## Tareas y decisiones pendientes para la Fase 2 (Desarrollo y Experimentación)\n- Resolver las 6 preguntas metodológicas del comentario interno `[MD1]` (pág. 35): concretar el tamaño real del corpus, número de preguntas, docentes disponibles para la referencia (anotación) y docentes para el estudio de usuarios (asistido vs no asistido).\n- Trabajar a partir de ahora sobre una nueva copia de trabajo en `docs/tfm/memoria/` sin alterar la entrega oficial archivada.",
+      "why": "El usuario aportó la versión definitiva entregada formalmente de los Capítulos 2 y 3 para su preservación y consulta compartida.",
+      "outcome": "",
+      "type": "note",
+      "status": "active",
+      "tags": [
+        "primera-entrega",
+        "tfm",
+        "memoria",
+        "estado-del-arte",
+        "objetivos",
+        "metodologia",
+        "unir"
+      ],
+      "source": "user",
+      "files": [
+        {
+          "path": "c:/Users/QsManu-Movil/Documents/ChatGPT/Personal - TFM/PROJECT_STATE.md",
+          "purpose": "Estado vigente del TFM con datos oficiales de la entrega"
+        },
+        {
+          "path": "c:/Users/QsManu-Movil/Documents/ChatGPT/Personal - TFM/docs/INDEX.md",
+          "purpose": "Catálogo de documentos del proyecto"
+        }
+      ],
+      "codeRefs": [],
+      "importance": 3,
+      "discussionId": null,
+      "createdAt": "2026-10-05T07:34:45.423Z",
       "updatedAt": null,
       "expiresAt": null
     }

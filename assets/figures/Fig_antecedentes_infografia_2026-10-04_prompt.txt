@@ -1,0 +1,5 @@
+Modo: edición con herramienta integrada image_gen.
+Usuario rechaza tabla y solicita gráfico con mayor elaboración visual. Se mantienen 13 antecedentes, agrupados por aportación principal; fuentes bibliográficas en Fig_antecedentes_conclusiones_2026-10-04_fuente.txt. La agrupación no implica exclusividad de dimensiones. Destino: ILU 12, sección 2.3. Propuesta TFM pendiente de validación.
+
+Prompt:
+undefined

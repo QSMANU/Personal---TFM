@@ -58,6 +58,9 @@ Cada asistente cuenta con su propio archivo de directivas:
 | **ChatGPT/Codex sobre esta carpeta** | [`AGENTS.md`](./AGENTS.md) / [`CHATGPT.md`](./CHATGPT.md) | Codex carga `AGENTS.md`; `CHATGPT.md` documenta la configuración. |
 | **Cursor** | [`AGENTS.md`](./AGENTS.md) | El MCP se registra en `~/.cursor/mcp.json`; abre esta carpeta como proyecto. |
 | **Proyecto de ChatGPT web/escritorio** | [`CHATGPT.md`](./CHATGPT.md) | Copiar las reglas en las Instrucciones del Proyecto y añadir los documentos necesarios. |
+| **Kimchi Studio** | [`KIMCHI.md`](./KIMCHI.md) | `~/.config/kimchi/harness/mcp.json` (configurado automáticamente por `setup-sync.bat`). |
+| **DeepSeek Harness** | [`DEEPSEEK.md`](./DEEPSEEK.md) | [`.mcp.json`](./.mcp.json) en la raíz del proyecto (carga automática al abrir la carpeta). |
+
 
 ### Instrucción Maestra para ChatGPT y Claude (Project Instructions)
 Si creas un Proyecto llamado **Personal - TFM** en la web o app de ChatGPT / Claude, pega este bloque en **Instrucciones del Proyecto**:
