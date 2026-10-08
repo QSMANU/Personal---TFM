@@ -506,7 +506,7 @@ export function pruneSessions() {
   return borrados;
 }
 
-/** Sesiones conocidas, marcando cuáles siguen vivas (heartbeat reciente o proceso vivo). */
+/** Sesiones conocidas, marcando cuáles siguen vivas (el proceso tiene que existir). */
 export function listSessions({ freshMs = 120000 } = {}) {
   const dir = sessionsDir();
   if (!existsSync(dir)) return [];
@@ -519,7 +519,10 @@ export function listSessions({ freshMs = 120000 } = {}) {
         const edad = ahora - Date.parse(s.lastSeen || s.startedAt || 0);
         let procesoVivo = false;
         try { process.kill(s.pid, 0); procesoVivo = true; } catch { procesoVivo = false; }
-        return { ...s, ageMs: edad, alive: edad < freshMs || procesoVivo };
+        // Viva = el proceso existe y el heartbeat no es viejo. El proceso manda:
+        // un archivo reciente de un proceso muerto NO debe verse como conectado.
+        const alive = procesoVivo && edad < 24 * 3600 * 1000;
+        return { ...s, ageMs: edad, fresh: edad < freshMs, alive };
       } catch { return null; }
     })
     .filter(Boolean)
