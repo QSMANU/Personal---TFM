@@ -86,6 +86,35 @@ const cli = (...args) => {
   check('dos escrituras del mismo proyecto con distinto formato no duplican', despues === antes + 1, `${antes} → ${despues}`);
 }
 
+/* 6. Publicar con el mismo id ACTUALIZA en vez de duplicar (documentos idempotentes) */
+{
+  const v1 = store.writeEntry({ project: 'Docs', id: 'ctx-doc', title: 'Documento v1', content: 'primera versión', type: 'note' });
+  const creado = v1.createdAt;
+  const antes = store.listEntries('docs').length;
+  const v2 = store.writeEntry({ project: 'Docs', id: 'ctx-doc', title: 'Documento v2', content: 'segunda versión', type: 'note' });
+  const despues = store.listEntries('docs').length;
+  check('republicar el mismo id no crea otra entrada', antes === 1 && despues === 1, `${antes} → ${despues}`);
+  check('republicar conserva la fecha original', v2.createdAt === creado, `${v1.createdAt} vs ${v2.createdAt}`);
+  check('republicar actualiza el contenido', store.readEntry('docs', 'ctx-doc').content.trim() === 'segunda versión', store.readEntry('docs', 'ctx-doc').content);
+  check('writeEntry informa si actualizó', v2.updated === true && v1.updated !== true);
+
+  // Y también por la bandeja, con "id:" en el encabezado.
+  const inbox = join(home, 'inbox');
+  mkdirSync(inbox, { recursive: true });
+  writeFileSync(join(inbox, 'doc-a.md'), '---\nid: ctx-ingest\nproject: Docs\ntitle: Desde bandeja v1\n---\nv1\n', 'utf8');
+  store.ingestInbox({ app: 'prueba' });
+  writeFileSync(join(inbox, 'doc-b.md'), '---\nid: ctx-ingest\nproject: Docs\ntitle: Desde bandeja v2\n---\nv2\n', 'utf8');
+  store.ingestInbox({ app: 'prueba' });
+  check('la bandeja respeta el id del encabezado', store.listEntries('docs').length === 2 && store.readEntry('docs', 'ctx-ingest').title === 'Desde bandeja v2');
+}
+
+/* 7. El grafo de relaciones refleja las actualizaciones sin duplicar nodos */
+{
+  const { buildEntryGraph } = await import('../src/relations.js');
+  const g = buildEntryGraph('docs');
+  check('el grafo del proyecto tiene un nodo por entrada', g.nodes.filter((n) => n.kind === 'entry').length === 2, JSON.stringify(g.stats));
+}
+
 rmSync(home, { recursive: true, force: true });
 console.log(failures === 0 ? '\nTodo OK.' : `\n${failures} prueba(s) fallaron.`);
 process.exit(failures === 0 ? 0 : 1);

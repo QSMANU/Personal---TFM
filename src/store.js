@@ -623,6 +623,7 @@ export function ingestInbox({ defaultProject = null, app = 'inbox', move = true 
     let tags = meta.tags ? meta.tags.split(',').map((t) => t.trim()).filter(Boolean) : [];
     let files_ = meta.files ? meta.files.split(',').map((t) => t.trim()).filter(Boolean) : [];
     let body = content;
+    let id = meta.id || null; // id explícito = actualizar esa entrada en vez de crear otra
 
     if (name.toLowerCase().endsWith('.json')) {
       try {
@@ -633,6 +634,7 @@ export function ingestInbox({ defaultProject = null, app = 'inbox', move = true 
         tags = data.tags || tags;
         files_ = data.files || files_;
         body = data.content || body;
+        id = data.id || id;
       } catch {
         skipped.push({ name, reason: 'JSON ilegible' });
         continue;
@@ -651,9 +653,9 @@ export function ingestInbox({ defaultProject = null, app = 'inbox', move = true 
 
     const match = findProjectMatch(project);
     const target = match ? match.name : project;
-    const entry = writeEntry({ project: target, title, content: body, type, tags, files: files_, app });
+    const entry = writeEntry({ id, project: target, title, content: body, type, tags, files: files_, app });
     if (match) rememberProjectIdentity(match.slug, { aliases: [project] });
-    processed.push({ name, entry, slug: entry.project, matchedBy: match?.matchedBy || 'nuevo' });
+    processed.push({ name, entry, slug: entry.project, matchedBy: match?.matchedBy || 'nuevo', updated: entry.updated });
 
     if (move) {
       ensureDir(inboxDoneDir());
@@ -745,13 +747,19 @@ export function writeEntry({ project, title, content, type = 'note', tags = [], 
   }
   const meta = ensureProject(project, { root });
   const slug = meta.slug;
+  const nuevoId = id || newEntryId();
+  // Si se publica con un id existente, se ACTUALIZA: se conserva la fecha original
+  // (así republicar un documento no duplica ni desordena el historial).
+  const previa = existsSync(join(entriesDir(slug), `${nuevoId}.md`))
+    ? toEntry(slug, nuevoId, readFileSync(join(entriesDir(slug), `${nuevoId}.md`), 'utf8'))
+    : null;
   const entry = {
-    id: id || newEntryId(),
+    id: nuevoId,
     project: slug,
     title: String(title || '').trim() || '(sin título)',
     type,
     app: app || process.env.SHARED_MCP_APP || 'desconocida',
-    createdAt: createdAt || new Date().toISOString(),
+    createdAt: createdAt || previa?.createdAt || new Date().toISOString(),
     tags,
     files,
     content: String(content ?? ''),
@@ -760,7 +768,9 @@ export function writeEntry({ project, title, content, type = 'note', tags = [], 
 
   if (type === 'handoff') {
     writeFileSync(handoffPath(slug), serializeEntry(entry), 'utf8');
+    if (previa && previa.type === 'handoff') { /* ya era el handoff: se sobreescribió */ }
   }
+  entry.updated = Boolean(previa);
   return entry;
 }
 

@@ -1,4 +1,5 @@
 ---
+id: ctx-decisiones
 project: Personal - Shared-MCP-Local
 title: Decisiones de diseño (opt-in, 8 herramientas, un proyecto por ruta)
 type: decision

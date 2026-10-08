@@ -1,4 +1,5 @@
 ---
+id: ctx-tareas
 project: Personal - Shared-MCP-Local
 title: Tareas pendientes y próximos pasos
 type: task

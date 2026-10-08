@@ -1,4 +1,5 @@
 ---
+id: ctx-comandos
 project: Personal - Shared-MCP-Local
 title: Cheatsheet de comandos (sharedctx)
 type: reference

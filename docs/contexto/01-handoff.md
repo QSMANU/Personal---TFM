@@ -1,4 +1,5 @@
 ---
+id: ctx-handoff
 project: Personal - Shared-MCP-Local
 title: Handoff · dónde quedé con QSMANU-LOCAL-SHARED-MCP
 type: handoff

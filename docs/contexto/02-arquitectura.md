@@ -1,4 +1,5 @@
 ---
+id: ctx-arquitectura
 project: Personal - Shared-MCP-Local
 title: Arquitectura y mapa de archivos
 type: reference

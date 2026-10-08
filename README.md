@@ -243,6 +243,13 @@ sharedctx approve <id>       # o: sharedctx approve all
 sharedctx reject all         # o descartar
 ```
 
+**Mantener un documento vivo sin duplicarlo:** publicá con un `--id` fijo (o `id:` en el encabezado del
+archivo de la bandeja). Republicar con el mismo id **actualiza** la entrada y conserva la fecha original:
+
+```powershell
+sharedctx add --id adr-014 --project "OAT - Architecture" --title "ADR-014" --file .\adr-014.md
+```
+
 **Retomar en otra app:**
 
 > Traé el contexto compartido del proyecto y seguí desde donde quedó.

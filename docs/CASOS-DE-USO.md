@@ -218,7 +218,56 @@ Tipos disponibles: `handoff`, `note`, `decision`, `task`, `bug`, `question`, `sn
 
 ---
 
-## 8. Prompts listos para copiar y pegar
+## 8. Caso "no quiero duplicar cuando actualizo"
+
+Una publicación normal **crea una entrada nueva**. Si estás manteniendo un documento (un handoff vivo, un
+ADR, una guía) y lo republicás cada semana, conviene darle un **id estable**: republicar con el mismo id
+**actualiza** la entrada en vez de crear otra, y conserva la fecha original.
+
+```powershell
+sharedctx add --id adr-014 --project "OAT - Architecture" --title "ADR-014 · Bus de eventos" --file .\adr-014.md
+# más adelante, con el archivo actualizado y el mismo --id:
+sharedctx add --id adr-014 --project "OAT - Architecture" --title "ADR-014 · Bus de eventos" --file .\adr-014.md
+# → "actualizado adr-014", no una entrada nueva
+```
+
+Igual por la bandeja, poniendo el id en el encabezado:
+
+```markdown
+---
+id: adr-014
+project: OAT - Architecture
+title: ADR-014 · Bus de eventos
+type: decision
+tags: arquitectura
+---
+...
+```
+
+Así los documentos de `docs\contexto` de este proyecto se publican siempre con el mismo id
+(`ctx-handoff`, `ctx-arquitectura`, …): podés reingestar toda la carpeta sin duplicar nada.
+
+**Cómo detectar que te pasó:** `sharedctx insights` marca los pares casi idénticos como posibles
+duplicados, y el grafo de entradas los dibuja con línea roja punteada.
+
+---
+
+## 9. Caso "quiero ver el contexto, no leerlo"
+
+```powershell
+sharedctx ui --open                         # panel: grafo de contexto, grafo de entradas, apps, diagnóstico
+sharedctx insights                          # en texto: salud + qué arreglar
+sharedctx graph                             # entradas ordenadas por cuántas relaciones tienen
+sharedctx graph --type dot > contexto.dot   # abrir en Graphviz / Obsidian / Gephi
+```
+
+El **grafo de entradas** del panel muestra cada entrada unida a las demás por etiquetas, archivos,
+menciones (`[[título]]`) y contenido parecido; el bloque **Diagnóstico** dice qué conviene arreglar
+(proyectos sin handoff, entradas huérfanas, duplicados, archivos compartidos entre proyectos).
+
+---
+
+## 10. Prompts listos para copiar y pegar
 
 | Querés… | Pegá esto en la app |
 |---|---|

@@ -29,6 +29,7 @@ const OPTIONS = {
   tags: { type: 'string' },
   files: { type: 'string' },
   content: { type: 'string', short: 'c' },
+  id: { type: 'string' },
   file: { type: 'string', short: 'f' },
   limit: { type: 'string' },
   out: { type: 'string', short: 'o' },
@@ -485,6 +486,7 @@ async function main() {
       const entry = writeEntry({
         project,
         root: values.project ? null : auto.root,
+        id: values.id || null,
         title: values.title,
         content,
         type: values.type || 'note',
@@ -498,7 +500,7 @@ async function main() {
         const sugerencias = suggestProjects(requested).filter((s) => s.score >= 0.5 && s.score < 1);
         if (sugerencias.length) console.log(`ojo: hay proyectos parecidos: ${sugerencias.map((s) => s.slug).join(', ')}`);
       }
-      console.log(`publicado ${entry.id} en ${entry.project} (${entry.type})`);
+      console.log(`${entry.updated ? 'actualizado' : 'publicado'} ${entry.id} en ${entry.project} (${entry.type})`);
       return;
     }
 

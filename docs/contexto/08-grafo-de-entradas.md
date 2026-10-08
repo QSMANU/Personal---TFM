@@ -1,4 +1,5 @@
 ---
+id: ctx-grafo
 project: Personal - Shared-MCP-Local
 title: Grafo de entradas y diagnóstico del contexto
 type: reference

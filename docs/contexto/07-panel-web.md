@@ -1,4 +1,5 @@
 ---
+id: ctx-panel
 project: Personal - Shared-MCP-Local
 title: Panel web local — sharedctx ui
 type: reference

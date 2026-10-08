@@ -1,4 +1,5 @@
 ---
+id: ctx-instalacion
 project: Personal - Shared-MCP-Local
 title: Estado de la instalación en cada app
 type: reference
