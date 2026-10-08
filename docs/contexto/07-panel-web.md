@@ -36,5 +36,11 @@ de `ui\`. Se refresca solo cada 5 segundos.
 **Decisiones:** el panel **no** aprueba pendientes ni publica nada a propósito: esas acciones siguen
 siendo del usuario por CLI, y así la interfaz no puede convertirse en un atajo para compartir sin querer.
 
-**Verificación:** 13 pruebas propias (`node test\dashboard.mjs`), incluidas "rechaza escrituras" y
-"no permite salir del directorio de la interfaz". Total del proyecto: 51 pruebas.
+**Verificación:** 19 pruebas de API (`node test\dashboard.mjs`) **más 15 pruebas que renderizan la
+interfaz de verdad** con jsdom (`node test\ui.mjs`): cargan el panel contra un servidor real, dibujan los
+dos grafos, hacen clic en pestañas, abren el grafo de un proyecto y el detalle de una entrada, y fallan si
+aparece cualquier error de runtime. Esa red existe porque un canvas mal resuelto rompió el panel sin que
+ninguna prueba de API lo detectara. Total del proyecto: **100 pruebas**.
+
+**Publicación idempotente:** este documento se publica con `id: ctx-panel`, así que actualizarlo y volver
+a ingestar **actualiza** la entrada en vez de crear otra (y conserva la fecha original).
