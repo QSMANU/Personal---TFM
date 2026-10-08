@@ -72,10 +72,12 @@ function radiusFor(n) {
 
 function setGraphData(st, data) {
   if (!st) return;
-  const canvas = st.canvas || document.getElementById(st.canvasId);
-  const W = canvas.clientWidth * devicePixelRatio;
-  const H = Number(canvas.getAttribute('height')) * devicePixelRatio;
-  canvas.width = canvas.clientWidth * devicePixelRatio;
+  const canvas = st.canvasEl;
+  if (!canvas) return;
+  const ancho = canvas.clientWidth || canvas.parentElement?.clientWidth || 800;
+  const W = ancho * devicePixelRatio;
+  const H = (Number(canvas.getAttribute('height')) || 520) * devicePixelRatio;
+  canvas.width = W;
   canvas.height = H;
   const cx = W / 2; const cy = H / 2;
   const total = Math.max(1, data.nodes.length);

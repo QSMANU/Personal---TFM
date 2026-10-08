@@ -327,12 +327,18 @@ $env:SHARED_MCP_HOME = 'D:\shared-context'   # y agregalo en el bloque env de ca
 Diagnóstico del servidor MCP sin abrir ninguna app:
 
 ```powershell
-npm test                     # 79 pruebas (30 de protocolo + 10 de robustez + 20 de relaciones + 19 del panel)
+npm test                     # 100 pruebas (30 protocolo + 16 robustez + 20 relaciones + 19 panel + 15 interfaz)
 node test\mcp-smoke.mjs      # protocolo MCP punta a punta
-node test\robustness.mjs     # contenido grande, unicode, BOM, candados
+node test\robustness.mjs     # contenido grande, unicode, BOM, candados, publicación idempotente
 node test\relations.mjs      # grafo de entradas y diagnóstico
 node test\dashboard.mjs      # panel web: endpoints, solo lectura, assets
+node test\ui.mjs             # renderiza la interfaz de verdad (jsdom) y busca errores de runtime
 ```
+
+`test\ui.mjs` carga el panel en jsdom contra un servidor real, dibuja los dos grafos con un canvas de
+prueba, hace clic en las pestañas, abre el grafo de un proyecto y el detalle de una entrada, y falla si
+aparece **cualquier** error de runtime en la consola. Es la red que atrapa los bugs que no se ven desde
+la API (por ejemplo, un canvas mal resuelto).
 
 El panel también sirve para diagnosticar: si una app figura **configurada** pero no **conectada ahora**,
 es que todavía no se reinició (o el proceso MCP se cayó y el log de la app lo dice).
@@ -363,9 +369,10 @@ shared-mcp-local\
   docs\mcp-config-recon-report.md    auditoría de esquemas MCP de cada app
   docs\contexto\*.md                 las entradas de este proyecto publicadas en el contexto
   test\mcp-smoke.mjs                 30 pruebas de protocolo MCP
-  test\robustness.mjs                10 pruebas de robustez
+  test\robustness.mjs                16 pruebas de robustez (incluye publicación idempotente)
   test\relations.mjs                 20 pruebas del grafo de entradas y el diagnóstico
-  test\dashboard.mjs                 19 pruebas del panel
+  test\dashboard.mjs                 19 pruebas del panel (API)
+  test\ui.mjs                        15 pruebas que renderizan la interfaz en jsdom
   ui\index.html · app.js · style.css interfaz del panel (dos grafos, sin dependencias)
   state\                             manifiesto, log y JSON temporales (ignorado por git)
 ```
