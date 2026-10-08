@@ -1,0 +1,11 @@
+# El instalador y los scripts de PowerShell deben conservar CRLF y su BOM UTF-8.
+*.ps1 text eol=crlf
+*.psm1 text eol=crlf
+
+# Texto normal con LF
+*.js text eol=lf
+*.mjs text eol=lf
+*.md text eol=lf
+*.json text eol=lf
+*.yml text eol=lf
+*.toml text eol=lf
