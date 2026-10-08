@@ -24,9 +24,11 @@ en `C:\Users\QsManu-Movil\.shared-mcp`.
 6. Importación **selectiva** del contexto viejo de `context-mcp` (`--list`, `--interactive`, `--only`,
    `--exclude`, `--since`, `--types`).
 7. Reversión completa probada: `install.ps1 -Restore` devuelve las apps al estado previo exacto.
+8. **Panel web local** (`sharedctx ui`): grafo de proyectos y apps, apps conectadas por heartbeat real,
+   métodos MCP con su esquema, pendientes y auditoría. Solo lectura y solo loopback.
 
-**Verificación:** 28 pruebas de humo (`node test\mcp-smoke.mjs`) + 10 de robustez
-(`node test\robustness.mjs`) en verde. Ida y vuelta de instalación/reversión probada de verdad.
+**Verificación:** 51 pruebas en verde (28 de protocolo MCP + 10 de robustez + 13 del panel), más la ida y
+vuelta de instalación/reversión probada de verdad.
 
 **Próximo paso concreto:** reiniciar Claude Desktop, Cursor, Antigravity, Kimchi y VS Code para que tomen
 el servidor nuevo; después decidir la importación del contexto viejo con

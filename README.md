@@ -194,7 +194,31 @@ archivos que creó el instalador. **Probado de ida y vuelta**: la máquina queda
 
 ---
 
-## 4. Uso diario
+## 4. Panel web local (`sharedctx ui`)
+
+```powershell
+sharedctx ui --open          # http://127.0.0.1:3120
+sharedctx ui --port 3200     # otro puerto
+```
+
+Una interfaz **de solo lectura** (y solo loopback) que muestra el estado real del servidor:
+
+| Sección | Qué muestra |
+|---|---|
+| Tarjetas | modo de consentimiento, proyectos, entradas, tamaño en disco, **apps conectadas ahora**, pendientes y última actividad |
+| **Grafo** | proyectos (círculos, tamaño = entradas) y apps (rombos) unidos por el contexto que aportó cada una; las conectadas en este momento se marcan en verde. Arrastrable, con detalle al hacer clic |
+| Proyectos | entradas, última actualización, handoff completo, desglose por app y por tipo, y actividad de los últimos 30 días |
+| Apps conectadas | estado de configuración leído del archivo de cada app, **sesiones MCP vivas** (heartbeat real con pid y transporte), proyecto actual y proyectos con contexto de esa app |
+| Métodos MCP | las 7 herramientas con su descripción y su JSON Schema, más las instrucciones opt-in que recibe el modelo |
+| Pendientes | lo que espera tu aprobación, con el comando exacto para aprobarlo |
+| Auditoría | últimos eventos de `audit.log` |
+
+El panel no expone ninguna ruta de escritura (probado: `POST` → 405), está atado a `127.0.0.1` y no
+permite salir de su carpeta de assets. Se refresca solo cada 5 segundos.
+
+---
+
+## 5. Uso diario
 
 **Cerrar un tramo de trabajo** (en la app donde estás):
 
@@ -237,7 +261,7 @@ Flujos completos y ejemplos por escenario: [docs/CASOS-DE-USO.md](docs/CASOS-DE-
 
 ---
 
-## 5. Ajustes finos
+## 6. Ajustes finos
 
 **Fijar el proyecto por carpeta** (recomendado en cada repo): `.sharedctx.json` en la raíz:
 
@@ -267,7 +291,7 @@ $env:SHARED_MCP_HOME = 'D:\shared-context'   # y agregalo en el bloque env de ca
 
 ---
 
-## 6. Solución de problemas
+## 7. Solución de problemas
 
 | Síntoma | Causa probable | Solución |
 |---|---|---|
@@ -283,23 +307,30 @@ $env:SHARED_MCP_HOME = 'D:\shared-context'   # y agregalo en el bloque env de ca
 Diagnóstico del servidor MCP sin abrir ninguna app:
 
 ```powershell
-npm test                     # 38 pruebas (28 de protocolo + 10 de robustez)
+npm test                     # 51 pruebas (28 de protocolo + 10 de robustez + 13 del panel)
 node test\mcp-smoke.mjs      # solo las de protocolo MCP punta a punta
 node test\robustness.mjs     # solo las de robustez (contenido grande, unicode, BOM, candados)
+node test\dashboard.mjs      # solo las del panel web (endpoints, solo lectura, assets)
 ```
+
+El panel también sirve para diagnosticar: si una app figura **configurada** pero no **conectada ahora**,
+es que todavía no se reinició (o el proceso MCP se cayó y el log de la app lo dice).
 
 ---
 
-## 7. Estructura del repositorio
+## 8. Estructura del repositorio
 
 ```
 shared-mcp-local\
   install.ps1                        instalador idempotente: backups, manifiesto, -Restore, -DryRun
   .sharedctx.json                    fija el nombre del proyecto para cualquier app que abra esta carpeta
-  src\store.js                       almacén, modos, identidad de proyectos, bandeja, auditoría
+  src\store.js                       almacén, modos, identidad de proyectos, bandeja, sesiones, auditoría
   src\server.js                      las 7 herramientas MCP + protocolo opt-in
   src\stdio.js / src\http.js         entradas MCP por stdio y por HTTP (loopback)
+  src\dashboard.js                   panel web local (API JSON + estáticos, solo lectura)
   src\cli.js                         `sharedctx`
+  src\apps.js                        catálogo de apps y de dónde lee cada una su config MCP
+  ui\index.html · app.js · style.css interfaz del panel (sin dependencias ni build)
   tools\merge-mcp-json.mjs           edición quirúrgica de configs JSON
   tools\merge-codex-toml.mjs         edición quirúrgica del config.toml de Codex
   tools\strip-context-mcp-hooks.mjs  quita hooks de captura automática
@@ -311,12 +342,13 @@ shared-mcp-local\
   docs\contexto\*.md                 las entradas de este proyecto publicadas en el contexto
   test\mcp-smoke.mjs                 28 pruebas de protocolo MCP
   test\robustness.mjs                10 pruebas de robustez
+  test\dashboard.mjs                 13 pruebas del panel
   state\                             manifiesto, log y JSON temporales (ignorado por git)
 ```
 
 ---
 
-## 8. Qué NO hace este servidor (a propósito)
+## 9. Qué NO hace este servidor (a propósito)
 
 - No captura conversaciones ni resultados de herramientas por su cuenta.
 - No lee ni escribe archivos de tu código: solo su propio almacén en `~\.shared-mcp`.

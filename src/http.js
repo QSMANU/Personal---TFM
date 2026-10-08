@@ -15,12 +15,15 @@
 import { createServer as createHttpServer } from 'node:http';
 import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js';
 import { createServer } from './server.js';
-import { getConfig, getHome, log } from './store.js';
+import { endSession, getConfig, getHome, log, registerSession } from './store.js';
 
 const cfg = getConfig();
 const portArgIdx = process.argv.indexOf('--port');
 const port = portArgIdx !== -1 ? Number(process.argv[portArgIdx + 1]) : cfg.port;
 const host = cfg.host || '127.0.0.1';
+const APP = process.env.SHARED_MCP_APP || 'desconocida';
+
+registerSession({ app: APP, transport: 'http' });
 
 async function readBody(req) {
   const chunks = [];
@@ -77,6 +80,7 @@ http.listen(port, host, () => {
   log(`HTTP MCP escuchando en http://${host}:${port}/mcp · modo=${getConfig().mode} · almacén=${getHome()}`);
 });
 
-const shutdown = () => { http.close(() => process.exit(0)); setTimeout(() => process.exit(0), 1500); };
+const shutdown = () => { endSession(APP); http.close(() => process.exit(0)); setTimeout(() => process.exit(0), 1500); };
 process.on('SIGINT', shutdown);
 process.on('SIGTERM', shutdown);
+process.on('exit', () => endSession(APP));

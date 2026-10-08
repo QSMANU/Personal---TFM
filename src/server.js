@@ -13,11 +13,14 @@ import {
   ENTRY_TYPES, MODES, audit, addPending, canRead, deleteEntry, describeGate,
   detectProject, ensureProject, findProjectMatch, getActive, getConfig, getHandoff, getHome,
   getLastProjectForApp, getProject, listEntries, listPending, listProjects, log, readDshWorkspaces,
-  readEntry, rememberProjectIdentity, setLastProjectForApp, slugify, suggestProjects, writeEntry,
+  readEntry, rememberProjectIdentity, setLastProjectForApp, slugify, suggestProjects, touchSession,
+  writeEntry,
 } from './store.js';
 
 const SERVER_NAME = 'QSMANU-LOCAL-SHARED-MCP';
-const SERVER_VERSION = '0.2.0';
+const SERVER_VERSION = '0.3.0';
+
+export { SERVER_NAME, SERVER_VERSION, TOOLS, OPT_IN_PROTOCOL };
 
 const OPT_IN_PROTOCOL = `Contexto compartido local (QSMANU-LOCAL-SHARED-MCP) entre herramientas de AI.
 
@@ -283,6 +286,8 @@ export function createServer() {
   server.setRequestHandler(CallToolRequestSchema, async (request) => {
     const { name, arguments: args = {} } = request.params;
     const cfg = getConfig();
+    // Heartbeat para que el panel muestre esta app como conectada ahora mismo.
+    touchSession(APP());
 
     try {
       switch (name) {

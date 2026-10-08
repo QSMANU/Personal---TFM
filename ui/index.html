@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>QSMANU-LOCAL-SHARED-MCP · panel</title>
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+<header>
+  <div class="brand">
+    <span class="dot" id="live-dot"></span>
+    <h1>QSMANU-LOCAL-SHARED-MCP</h1>
+    <span class="badge" id="mode-badge">…</span>
+  </div>
+  <div class="meta">
+    <span id="home-path" class="mono">…</span>
+    <button id="refresh" title="Refrescar ahora">↻</button>
+    <label class="auto"><input type="checkbox" id="auto" checked> auto 5 s</label>
+    <span id="stamp" class="mono"></span>
+  </div>
+</header>
+
+<section class="cards" id="cards"></section>
+
+<nav class="tabs" id="tabs">
+  <button data-tab="grafo" class="active">Grafo</button>
+  <button data-tab="proyectos">Proyectos</button>
+  <button data-tab="apps">Apps conectadas</button>
+  <button data-tab="metodos">Métodos MCP</button>
+  <button data-tab="pendientes">Pendientes</button>
+  <button data-tab="auditoria">Auditoría</button>
+</nav>
+
+<main>
+  <section id="tab-grafo" class="tab active">
+    <div class="panel">
+      <div class="panel-head">
+        <h2>Grafo de contexto</h2>
+        <p class="hint">Proyectos (círculos) y apps (rombos). El grosor indica cuánto contexto aportó esa app a ese proyecto. Arrastrá los nodos; clic en un proyecto para abrir su detalle.</p>
+      </div>
+      <canvas id="graph" height="520"></canvas>
+      <div class="legend">
+        <span><i class="sw project"></i> proyecto</span>
+        <span><i class="sw app"></i> app configurada</span>
+        <span><i class="sw app live"></i> app conectada ahora</span>
+      </div>
+    </div>
+  </section>
+
+  <section id="tab-proyectos" class="tab">
+    <div class="panel" id="projects"></div>
+  </section>
+
+  <section id="tab-apps" class="tab">
+    <div class="panel" id="apps"></div>
+  </section>
+
+  <section id="tab-metodos" class="tab">
+    <div class="panel" id="tools"></div>
+  </section>
+
+  <section id="tab-pendientes" class="tab">
+    <div class="panel" id="pending"></div>
+  </section>
+
+  <section id="tab-auditoria" class="tab">
+    <div class="panel" id="audit"></div>
+  </section>
+</main>
+
+<div id="drawer" class="drawer hidden">
+  <div class="drawer-head">
+    <h2 id="drawer-title"></h2>
+    <button id="drawer-close">✕</button>
+  </div>
+  <div id="drawer-body"></div>
+</div>
+
+<script src="/app.js"></script>
+</body>
+</html>

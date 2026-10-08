@@ -32,11 +32,13 @@ import { randomUUID } from 'node:crypto';
 
 export const MODES = ['off', 'readonly', 'ask', 'on'];
 export const ENTRY_TYPES = ['handoff', 'note', 'decision', 'task', 'bug', 'question', 'snippet', 'reference'];
+export const ACTIVITY_DAYS = 30;
 
 const DEFAULTS = {
   mode: 'ask',            // publicar requiere aprobación humana
   host: '127.0.0.1',
-  port: 3111,
+  port: 3111,             // transporte MCP por HTTP
+  dashboardPort: 3120,    // panel web (`sharedctx ui`)
   allowCrossProjectRead: false, // leer otro proyecto exige confirmación explícita
   defaultProject: null,
 };
@@ -442,6 +444,151 @@ export function readDshWorkspaces() {
     return null;
   }
 }
+
+/* ------------------------------------------------------------- sesiones */
+
+export function sessionsDir() { return join(getHome(), 'sessions'); }
+
+/**
+ * Cada proceso MCP (una app conectada) deja su heartbeat acá. Sirve para que el
+ * panel muestre "apps conectadas ahora" con datos reales, no inferidos.
+ */
+export function registerSession({ app = null, transport = 'stdio', cwd = process.cwd() } = {}) {
+  pruneSessions();
+  const id = `${app || 'desconocida'}-${process.pid}`;
+  const file = join(ensureDir(sessionsDir()), `${id}.json`);
+  const session = {
+    id,
+    app: app || 'desconocida',
+    transport,
+    pid: process.pid,
+    cwd,
+    startedAt: new Date().toISOString(),
+    lastSeen: new Date().toISOString(),
+  };
+  try { writeFileSync(file, `${JSON.stringify(session, null, 2)}\n`, 'utf8'); } catch { /* best effort */ }
+  return session;
+}
+
+export function touchSession(app = null) {
+  const id = `${app || process.env.SHARED_MCP_APP || 'desconocida'}-${process.pid}`;
+  const file = join(sessionsDir(), `${id}.json`);
+  try {
+    if (!existsSync(file)) return registerSession({ app });
+    const session = JSON.parse(readFileSync(file, 'utf8'));
+    session.lastSeen = new Date().toISOString();
+    writeFileSync(file, `${JSON.stringify(session, null, 2)}\n`, 'utf8');
+    return session;
+  } catch { return null; }
+}
+
+export function endSession(app = null) {
+  const id = `${app || process.env.SHARED_MCP_APP || 'desconocida'}-${process.pid}`;
+  try { rmSync(join(sessionsDir(), `${id}.json`), { force: true }); } catch { /* best effort */ }
+}
+
+/** Borra los archivos de sesión de procesos que ya no existen (se llama al registrar). */
+export function pruneSessions() {
+  const dir = sessionsDir();
+  if (!existsSync(dir)) return 0;
+  let borrados = 0;
+  for (const n of readdirSync(dir).filter((x) => x.endsWith('.json'))) {
+    try {
+      const s = JSON.parse(readFileSync(join(dir, n), 'utf8'));
+      let vivo = false;
+      try { process.kill(s.pid, 0); vivo = true; } catch { vivo = false; }
+      const viejo = Date.now() - Date.parse(s.lastSeen || s.startedAt || 0) > 24 * 3600 * 1000;
+      if (!vivo || viejo) { rmSync(join(dir, n), { force: true }); borrados += 1; }
+    } catch {
+      try { rmSync(join(dir, n), { force: true }); borrados += 1; } catch { /* ignore */ }
+    }
+  }
+  return borrados;
+}
+
+/** Sesiones conocidas, marcando cuáles siguen vivas (heartbeat reciente o proceso vivo). */
+export function listSessions({ freshMs = 120000 } = {}) {
+  const dir = sessionsDir();
+  if (!existsSync(dir)) return [];
+  const ahora = Date.now();
+  return readdirSync(dir)
+    .filter((n) => n.endsWith('.json'))
+    .map((n) => {
+      try {
+        const s = JSON.parse(readFileSync(join(dir, n), 'utf8'));
+        const edad = ahora - Date.parse(s.lastSeen || s.startedAt || 0);
+        let procesoVivo = false;
+        try { process.kill(s.pid, 0); procesoVivo = true; } catch { procesoVivo = false; }
+        return { ...s, ageMs: edad, alive: edad < freshMs || procesoVivo };
+      } catch { return null; }
+    })
+    .filter(Boolean)
+    .sort((a, b) => String(b.lastSeen).localeCompare(String(a.lastSeen)));
+}
+
+/* ------------------------------------------------------------- métricas */
+
+/** Actividad por día (para el gráfico de barras del panel). */
+export function activityByDay(slug, days = 30) {
+  const desde = Date.now() - days * 86400000;
+  const buckets = new Map();
+  for (const e of listEntries(slug)) {
+    if (!e.createdAt) continue;
+    const t = Date.parse(e.createdAt);
+    if (Number.isNaN(t) || t < desde) continue;
+    const dia = new Date(t).toISOString().slice(0, 10);
+    buckets.set(dia, (buckets.get(dia) || 0) + 1);
+  }
+  const out = [];
+  for (let i = days - 1; i >= 0; i -= 1) {
+    const dia = new Date(Date.now() - i * 86400000).toISOString().slice(0, 10);
+    out.push({ date: dia, count: buckets.get(dia) || 0 });
+  }
+  return out;
+}
+
+/** Tamaño total del almacén en bytes (para mostrar "cuánto ocupa"). */
+export function storeSize() {
+  const home = getHome();
+  if (!existsSync(home)) return 0;
+  let total = 0;
+  const walk = (dir) => {
+    for (const entry of readdirSync(dir, { withFileTypes: true })) {
+      const full = join(dir, entry.name);
+      if (entry.isDirectory()) walk(full);
+      else { try { total += statSync(full).size; } catch { /* ignore */ } }
+    }
+  };
+  try { walk(home); } catch { /* ignore */ }
+  return total;
+}
+
+/** Resumen por proyecto, con desglose por app y por tipo. */
+export function projectSummary(slug) {
+  const meta = getProject(slug) || { slug, name: slug, aliases: [], roots: [] };
+  const entries = listEntries(slug);
+  const porApp = {};
+  const porTipo = {};
+  for (const e of entries) {
+    porApp[e.app] = (porApp[e.app] || 0) + 1;
+    porTipo[e.type] = (porTipo[e.type] || 0) + 1;
+  }
+  const ultima = entries.map((e) => e.createdAt).filter(Boolean).sort().at(-1) || null;
+  return {
+    slug,
+    name: meta.name,
+    aliases: meta.aliases || [],
+    roots: meta.roots || [],
+    createdAt: meta.createdAt || null,
+    entries: entries.length,
+    byApp: porApp,
+    byType: porTipo,
+    lastUpdate: ultima,
+    handoff: getHandoff(slug) ? { title: getHandoff(slug).title, content: getHandoff(slug).content, createdAt: getHandoff(slug).createdAt } : null,
+    activity: activityByDay(slug, 30),
+  };
+}
+
 
 /* ------------------------------------------------------------- inbox */
 

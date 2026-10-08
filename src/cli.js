@@ -68,6 +68,7 @@ Aprobaciones (modo ask)
   sharedctx reject <id|all>                 descartar
 
 Integración
+  sharedctx ui [--port 3120] [--open]       panel web local: estado, grafo, apps, métodos
   sharedctx export --project P --out DIR    exporta a Markdown (para ChatGPT web)
   sharedctx export --all --out DIR
   sharedctx serve --http [--port 3111]      servidor MCP por HTTP en loopback
@@ -484,6 +485,20 @@ async function main() {
       if (values.port) args.push('--port', String(values.port));
       const child = spawn(process.execPath, args, { stdio: 'inherit', env: process.env });
       child.on('exit', (code) => process.exit(code ?? 0));
+      return;
+    }
+
+    case 'ui': case 'dashboard': case 'panel': {
+      const { startDashboard } = await import('./dashboard.js');
+      const port = Number(values.port) || getConfig().dashboardPort || 3120;
+      const abrir = process.argv.includes('--open');
+      const { url, server } = await startDashboard({ port, open: abrir });
+      console.log(`Panel del contexto compartido: ${url}`);
+      console.log(`Almacén: ${getHome()} · modo: ${getConfig().mode}`);
+      console.log('Ctrl+C para detener.');
+      const cerrar = () => { server.close(() => process.exit(0)); setTimeout(() => process.exit(0), 800); };
+      process.on('SIGINT', cerrar);
+      process.on('SIGTERM', cerrar);
       return;
     }
 
