@@ -313,7 +313,7 @@ async function main() {
         return;
       }
       for (const p of res.processed) {
-        console.log(`publicado ${p.entry.id} → ${p.slug} · ${p.entry.title} (desde ${p.name}${p.matchedBy !== 'nuevo' ? `, emparejado por ${p.matchedBy}` : ', proyecto nuevo'})`);
+        console.log(`${p.updated ? 'actualizado' : 'publicado'} ${p.entry.id} → ${p.slug} · ${p.entry.title} (desde ${p.name}${p.matchedBy !== 'nuevo' ? `, emparejado por ${p.matchedBy}` : ', proyecto nuevo'})`);
       }
       for (const s of res.skipped) console.log(`omitido  ${s.name} · ${s.reason}`);
       return;
