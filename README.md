@@ -24,7 +24,7 @@ Kimchi Studio · VS Code Copilot · Claude Code · DeepSeek Harness · y ChatGPT
    Codex  ────┤ LOCAL-SHARED-├──►│ consentimiento │──►│ projects/<p>/
    Kimchi ────┤ MCP          │   │ off/ro/ask/on  │   │  handoff.md
    VS Code ───┤ (MCP local)  │   └────────────────┘   │  entries/*.md
-   DSH    ────┤ 7 herramientas│                       │ pending/ audit.log
+   DSH    ────┤ 8 herramientas│                       │ pending/ audit.log
               └──────────────┘                        └──────────────┘
 ```
 
@@ -36,7 +36,7 @@ Kimchi Studio · VS Code Copilot · Claude Code · DeepSeek Harness · y ChatGPT
 | El modelo no puede darse permiso | El modo de consentimiento **no es una herramienta MCP**: se cambia únicamente por CLI (`sharedctx mode ...`) |
 | Vos aprobás cada publicación | Modo `ask` (por defecto): lo publicado queda en `pending/` hasta que corras `sharedctx approve <id>` |
 | Un proyecto no se filtra a otro | Almacén separado por proyecto; leer otro exige `confirm_cross_project` y queda auditado |
-| El modelo no puede borrar ni ejecutar nada | 7 herramientas, ninguna de archivos, shell, git ni borrado masivo |
+| El modelo no puede borrar ni ejecutar nada | 8 herramientas, ninguna de archivos, shell, git ni borrado masivo |
 | Todo es auditable | `audit.log` (JSONL) registra cada lectura, publicación, aprobación y cambio de modo |
 | Todo queda en tu disco | `~\.shared-mcp`; el servidor HTTP opcional escucha solo en `127.0.0.1` (verificado con netstat) |
 
@@ -50,6 +50,7 @@ Kimchi Studio · VS Code Copilot · Claude Code · DeepSeek Harness · y ChatGPT
 | `shared_publish` | publica (con `confirm: true`) | sí, según el modo |
 | `shared_pending` | publicaciones esperando tu OK | no |
 | `shared_use_project` | fija el proyecto (sesión + memoria de esa app) | solo su estado, no contexto |
+| `shared_related` | vecindario de una entrada: las que comparten etiquetas, archivos o contenido | no |
 | `shared_forget` | borra una entrada puntual | sí, según el modo |
 
 ### 1.1 Detección automática del proyecto
@@ -205,16 +206,28 @@ Una interfaz **de solo lectura** (y solo loopback) que muestra el estado real de
 
 | Sección | Qué muestra |
 |---|---|
-| Tarjetas | modo de consentimiento, proyectos, entradas, tamaño en disco, **apps conectadas ahora**, pendientes y última actividad |
-| **Grafo** | proyectos (círculos, tamaño = entradas) y apps (rombos) unidos por el contexto que aportó cada una; las conectadas en este momento se marcan en verde. Arrastrable, con detalle al hacer clic |
+| Tarjetas | modo de consentimiento, **salud del contexto (0-100)**, proyectos, entradas, tamaño en disco, **apps conectadas ahora**, pendientes y última actividad |
+| **Grafo de contexto** | proyectos (círculos, tamaño = entradas) y apps (rombos) unidos por el contexto que aportó cada una; las conectadas en este momento se marcan en verde. Arrastrable, con detalle al hacer clic |
+| **Grafo de entradas** | cada entrada unida a las demás por **etiquetas**, **archivos**, **menciones** (`[[título]]` o id) y **contenido parecido** (los posibles duplicados van en rojo punteado). Tiene conmutadores de etiquetas/archivos, selector de proyecto, exportación a DOT y clic para leer la entrada con su vecindario |
+| **Diagnóstico** | salud 0-100 y qué conviene arreglar: proyectos sin handoff, entradas huérfanas, duplicados, archivos compartidos entre proyectos, contexto escrito por una sola app, entradas viejas, pendientes olvidados. Cada aviso trae el comando para resolverlo |
 | Proyectos | entradas, última actualización, handoff completo, desglose por app y por tipo, y actividad de los últimos 30 días |
 | Apps conectadas | estado de configuración leído del archivo de cada app, **sesiones MCP vivas** (heartbeat real con pid y transporte), proyecto actual y proyectos con contexto de esa app |
-| Métodos MCP | las 7 herramientas con su descripción y su JSON Schema, más las instrucciones opt-in que recibe el modelo |
+| Métodos MCP | las 8 herramientas con su descripción y su JSON Schema, más las instrucciones opt-in que recibe el modelo |
 | Pendientes | lo que espera tu aprobación, con el comando exacto para aprobarlo |
 | Auditoría | últimos eventos de `audit.log` |
 
 El panel no expone ninguna ruta de escritura (probado: `POST` → 405), está atado a `127.0.0.1` y no
 permite salir de su carpeta de assets. Se refresca solo cada 5 segundos.
+
+**Lo mismo desde la terminal**, sin abrir el navegador:
+
+```powershell
+sharedctx insights                          # salud + qué arreglar, con el comando de cada cosa
+sharedctx insights "Personal - TFM" --json  # acotado a un proyecto, en JSON
+sharedctx graph "Personal - TFM"            # entradas ordenadas por cantidad de relaciones
+sharedctx graph --type dot > contexto.dot   # para Graphviz / Obsidian / Gephi
+sharedctx graph --type md                   # para pegar en un README
+```
 
 ---
 
@@ -307,10 +320,11 @@ $env:SHARED_MCP_HOME = 'D:\shared-context'   # y agregalo en el bloque env de ca
 Diagnóstico del servidor MCP sin abrir ninguna app:
 
 ```powershell
-npm test                     # 51 pruebas (28 de protocolo + 10 de robustez + 13 del panel)
-node test\mcp-smoke.mjs      # solo las de protocolo MCP punta a punta
-node test\robustness.mjs     # solo las de robustez (contenido grande, unicode, BOM, candados)
-node test\dashboard.mjs      # solo las del panel web (endpoints, solo lectura, assets)
+npm test                     # 79 pruebas (30 de protocolo + 10 de robustez + 20 de relaciones + 19 del panel)
+node test\mcp-smoke.mjs      # protocolo MCP punta a punta
+node test\robustness.mjs     # contenido grande, unicode, BOM, candados
+node test\relations.mjs      # grafo de entradas y diagnóstico
+node test\dashboard.mjs      # panel web: endpoints, solo lectura, assets
 ```
 
 El panel también sirve para diagnosticar: si una app figura **configurada** pero no **conectada ahora**,
@@ -325,7 +339,8 @@ shared-mcp-local\
   install.ps1                        instalador idempotente: backups, manifiesto, -Restore, -DryRun
   .sharedctx.json                    fija el nombre del proyecto para cualquier app que abra esta carpeta
   src\store.js                       almacén, modos, identidad de proyectos, bandeja, sesiones, auditoría
-  src\server.js                      las 7 herramientas MCP + protocolo opt-in
+  src\server.js                      las 8 herramientas MCP + protocolo opt-in
+  src\relations.js                   grafo de entradas (tags/archivos/menciones/similitud) + diagnóstico
   src\stdio.js / src\http.js         entradas MCP por stdio y por HTTP (loopback)
   src\dashboard.js                   panel web local (API JSON + estáticos, solo lectura)
   src\cli.js                         `sharedctx`
@@ -340,9 +355,11 @@ shared-mcp-local\
   docs\CASOS-DE-USO.md               casos de uso por escenario
   docs\mcp-config-recon-report.md    auditoría de esquemas MCP de cada app
   docs\contexto\*.md                 las entradas de este proyecto publicadas en el contexto
-  test\mcp-smoke.mjs                 28 pruebas de protocolo MCP
+  test\mcp-smoke.mjs                 30 pruebas de protocolo MCP
   test\robustness.mjs                10 pruebas de robustez
-  test\dashboard.mjs                 13 pruebas del panel
+  test\relations.mjs                 20 pruebas del grafo de entradas y el diagnóstico
+  test\dashboard.mjs                 19 pruebas del panel
+  ui\index.html · app.js · style.css interfaz del panel (dos grafos, sin dependencias)
   state\                             manifiesto, log y JSON temporales (ignorado por git)
 ```
 

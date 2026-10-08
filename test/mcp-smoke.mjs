@@ -37,7 +37,7 @@ await client.connect(transport);
 
 try {
   const tools = (await client.listTools()).tools.map((t) => t.name).sort();
-  check('expone exactamente las 7 herramientas previstas', tools.length === 7, tools.join(', '));
+  check('expone exactamente las 8 herramientas previstas', tools.length === 8, tools.join(', '));
   check('no expone ninguna herramienta destructiva de archivos/git',
     !tools.some((t) => /file|git|delete_dir|exec|shell/i.test(t)), tools.join(', '));
   check('no expone ninguna herramienta para cambiar el modo de consentimiento',
@@ -96,6 +96,10 @@ try {
 
   const exp = cli('export', '--project', 'proyecto-demo', '--out', join(home, 'export'));
   check('export a Markdown funciona (para ChatGPT web)', exp.code === 0 && /exportado/.test(exp.out), exp.out);
+
+  const rel = await client.callTool({ name: 'shared_related', arguments: { limit: 5 } });
+  check('shared_related devuelve el vecindario del handoff', !rel.isError && /Relacionadas con/.test(rel.content[0].text), rel.content[0].text);
+  check('el vecindario explica el motivo de cada relación', /por qué:/.test(rel.content[0].text), rel.content[0].text);
 } finally {
   await client.close().catch(() => {});
 }

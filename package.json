@@ -14,9 +14,10 @@
     "http": "node src/http.js",
     "cli": "node src/cli.js",
     "check": "node --check src/store.js && node --check src/server.js && node --check src/stdio.js && node --check src/http.js && node --check src/cli.js",
-    "test": "node test/mcp-smoke.mjs && node test/robustness.mjs && node test/dashboard.mjs",
+    "test": "node test/mcp-smoke.mjs && node test/robustness.mjs && node test/relations.mjs && node test/dashboard.mjs",
     "test:smoke": "node test/mcp-smoke.mjs",
     "test:robust": "node test/robustness.mjs",
+    "test:relations": "node test/relations.mjs",
     "test:dashboard": "node test/dashboard.mjs"
   },
   "engines": {

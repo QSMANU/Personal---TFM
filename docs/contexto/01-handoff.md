@@ -12,7 +12,7 @@ entre herramientas de AI **solo cuando el usuario lo pide**, separado por proyec
 en `C:\Users\QsManu-Movil\.shared-mcp`.
 
 **Qué quedó hecho:**
-1. Servidor MCP con 7 herramientas (`shared_status`, `shared_pull`, `shared_list`, `shared_publish`,
+1. Servidor MCP con 8 herramientas (`shared_status`, `shared_pull`, `shared_list`, `shared_publish`,
    `shared_pending`, `shared_use_project`, `shared_forget`). Ninguna toca archivos, shell ni git.
 2. Consentimiento en 4 modos (`off` / `readonly` / `ask` / `on`), por defecto `ask`: cada publicación
    queda pendiente hasta `sharedctx approve <id>`. El modo **no** es una herramienta MCP.

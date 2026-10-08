@@ -25,6 +25,7 @@ import {
 } from './store.js';
 import { KNOWN_APPS, SERVER_NAME } from './apps.js';
 import { TOOLS, SERVER_VERSION, OPT_IN_PROTOCOL } from './server.js';
+import { buildEntryGraph, graphToDot, insights, relatedEntries } from './relations.js';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const UI_DIR = join(HERE, '..', 'ui');
@@ -154,6 +155,7 @@ function overview() {
   const pending = listPending();
   const sessions = listSessions();
   const audit = readAudit(1);
+  const diagnostico = insights();
   return {
     server: { name: SERVER_NAME, version: SERVER_VERSION, protocol: 'MCP (stdio + streamable-http)' },
     home: getHome(),
@@ -162,6 +164,7 @@ function overview() {
     modes: MODES,
     entryTypes: ENTRY_TYPES,
     activeProject: getActive(),
+    health: { score: diagnostico.score, warnings: diagnostico.insights.filter((i) => i.severity === 'warn').length, tips: diagnostico.insights.filter((i) => i.severity === 'tip').length },
     counts: {
       projects: projects.length,
       entries: projects.reduce((acc, p) => acc + p.entries, 0),
@@ -197,6 +200,26 @@ function apiData(pathname, query) {
     case '/api/pending': return { pending: listPending() };
     case '/api/audit': return { audit: readAudit(Math.min(Number(query.get('limit')) || 100, 500)) };
     case '/api/graph': return graph();
+    case '/api/entrygraph': {
+      const slug = query.get('project') || getActive()?.slug || listProjects()[0]?.slug;
+      if (!slug) return { project: null, nodes: [], edges: [], stats: { entries: 0, tags: 0, files: 0, links: 0, byKind: {}, isolated: 0, duplicates: [] } };
+      return buildEntryGraph(slug, {
+        includeTags: query.get('tags') !== '0',
+        includeFiles: query.get('files') !== '0',
+        limit: Math.min(Number(query.get('limit')) || 300, 500),
+      });
+    }
+    case '/api/insights': return insights(query.get('project') || null);
+    case '/api/related': {
+      const slug = query.get('project') || getActive()?.slug;
+      if (!slug) return { related: [] };
+      return relatedEntries(slug, { id: query.get('id') || null, limit: Math.min(Number(query.get('limit')) || 6, 20) });
+    }
+    case '/api/dot': {
+      const slug = query.get('project') || getActive()?.slug || listProjects()[0]?.slug;
+      if (!slug) return { dot: '' };
+      return { dot: graphToDot(buildEntryGraph(slug), slug) };
+    }
     case '/api/tools': return { tools: TOOLS };
     case '/api/sessions': return { sessions: listSessions() };
     default: return null;

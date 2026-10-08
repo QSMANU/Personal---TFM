@@ -20,7 +20,7 @@ sharedctx ui --port 3200
 | Grafo | proyectos (círculos, tamaño = entradas) y apps (rombos) unidos por el contexto que aportó cada una; las conectadas en vivo se marcan en verde. Arrastrable, clic en un proyecto abre sus entradas |
 | Proyectos | entradas, última actualización, handoff completo, desglose por app y tipo, actividad de 30 días |
 | Apps conectadas | configurada sí/no (leyendo el archivo de cada app), sesiones MCP vivas con pid y transporte, proyecto actual, proyectos con contexto |
-| Métodos MCP | las 7 herramientas con descripción y JSON Schema, más el protocolo opt-in que recibe el modelo |
+| Métodos MCP | las 8 herramientas con descripción y JSON Schema, más el protocolo opt-in que recibe el modelo |
 | Pendientes | lo que espera aprobación, con el comando exacto para aprobarlo |
 | Auditoría | últimos eventos de `audit.log` |
 

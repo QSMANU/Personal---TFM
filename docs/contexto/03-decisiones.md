@@ -1,6 +1,6 @@
 ---
 project: Personal - Shared-MCP-Local
-title: Decisiones de diseño (opt-in, 7 herramientas, un proyecto por ruta)
+title: Decisiones de diseño (opt-in, 8 herramientas, un proyecto por ruta)
 type: decision
 tags: decisiones, seguridad, opt-in
 files: D:\Repositories\shared-mcp-local\src\server.js
@@ -14,7 +14,7 @@ la compartición; si el usuario quiere publicar directo, lo decide él.
 `shared_publish` no escribe: crea un pendiente y devuelve el id. Se materializa con
 `sharedctx approve <id>`. *Consecuencia:* aunque el modelo publique por error, nada se comparte sin el OK humano.
 
-**3. Superficie mínima: 7 herramientas, ninguna destructiva.**
+**3. Superficie mínima: 8 herramientas, ninguna destructiva.**
 Sin `read_file`, `write_file`, `delete_file`, `git_push` ni shell — a diferencia del servidor de terceros
 que se retiró (`context-mcp-server`), que exponía todo eso a todas las apps y capturaba contexto sola.
 

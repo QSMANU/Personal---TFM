@@ -366,6 +366,70 @@ async function main() {
       return;
     }
 
+    case 'graph': {
+      const { buildEntryGraph, graphToDot } = await import('./relations.js');
+      const requested = values.project || rest[0] || detectProject().name;
+      const match = findProjectMatch(requested);
+      const slug = match ? match.slug : slugify(requested);
+      const g = buildEntryGraph(slug, {
+        includeTags: !process.argv.includes('--no-tags'),
+        includeFiles: !process.argv.includes('--no-files'),
+        limit: Number(values.limit) || 300,
+      });
+      const formato = values.type || 'text';
+      if (formato === 'json') { console.log(JSON.stringify(g, null, 2)); return; }
+      if (formato === 'dot') { console.log(graphToDot(g, slug)); return; }
+      if (formato === 'md') {
+        console.log(`# Grafo de contexto · ${match ? match.name : slug}\n`);
+        console.log(`- Entradas: ${g.stats.entries} · etiquetas: ${g.stats.tags} · archivos: ${g.stats.files} · relaciones: ${g.stats.links}`);
+        console.log(`- Por tipo: ${Object.entries(g.stats.byKind).map(([k, n]) => `${k}: ${n}`).join(', ') || 'sin relaciones'}`);
+        console.log(`- Sin ninguna relación: ${g.stats.isolated}`);
+        console.log(`\n## Entradas\n`);
+        for (const n of g.nodes.filter((x) => x.kind === 'entry')) {
+          console.log(`- **${n.label}** (\`${n.entryId}\`) · ${n.type} · ${n.app} · ${n.degree} relación(es)`);
+        }
+        if (g.stats.duplicates.length) {
+          console.log(`\n## Posibles duplicados\n`);
+          for (const d of g.stats.duplicates) console.log(`- ${Math.round(d.score * 100)}% · ${d.aTitle} ≈ ${d.bTitle}`);
+        }
+        return;
+      }
+      console.log(`# ${match ? match.name : slug}`);
+      console.log(`entradas: ${g.stats.entries} · etiquetas: ${g.stats.tags} · archivos: ${g.stats.files} · relaciones: ${g.stats.links}`);
+      console.log(`por tipo: ${Object.entries(g.stats.byKind).map(([k, n]) => `${k}: ${n}`).join(', ') || 'sin relaciones'}`);
+      console.log(`sin ninguna relación: ${g.stats.isolated}`);
+      const ordenadas = g.nodes.filter((x) => x.kind === 'entry').sort((a, b) => b.degree - a.degree);
+      console.log('\nEntradas por cantidad de relaciones:');
+      for (const n of ordenadas) {
+        console.log(`  ${String(n.degree).padStart(3)}  ${n.label.slice(0, 60).padEnd(62)} ${n.type.padEnd(10)} ${n.id ?? n.entryId}`);
+      }
+      if (g.stats.duplicates.length) {
+        console.log('\nPosibles duplicados:');
+        for (const d of g.stats.duplicates) console.log(`  ${Math.round(d.score * 100)}%  ${d.aTitle} ≈ ${d.bTitle}`);
+      }
+      return;
+    }
+
+    case 'insights': case 'diagnostico': {
+      const { insights } = await import('./relations.js');
+      const requested = values.project || rest[0] || null;
+      const match = requested ? findProjectMatch(requested) : null;
+      const data = insights(match ? match.slug : null);
+      if (values.json) { console.log(JSON.stringify(data, null, 2)); return; }
+      console.log(`salud del contexto: ${data.score}/100  (${data.scope})\n`);
+      if (data.insights.length === 0) { console.log('Nada para mejorar.'); return; }
+      const icono = { warn: '⚠', tip: '💡', info: 'ℹ' };
+      for (const i of data.insights) {
+        console.log(`${icono[i.severity] || '·'} ${i.title}`);
+        console.log(`   ${i.detail}`);
+        for (const x of i.items.slice(0, 5)) console.log(`     · ${x.label}${x.ref ? `  [${x.ref}]` : ''}`);
+        if (i.items.length > 5) console.log(`     · … y ${i.items.length - 5} más`);
+        if (i.action) console.log(`   arreglo: ${i.action}`);
+        console.log('');
+      }
+      return;
+    }
+
     case 'pending': {
       const pending = listPending();
       if (values.json) { console.log(JSON.stringify(pending, null, 2)); return; }

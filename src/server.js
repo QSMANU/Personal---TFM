@@ -13,9 +13,10 @@ import {
   ENTRY_TYPES, MODES, audit, addPending, canRead, deleteEntry, describeGate,
   detectProject, ensureProject, findProjectMatch, getActive, getConfig, getHandoff, getHome,
   getLastProjectForApp, getProject, listEntries, listPending, listProjects, log, readDshWorkspaces,
-  readEntry, rememberProjectIdentity, setLastProjectForApp, slugify, suggestProjects, touchSession,
-  writeEntry,
+  readEntry, rememberProjectIdentity, setLastProjectForApp, slugify, suggestProjects,
+  touchSession, writeEntry,
 } from './store.js';
+import { relatedEntries } from './relations.js';
 
 const SERVER_NAME = 'QSMANU-LOCAL-SHARED-MCP';
 const SERVER_VERSION = '0.3.0';
@@ -110,6 +111,20 @@ const TOOLS = [
         confirm: { type: 'boolean', description: 'Debe ser true.' },
       },
       required: ['confirm'],
+      additionalProperties: false,
+    },
+  },
+  {
+    name: 'shared_related',
+    description:
+      'Devuelve las entradas del proyecto activo más relacionadas con una entrada (o con el handoff, si no se indica id): las que comparten etiquetas, archivos, se mencionan o tienen contenido parecido. Usala para traer solo el vecindario relevante en vez de todo el contexto. Solo lectura.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        id: { type: 'string', description: 'Id de la entrada base. Si se omite, se usa el handoff del proyecto.' },
+        project: { type: 'string', description: 'Proyecto. Omitilo para usar el detectado.' },
+        limit: { type: 'number', description: 'Cuántas entradas relacionadas devolver (por defecto 6, máximo 20).' },
+      },
       additionalProperties: false,
     },
   },
@@ -454,6 +469,25 @@ export function createServer() {
           const entry = writeEntry({ ...payload, app: process.env.SHARED_MCP_APP || null });
           audit('publish', { project: detected.slug, id: entry.id, type: entry.type });
           return text(`Publicado en \`${detected.slug}\` (id \`${entry.id}\`, tipo \`${entry.type}\`, detectado por: ${detected.source}). Otras herramientas ya pueden leerlo con \`shared_pull\`.`);
+        }
+
+        case 'shared_related': {
+          if (!canRead(cfg)) return fail(`El contexto compartido está desactivado (modo \`off\`).`);
+          const detected = resolveProject(args.project);
+          if (!detected.slug) return text(unknownProjectHint(detected));
+          const res = relatedEntries(detected.slug, { id: args.id || null, limit: Math.min(Number(args.limit) || 6, 20) });
+          audit('related', { project: detected.slug, base: res.base?.id || null });
+          if (!res.base) return text(`El proyecto \`${detected.slug}\` no tiene entradas todavía.`);
+          if (res.related.length === 0) {
+            return text(`Base: **${res.base.title}** (\`${res.base.id}\`).\n\nNo hay entradas relacionadas: ninguna comparte etiquetas, archivos ni contenido parecido. Si querés que sean recuperables después, publicalas con \`tags\` y \`files\`.`);
+          }
+          return text([
+            `# Relacionadas con: ${res.base.title} (\`${res.base.id}\`)`,
+            ``,
+            res.related.map((r) => `- **${r.title}** · \`${r.id}\` · ${r.type} · ${r.app} · ${r.createdAt}\n  por qué: ${r.razones.join(' · ')}`).join('\n'),
+            ``,
+            `Para leer alguna completa: \`shared_pull\` (trae el handoff y las últimas) o pedime el id concreto.`,
+          ].join('\n'));
         }
 
         case 'shared_pending': {

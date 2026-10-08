@@ -28,8 +28,8 @@ function check(label, condition, detail = '') {
 
 // Datos de prueba: un proyecto con dos entradas y una sesión "viva".
 store.saveConfig({ mode: 'ask' });
-store.writeEntry({ project: 'Personal - Demo', title: 'Handoff demo', content: 'estado de prueba', type: 'handoff' });
-store.writeEntry({ project: 'Personal - Demo', title: 'Decisión demo', content: 'elegimos X', type: 'decision' });
+store.writeEntry({ project: 'Personal - Demo', title: 'Handoff demo', content: 'estado de prueba', type: 'handoff', tags: ['demo'], files: ['D:\\demo\\a.ts'] });
+store.writeEntry({ project: 'Personal - Demo', title: 'Decisión demo', content: 'elegimos X', type: 'decision', tags: ['demo', 'decisiones'], files: ['D:\\demo\\a.ts'] });
 store.addPending({ project: 'Personal - Demo', title: 'Pendiente demo', content: 'algo por aprobar', type: 'note' });
 store.registerSession({ app: 'cursor', transport: 'stdio' });
 
@@ -41,11 +41,13 @@ try {
   check('overview informa modo, contadores y almacén',
     overview.mode === 'ask' && overview.counts.projects === 1 && overview.counts.entries === 2 && overview.counts.pending === 1 && overview.home === home,
     JSON.stringify(overview.counts));
+  check('overview incluye la salud del contexto',
+    overview.health && typeof overview.health.score === 'number', JSON.stringify(overview.health));
   check('overview expone el protocolo opt-in que recibe el modelo',
     typeof overview.instructions === 'string' && overview.instructions.includes('NUNCA publiques'));
 
   const tools = await (await fetch(`${base}/api/tools`)).json();
-  check('los métodos MCP se exponen con su esquema', tools.tools.length === 7 && tools.tools.every((t) => t.name && t.inputSchema));
+  check('los métodos MCP se exponen con su esquema', tools.tools.length === 8 && tools.tools.every((t) => t.name && t.inputSchema));
 
   const apps = await (await fetch(`${base}/api/apps`)).json();
   const cursor = apps.apps.find((a) => a.id === 'cursor');
@@ -62,6 +64,27 @@ try {
   check('el grafo trae nodos de proyecto y de app con sus aristas',
     graph.nodes.some((n) => n.kind === 'project' && n.slug === 'personal-demo') && graph.nodes.some((n) => n.kind === 'app') && graph.edges.length > 0,
     JSON.stringify({ nodes: graph.nodes.length, edges: graph.edges.length }));
+
+  const eg = await (await fetch(`${base}/api/entrygraph?project=personal-demo`)).json();
+  check('el grafo de entradas trae entradas, etiquetas y relaciones',
+    eg.nodes.some((n) => n.kind === 'entry') && eg.stats.entries === 2 && eg.stats.tags >= 1 && eg.stats.links > 0,
+    JSON.stringify(eg.stats));
+
+  const egSinTags = await (await fetch(`${base}/api/entrygraph?project=personal-demo&tags=0&files=0`)).json();
+  check('los conmutadores de tags/archivos cambian el grafo',
+    egSinTags.stats.links < eg.stats.links || eg.stats.tags === 0,
+    JSON.stringify({ con: eg.stats.links, sin: egSinTags.stats.links }));
+
+  const diag = await (await fetch(`${base}/api/insights`)).json();
+  check('el diagnóstico trae salud y avisos con acción',
+    typeof diag.score === 'number' && Array.isArray(diag.insights) && diag.insights.every((i) => i.title && i.action),
+    JSON.stringify({ score: diag.score, n: diag.insights?.length }));
+
+  const related = await (await fetch(`${base}/api/related?project=personal-demo`)).json();
+  check('el panel puede pedir el vecindario de una entrada', Array.isArray(related.related));
+
+  const dot = await (await fetch(`${base}/api/dot?project=personal-demo`)).json();
+  check('se puede exportar el grafo a DOT', dot.dot.startsWith('digraph'));
 
   const pending = await (await fetch(`${base}/api/pending`)).json();
   check('los pendientes se listan', pending.pending.length === 1 && pending.pending[0].title === 'Pendiente demo');

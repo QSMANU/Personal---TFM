@@ -24,7 +24,8 @@
 <section class="cards" id="cards"></section>
 
 <nav class="tabs" id="tabs">
-  <button data-tab="grafo" class="active">Grafo</button>
+  <button data-tab="grafo" class="active">Grafo de contexto</button>
+  <button data-tab="entradas">Grafo de entradas</button>
   <button data-tab="proyectos">Proyectos</button>
   <button data-tab="apps">Apps conectadas</button>
   <button data-tab="metodos">Métodos MCP</button>
@@ -46,6 +47,30 @@
         <span><i class="sw app live"></i> app conectada ahora</span>
       </div>
     </div>
+  </section>
+
+  <section id="tab-entradas" class="tab">
+    <div class="panel">
+      <div class="panel-head">
+        <h2>Grafo de entradas de contexto</h2>
+        <p class="hint">Cada entrada, unida a las demás por <b>etiquetas</b>, <b>archivos</b>, <b>menciones</b> y <b>contenido parecido</b>. Las líneas rojas punteadas son posibles duplicados. Clic en una entrada para leerla.</p>
+        <div class="controls">
+          <label>Proyecto <select id="eg-project"></select></label>
+          <label class="chk"><input type="checkbox" id="eg-tags" checked> etiquetas</label>
+          <label class="chk"><input type="checkbox" id="eg-files" checked> archivos</label>
+          <button id="eg-dot">Exportar DOT</button>
+          <span id="eg-stats" class="hint"></span>
+        </div>
+      </div>
+      <canvas id="egraph" height="560"></canvas>
+      <div class="legend">
+        <span><i class="sw entry"></i> entrada</span>
+        <span><i class="sw tag"></i> etiqueta</span>
+        <span><i class="sw file"></i> archivo</span>
+        <span><i class="sw dup"></i> posible duplicado</span>
+      </div>
+    </div>
+    <div class="panel" id="insights" style="margin-top:14px"></div>
   </section>
 
   <section id="tab-proyectos" class="tab">
