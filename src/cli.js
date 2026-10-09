@@ -555,13 +555,55 @@ async function main() {
     }
 
     case 'ui': case 'dashboard': case 'panel': {
-      const { startDashboard } = await import('./dashboard.js');
+      const dash = await import('./dashboard.js');
       const port = Number(values.port) || getConfig().dashboardPort || 3120;
-      const abrir = process.argv.includes('--open');
-      const { url, server } = await startDashboard({ port, open: abrir });
+
+      if (process.argv.includes('--status')) {
+        const corriendo = await dash.panelRunning(port);
+        const tarea = dash.taskStatus();
+        console.log(`panel:         ${corriendo ? `CORRIENDO en ${corriendo.url}` : 'detenido'}`);
+        console.log(`arranque auto: ${tarea.installed ? `instalado vía ${tarea.method}${tarea.name ? ` ("${tarea.name}")` : ''}` : 'NO instalado'}`);
+        if (!tarea.installed) console.log('               instalalo con:  sharedctx ui --install');
+        return;
+      }
+
+      if (process.argv.includes('--install')) {
+        const res = dash.installAutostart({ port });
+        if (!res.ok) { console.error(`No pude registrar el arranque automático: ${res.error}`); process.exit(1); }
+        console.log(`arranque automático instalado vía ${res.method}`);
+        if (res.nota) console.log(`nota: ${res.nota}`);
+        console.log(`lanzador: ${res.cmd}`);
+        console.log(`log:      ${res.log}`);
+        const corriendo = await dash.panelRunning(port);
+        if (corriendo) {
+          console.log(`el panel ya estaba corriendo en ${corriendo.url}`);
+        } else {
+          const arranque = dash.runTaskNow();
+          await new Promise((r) => setTimeout(r, 1800));
+          const ahora = await dash.panelRunning(port);
+          console.log(ahora
+            ? `panel arrancado ahora (${arranque.via}): ${ahora.url}`
+            : `todavía no responde (${arranque.error || 'sin detalle'}); revisá ${res.log}`);
+        }
+        return;
+      }
+
+      if (process.argv.includes('--uninstall')) {
+        const res = dash.uninstallAutostart();
+        console.log(res.ok ? `arranque automático quitado (${res.task} · ${res.runKey})` : `no había nada registrado`);
+        return;
+      }
+
+      const ya = await dash.panelRunning(port);
+      if (ya) {
+        console.log(`El panel ya está corriendo en ${ya.url}`);
+        if (process.argv.includes('--open')) spawn('cmd', ['/c', 'start', '', ya.url], { detached: true, stdio: 'ignore' }).unref();
+        return;
+      }
+      const { url, server } = await dash.startDashboard({ port, open: process.argv.includes('--open') });
       console.log(`Panel del contexto compartido: ${url}`);
       console.log(`Almacén: ${getHome()} · modo: ${getConfig().mode}`);
-      console.log('Ctrl+C para detener.');
+      console.log('Ctrl+C para detener.  (para que arranque solo:  sharedctx ui --install)');
       const cerrar = () => { server.close(() => process.exit(0)); setTimeout(() => process.exit(0), 800); };
       process.on('SIGINT', cerrar);
       process.on('SIGTERM', cerrar);

@@ -5,7 +5,7 @@
  *   node test/dashboard.mjs
  */
 
-import { mkdtempSync, rmSync } from 'node:fs';
+import { mkdtempSync, rmSync, readFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -106,6 +106,27 @@ try {
 
   const missing = await fetch(`${base}/api/nope`);
   check('404 en endpoint inexistente', missing.status === 404);
+
+  /* Arranque automático: las piezas que no dependen de tocar el registro de Windows */
+  const dash = await import('../src/dashboard.js');
+
+  const vivo = await dash.panelRunning(server.address().port);
+  check('panelRunning detecta el panel que está corriendo', Boolean(vivo) && vivo.url.includes(String(server.address().port)), JSON.stringify(vivo));
+  const muerto = await dash.panelRunning(59999);
+  check('panelRunning no inventa un panel donde no hay', muerto === null, JSON.stringify(muerto));
+
+  const launcher = dash.writeLauncher({ port: 3120, host: '127.0.0.1' });
+  const cmdTxt = readFileSync(launcher.cmd, 'utf8');
+  const vbsTxt = readFileSync(launcher.vbs, 'utf8');
+  check('el lanzador usa la ruta absoluta de node', cmdTxt.includes(process.execPath) && cmdTxt.includes('dashboard.js'));
+  check('el lanzador es ASCII puro (cmd.exe no lee UTF-8)',
+    !/[^\x00-\x7F]/.test(cmdTxt) && !/[^\x00-\x7F]/.test(vbsTxt));
+  check('el envoltorio .vbs lanza oculto y sin esperar', /sh\.Run ".+", 0, False/.test(vbsTxt));
+  check('el log del panel queda dentro del almacén', launcher.log.startsWith(home), launcher.log);
+
+  const tarea = dash.taskStatus();
+  check('taskStatus informa si hay arranque automático',
+    typeof tarea.installed === 'boolean' && (!tarea.installed || Boolean(tarea.method)), JSON.stringify(tarea));
 } finally {
   server.closeAllConnections?.();
   server.closeIdleConnections?.();

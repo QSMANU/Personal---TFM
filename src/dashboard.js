@@ -14,10 +14,10 @@
  */
 
 import { createServer } from 'node:http';
-import { readFileSync, existsSync, statSync } from 'node:fs';
+import { readFileSync, writeFileSync, mkdirSync, existsSync, statSync } from 'node:fs';
 import { join, dirname, extname } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { spawn } from 'node:child_process';
+import { spawn, spawnSync } from 'node:child_process';
 import {
   ACTIVITY_DAYS, audit as logAudit, describeGate, getActive, getConfig, getHome, getState,
   listEntries, listPending, listProjects, listSessions, projectSummary, readAudit, readEntry,
@@ -226,6 +226,121 @@ function apiData(pathname, query) {
   }
 }
 
+/* -------------------------------------------------------- arranque automático */
+
+const TAREA = 'QSMANU-LOCAL-SHARED-MCP panel';
+const CLAVE_RUN = 'QSMANU-LOCAL-SHARED-MCP-panel';
+const RUN_KEY = 'HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run';
+
+/** ¿Hay un panel respondiendo en ese puerto? */
+export async function panelRunning(port = 3120, host = '127.0.0.1') {
+  try {
+    const res = await fetch(`http://${host}:${port}/api/overview`, { signal: AbortSignal.timeout(1500) });
+    if (!res.ok) return null;
+    const data = await res.json();
+    return { url: `http://${host}:${port}/`, server: data.server?.name, entries: data.counts?.entries ?? null };
+  } catch {
+    return null;
+  }
+}
+
+/** Estado del arranque automático: tarea programada, clave Run o nada. */
+export function taskStatus() {
+  const tarea = spawnSync('schtasks', ['/Query', '/TN', TAREA, '/FO', 'LIST'], { encoding: 'utf8' });
+  if (tarea.status === 0) {
+    const estado = /Status:\s*(.+)/i.exec(`${tarea.stdout}`)?.[1]?.trim() || null;
+    return { installed: true, method: 'tarea programada', name: TAREA, status: estado };
+  }
+  const run = spawnSync('reg', ['query', RUN_KEY, '/v', CLAVE_RUN], { encoding: 'utf8' });
+  if (run.status === 0) {
+    const valor = /REG_SZ\s+(.+)/.exec(`${run.stdout}`)?.[1]?.trim() || null;
+    return { installed: true, method: 'clave Run del usuario', name: CLAVE_RUN, value: valor };
+  }
+  return { installed: false };
+}
+
+/** Escribe el lanzador (.cmd) y un envoltorio .vbs para que corra sin ventana. */
+export function writeLauncher({ port = 3120, host = '127.0.0.1' } = {}) {
+  const dir = join(getHome(), 'state');
+  if (!existsSync(dir)) mkdirSync(dir, { recursive: true });
+  const cmd = join(dir, 'run-dashboard.cmd');
+  const vbs = join(dir, 'run-dashboard.vbs');
+  const log = join(getHome(), 'dashboard.log');
+  const script = join(HERE, 'dashboard.js');
+
+  // ASCII puro a propósito: cmd.exe y wscript leen estos archivos con la
+  // codificación del sistema, no con UTF-8.
+  // Sin la ruta absoluta de node, la tarea dependería del PATH del momento del logon.
+  writeFileSync(cmd, [
+    '@echo off',
+    'rem Lanzador del panel de contexto compartido (QSMANU-LOCAL-SHARED-MCP).',
+    'rem Instalado por: sharedctx ui --install   |   quitado por: sharedctx ui --uninstall',
+    'setlocal',
+    `"${process.execPath}" "${script}" --port ${port} --host ${host} >> "${log}" 2>&1`,
+    '',
+  ].join('\r\n'), 'utf8');
+
+  writeFileSync(vbs, [
+    "' Arranca el panel sin mostrar ventana (lo usa el arranque automatico del usuario).",
+    'Set sh = CreateObject("WScript.Shell")',
+    `sh.Run """${cmd}""", 0, False`,
+    '',
+  ].join('\r\n'), 'utf8');
+
+  return { cmd, vbs, log };
+}
+
+/**
+ * Registra el panel para que arranque al iniciar sesión.
+ * Intenta primero la tarea programada; si Windows pide elevación, usa la clave
+ * Run del usuario (no necesita administrador).
+ */
+export function installAutostart({ port = 3120, host = '127.0.0.1' } = {}) {
+  if (process.platform !== 'win32') {
+    return { ok: false, error: 'el arranque automático está implementado para Windows' };
+  }
+  const { cmd, vbs, log } = writeLauncher({ port, host });
+
+  const tarea = spawnSync('schtasks', ['/Create', '/TN', TAREA, '/TR', cmd, '/SC', 'ONLOGON', '/RL', 'LIMITED', '/F'], { encoding: 'utf8' });
+  if (tarea.status === 0) {
+    return { ok: true, method: 'tarea programada (al iniciar sesión)', cmd, vbs, log, status: taskStatus() };
+  }
+
+  const run = spawnSync('reg', ['add', RUN_KEY, '/v', CLAVE_RUN, '/t', 'REG_SZ', '/d', `wscript.exe "${vbs}"`, '/f'], { encoding: 'utf8' });
+  if (run.status === 0) {
+    return {
+      ok: true,
+      method: 'clave Run del usuario (al iniciar sesión, sin ventana)',
+      cmd, vbs, log,
+      nota: `la tarea programada no se pudo crear (${`${tarea.stderr || tarea.stdout}`.trim()}); se usó la clave Run`,
+      status: taskStatus(),
+    };
+  }
+
+  return { ok: false, error: `${run.stderr || run.stdout}`.trim(), cmd };
+}
+
+/** Quita el arranque automático (no borra el almacén ni los lanzadores). */
+export function uninstallAutostart() {
+  const tarea = spawnSync('schtasks', ['/Delete', '/TN', TAREA, '/F'], { encoding: 'utf8' });
+  const run = spawnSync('reg', ['delete', RUN_KEY, '/v', CLAVE_RUN, '/f'], { encoding: 'utf8' });
+  const quitado = tarea.status === 0 || run.status === 0;
+  return quitado ? { ok: true, task: TAREA, runKey: CLAVE_RUN } : { ok: false, error: 'no había nada registrado' };
+}
+
+/** Arranca el panel ahora mismo, con el mismo mecanismo del logon. */
+export function runTaskNow() {
+  const tarea = spawnSync('schtasks', ['/Run', '/TN', TAREA], { encoding: 'utf8' });
+  if (tarea.status === 0) return { ok: true, via: 'tarea programada' };
+  const { cmd } = writeLauncher();
+  try {
+    spawn('cmd', ['/c', cmd], { detached: true, stdio: 'ignore', windowsHide: true }).unref();
+    return { ok: true, via: 'lanzador directo' };
+  } catch (err) {
+    return { ok: false, error: err.message };
+  }
+}
+
 /* ------------------------------------------------------------------- server */
 
 export function createDashboardServer() {
@@ -270,7 +385,14 @@ export function createDashboardServer() {
 export function startDashboard({ port = 3120, host = '127.0.0.1', open = false } = {}) {
   const server = createDashboardServer();
   return new Promise((resolve, reject) => {
-    server.on('error', reject);
+    server.on('error', (err) => {
+      // Si el puerto ya está ocupado, no es un fallo: el panel ya está corriendo.
+      if (err.code === 'EADDRINUSE') {
+        reject(Object.assign(new Error(`el puerto ${port} ya está ocupado`), { code: 'EADDRINUSE' }));
+        return;
+      }
+      reject(err);
+    });
     server.listen(port, host, () => {
       const url = `http://${host}:${port}/`;
       logAudit('dashboard.open', { url });
@@ -291,9 +413,26 @@ const esPrincipal = process.argv[1] && fileURLToPath(import.meta.url) === proces
 if (esPrincipal) {
   const args = process.argv.slice(2);
   const portIdx = args.indexOf('--port');
-  const port = portIdx !== -1 ? Number(args[portIdx + 1]) : (getConfig().dashboardPort || 3120);
-  const { url } = await startDashboard({ port, open: args.includes('--open') });
-  process.stdout.write(`Panel del contexto compartido: ${url}\n`);
-  process.stdout.write(`Almacén: ${getHome()} · modo: ${getConfig().mode}\n`);
-  process.stdout.write('Ctrl+C para detener.\n');
+  const hostIdx = args.indexOf('--host');
+  const cfg = getConfig();
+  const port = portIdx !== -1 ? Number(args[portIdx + 1]) : (cfg.dashboardPort || 3120);
+  const host = hostIdx !== -1 ? args[hostIdx + 1] : '127.0.0.1';
+
+  // Arrancar dos veces no es un error: si ya responde, salimos en silencio
+  // (es lo que pasa cuando la tarea programada se dispara y el panel ya está vivo).
+  const ya = await panelRunning(port, host);
+  if (ya) {
+    process.stdout.write(`El panel ya estaba corriendo en ${ya.url}\n`);
+    process.exit(0);
+  }
+
+  try {
+    const { url } = await startDashboard({ port, host, open: args.includes('--open') });
+    process.stdout.write(`Panel del contexto compartido: ${url}\n`);
+    process.stdout.write(`Almacén: ${getHome()} · modo: ${cfg.mode}\n`);
+    process.stdout.write('Ctrl+C para detener.\n');
+  } catch (err) {
+    process.stderr.write(`No pude arrancar el panel: ${err.message}\n`);
+    process.exit(1);
+  }
 }

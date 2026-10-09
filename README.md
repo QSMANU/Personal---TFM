@@ -198,9 +198,38 @@ archivos que creó el instalador. **Probado de ida y vuelta**: la máquina queda
 ## 4. Panel web local (`sharedctx ui`)
 
 ```powershell
-sharedctx ui --open          # http://127.0.0.1:3120
+sharedctx ui --install       # arranque automático al iniciar sesión + lo arranca ahora
+sharedctx ui --status        # ¿está corriendo? ¿tiene arranque automático?
+sharedctx ui --uninstall     # quitar el arranque automático
+sharedctx ui --open          # arrancarlo a mano y abrir el navegador
 sharedctx ui --port 3200     # otro puerto
 ```
+
+### Dónde vive cada cosa (importante)
+
+| Pieza | ¿Es un servidor? | Dónde corre |
+|---|---|---|
+| **El MCP** (`QSMANU-LOCAL-SHARED-MCP`) | **No** | Es un **proceso stdio que arranca cada app cuando la abrís**: Claude Desktop, Cursor, Codex, VS Code, Kimchi y DSH lanzan `node src\stdio.js` por su cuenta y lo cierran al salir. No hay nada que hostear ni que mantener levantado |
+| Transporte MCP por HTTP | Sí (opcional) | `sharedctx serve --http` → `http://127.0.0.1:3111/mcp`. Solo hace falta si una app no soporta stdio |
+| **Panel** (`sharedctx ui`) | Sí | `http://127.0.0.1:3120` (solo loopback). Es lo único que conviene tener siempre arriba |
+| Almacén | No | `~\.shared-mcp`: archivos en disco, no un servicio |
+
+### Arranque automático del panel
+
+`sharedctx ui --install` escribe un lanzador y lo registra en el inicio de sesión:
+
+```
+~\.shared-mcp\state\run-dashboard.cmd    lanzador (ruta absoluta de node, ASCII puro)
+~\.shared-mcp\state\run-dashboard.vbs    lo lanza sin mostrar ventana
+~\.shared-mcp\dashboard.log              salida del panel
+```
+
+Primero intenta una **tarea programada** de Windows (`schtasks /SC ONLOGON`). Si Windows pide elevación
+—como pasa en esta máquina— cae a la **clave `Run` del usuario** (`HKCU\...\CurrentVersion\Run`,
+`QSMANU-LOCAL-SHARED-MCP-panel`), que no necesita administrador y arranca igual al iniciar sesión, oculto.
+`sharedctx ui --status` dice cuál de las dos quedó activa.
+
+Arrancar dos veces no molesta: si el panel ya responde, el segundo intento sale sin hacer nada.
 
 Una interfaz **de solo lectura** (y solo loopback) que muestra el estado real del servidor:
 
