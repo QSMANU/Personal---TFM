@@ -9,9 +9,28 @@ files: D:\Repositories\shared-mcp-local\src\dashboard.js, D:\Repositories\shared
 **Qué es:** una interfaz web local para ver el estado del contexto compartido, sin depender de ninguna IA.
 
 ```powershell
-sharedctx ui --open          # http://127.0.0.1:3120
+sharedctx ui --install       # arranque automático al iniciar sesión + lo arranca ahora
+sharedctx ui --status        # ¿está corriendo? ¿tiene arranque automático?
+sharedctx ui --uninstall     # quitar el arranque automático
+sharedctx ui --open          # arrancarlo a mano y abrir el navegador
 sharedctx ui --port 3200
 ```
+
+**Dónde vive cada cosa**
+
+| Pieza | ¿Servidor? | Dónde corre |
+|---|---|---|
+| El MCP (`QSMANU-LOCAL-SHARED-MCP`) | **No** | Proceso **stdio que arranca cada app** al abrirse y se cierra con ella. No hay nada que hostear |
+| Transporte MCP por HTTP | Sí (opcional) | `sharedctx serve --http` → `127.0.0.1:3111/mcp`, solo si una app no soporta stdio |
+| Panel (`sharedctx ui`) | Sí | `http://127.0.0.1:3120`, solo loopback. Lo único que conviene tener siempre arriba |
+| Almacén | No | `~\.shared-mcp`: archivos, no un servicio |
+
+**Arranque automático:** `--install` escribe `~\.shared-mcp\state\run-dashboard.cmd` (con la ruta absoluta de
+node y **ASCII puro**, porque `cmd.exe` no lee UTF-8) y `run-dashboard.vbs` (lo lanza sin ventana), y lo
+registra al iniciar sesión. Intenta primero una **tarea programada** (`schtasks /SC ONLOGON`); si Windows
+pide elevación, usa la **clave `Run` del usuario** (`HKCU\...\CurrentVersion\Run`), que no necesita
+administrador. Arrancar dos veces no rompe nada: si el panel ya responde, el segundo intento sale solo.
+Verificado matando el panel y lanzando el `.vbs` como lo haría el logon.
 
 **Qué muestra**
 
