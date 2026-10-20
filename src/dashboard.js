@@ -25,7 +25,7 @@ import {
 } from './store.js';
 import { KNOWN_APPS, SERVER_NAME } from './apps.js';
 import { TOOLS, SERVER_VERSION, OPT_IN_PROTOCOL } from './server.js';
-import { buildEntryGraph, graphToDot, insights, relatedEntries } from './relations.js';
+import { buildEntryGraph, graphToDot, graphToMermaid, insights, relatedEntries } from './relations.js';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const UI_DIR = join(HERE, '..', 'ui');
@@ -219,6 +219,11 @@ function apiData(pathname, query) {
       const slug = query.get('project') || getActive()?.slug || listProjects()[0]?.slug;
       if (!slug) return { dot: '' };
       return { dot: graphToDot(buildEntryGraph(slug), slug) };
+    }
+    case '/api/mermaid': {
+      const slug = query.get('project') || getActive()?.slug || listProjects()[0]?.slug;
+      if (!slug) return { mermaid: '' };
+      return { mermaid: graphToMermaid(buildEntryGraph(slug), slug) };
     }
     case '/api/tools': return { tools: TOOLS };
     case '/api/sessions': return { sessions: listSessions() };

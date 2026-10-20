@@ -37,16 +37,22 @@ sharedctx insights                          # salud + qué arreglar
 sharedctx insights "Personal - TFM" --json  # acotado, en JSON
 sharedctx graph "Personal - TFM"            # entradas ordenadas por cantidad de relaciones
 sharedctx graph --type dot > contexto.dot   # Graphviz / Obsidian / Gephi
+sharedctx graph --type mermaid > contexto.mmd  # GitHub, PRs, Obsidian
 sharedctx graph --type md                   # para pegar en un README
 ```
 
 En el panel: pestaña **Grafo de entradas** (conmutadores de etiquetas/archivos, selector de proyecto,
-exportar DOT, clic para leer la entrada con su vecindario) y bloque **Diagnóstico** con la salud.
+buscador en vivo, exportar DOT/Mermaid/PNG, clic para leer la entrada con su vecindario y Markdown) y bloque
+**Diagnóstico** con la salud.
 
-**Estado real de este proyecto:** 35 nodos, 37 relaciones (22 por etiqueta, 14 por archivo, 1 duplicado),
-0 entradas huérfanas, salud 95/100. El único aviso es que todo el contexto lo escribió `inbox` (o sea, yo
-publicando por CLI): cuando alguna app lo haga desde su propia sesión, ese aviso desaparece solo.
+**Rendimiento:** el cálculo de similitudes es cuadrático, así que se memoiza por proyecto con una firma de
+`id + mtime + tamaño`. Editar una entrada invalida la caché (aunque conserve `id` y `createdAt`) y el panel
+puede refrescar cada 5 s sin recalcular todo si nada cambió.
 
-**Verificación:** 20 pruebas propias (`node test\relations.mjs`), incluidas "detecta relaciones por
-etiqueta y archivo", "marca el par casi idéntico como duplicado", "la entrada sin relaciones queda
-aislada" y "cada aviso trae un comando para arreglarlo". Total del proyecto: **79 pruebas**.
+**Estado real de este proyecto:** cambia con cada publicación; se consulta en vivo con
+`sharedctx insights "Personal - Shared-MCP-Local"` o en la pestaña del panel. La salud y los avisos se
+calculan sobre las entradas actuales, no sobre una foto fija.
+
+**Verificación:** pruebas propias (`node test\relations.mjs`), incluidas "detecta relaciones por etiqueta
+y archivo", "marca el par casi idéntico como duplicado", "la entrada sin relaciones queda aislada",
+"exporta Mermaid válido" y "la caché se invalida al editar una entrada".

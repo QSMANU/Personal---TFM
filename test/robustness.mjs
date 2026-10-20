@@ -71,6 +71,8 @@ const cli = (...args) => {
   store.saveConfig({ mode: 'readonly' });
   const lectura = cli('projects');
   check('mode readonly: leer sigue permitido', lectura.code === 0, lectura.out.trim());
+  const bloqueadoRo = cli('add', '--title', 'no', '--content', 'no', '--project', 'x');
+  check('mode readonly: el CLI rechaza escribir (exit 2)', bloqueadoRo.code === 2 && /modo `readonly`/.test(bloqueadoRo.out), bloqueadoRo.out.trim());
 
   store.saveConfig({ mode: 'ask' });
   const ok = cli('add', '--title', 'sí', '--content', 'sí', '--project', 'x');
@@ -113,6 +115,35 @@ const cli = (...args) => {
   const { buildEntryGraph } = await import('../src/relations.js');
   const g = buildEntryGraph('docs');
   check('el grafo del proyecto tiene un nodo por entrada', g.nodes.filter((n) => n.kind === 'entry').length === 2, JSON.stringify(g.stats));
+}
+
+/* 8. Los ids que vienen de un modelo no pueden salir de la carpeta del proyecto */
+{
+  for (const malo of ['../evil', 'a/b', '..', 'CON', '.oculto']) {
+    let rechazado = false;
+    try { store.assertSafeId(malo); } catch { rechazado = true; }
+    check(`rechaza id inseguro "${malo}"`, rechazado);
+  }
+  check('acepta un id normal con guiones, puntos y guiones bajos', store.assertSafeId('ctx-doc_1.2') === 'ctx-doc_1.2');
+}
+
+/* 9. Escritura atómica: sin temporales huérfanos y con el último contenido */
+{
+  const dir = join(home, 'atomic');
+  mkdirSync(dir, { recursive: true });
+  const archivo = join(dir, 'config.json');
+  store.writeAtomicSync(archivo, '{"a":1}\n', 'utf8');
+  store.writeAtomicSync(archivo, '{"a":2}\n', 'utf8');
+  check('la escritura atómica deja el último contenido', JSON.parse(readFileSync(archivo, 'utf8')).a === 2);
+  check('la escritura atómica no deja archivos .tmp', readdirSync(dir).filter((n) => n.includes('.tmp')).length === 0, readdirSync(dir).join(', '));
+}
+
+/* 10. El handoff conserva el id real de su front-matter y se puede borrar */
+{
+  const h = store.writeEntry({ project: 'Handoff Test', id: 'h-test', title: 'Handoff test', content: 'estado', type: 'handoff' });
+  const leido = store.getHandoff('handoff-test');
+  check('getHandoff conserva el id real de la entrada', leido && leido.id === h.id, JSON.stringify(leido));
+  check('borrar el handoff elimina también handoff.md', store.deleteEntry('handoff-test', h.id) && store.getHandoff('handoff-test') === null);
 }
 
 rmSync(home, { recursive: true, force: true });

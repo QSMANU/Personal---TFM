@@ -10,16 +10,18 @@ files: D:\Repositories\shared-mcp-local\src\store.js, D:\Repositories\shared-mcp
 
 | Ruta | Qué es |
 |---|---|
-| `src\store.js` | almacén en disco: modos, identidad de proyectos (alias/rutas/similitud), bandeja, auditoría |
-| `src\server.js` | las 7 herramientas MCP + el protocolo opt-in que se inyecta como *instructions* |
+| `src\store.js` | almacén en disco: modos, identidad de proyectos (alias/rutas/similitud), escritura atómica, ids seguros, bandeja, auditoría |
+| `src\server.js` | las 8 herramientas MCP + el protocolo opt-in que se inyecta como *instructions* |
+| `src\relations.js` | grafo de entradas (tags/archivos/menciones/similitud con caché) y diagnóstico |
 | `src\stdio.js` / `src\http.js` | transportes: stdio (todas las apps) y Streamable HTTP en loopback |
-| `src\cli.js` | comando `sharedctx` (modo, aprobaciones, bandeja, export, alias, use) |
-| `install.ps1` | instalador idempotente: backups, manifiesto, `-Restore`, `-DryRun`, `-KeepContextMcp` |
-| `agents\contexto-compartido.md` | bloque de instrucciones que se inyecta en CLAUDE.md/AGENTS.md/GEMINI.md/Cursor/Kimchi |
+| `src\dashboard.js` / `ui\*` | panel web de solo lectura (API + canvas) |
+| `src\cli.js` | comando `sharedctx` (modo, aprobaciones, bandeja, export, alias, use, graph, insights, ui) |
+| `install.ps1` | instalador idempotente: detección de apps, backups, manifiesto, `-Restore`, `-DryRun`, `-ListApps` |
+| `agents\contexto-compartido.md` | bloque de instrucciones que se inyecta en CLAUDE.md/AGENTS.md/GEMINI.md/Cursor/Kimi Code |
 | `docs\CASOS-DE-USO.md` | casos de uso por escenario (personal vs laboral, app bloqueada, ChatGPT web) |
 | `docs\mcp-config-recon-report.md` | auditoría de los esquemas MCP reales de cada app, con evidencia |
 | `docs\contexto\*.md` | **las entradas publicadas en este mismo contexto** (fuente versionada) |
-| `test\mcp-smoke.mjs` / `test\robustness.mjs` | 28 + 10 pruebas |
+| `test\*.mjs` / `test\install-detection.ps1` | suite de protocolo, robustez, relaciones, panel y detección de apps |
 
 **Almacén de datos** (`C:\Users\QsManu-Movil\.shared-mcp`)
 

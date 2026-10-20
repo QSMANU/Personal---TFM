@@ -1,7 +1,7 @@
 /**
  * server.js — superficie MCP del contexto compartido.
  *
- * Seis herramientas, ninguna destructiva y ninguna capaz de cambiar el modo de
+ * Ocho herramientas, ninguna destructiva y ninguna capaz de cambiar el modo de
  * consentimiento (eso es solo por CLI). Las descripciones de las herramientas
  * son el contrato de "solo si quiero": le dicen al modelo, explícitamente, que
  * no debe publicar ni leer otro proyecto si el usuario no lo pidió.
@@ -38,8 +38,8 @@ Reglas que debés respetar siempre:
    para eso existe confirm_cross_project y hay que decirlo antes de usarlo.
 3. El contexto compartido es un complemento del trabajo, no un registro automático de la
    conversación: publicá resúmenes útiles (decisiones, estado, próximos pasos), no transcripciones.
-4. Si shared_publish responde "pendiente de aprobación", avisale al usuario el id y que debe
-   aprobarlo con \`sharedctx approve <id>\` (o \`sharedctx approve all\`).
+4. Si shared_publish o shared_forget responden "pendiente de aprobación", avisale al usuario el id y que
+   debe aprobarlo con \`sharedctx approve <id>\` (o \`sharedctx approve all\`).
 5. El modo de consentimiento lo cambia únicamente el usuario por CLI; no intentes cambiarlo.
 6. Solo si shared_status dice "sin determinar": preguntale al usuario en qué proyecto trabaja y
    fijalo con \`shared_use_project\` (confirm: true), o decile que corra \`sharedctx use "<proyecto>"\`
@@ -130,7 +130,7 @@ const TOOLS = [
   },
   {
     name: 'shared_pending',
-    description: 'Lista las publicaciones que están esperando la aprobación del usuario (modo "ask"). Solo lectura.',
+    description: 'Lista las publicaciones y los borrados que están esperando la aprobación del usuario (modo "ask"). Solo lectura.',
     inputSchema: { type: 'object', properties: {}, additionalProperties: false },
   },
   {
@@ -514,8 +514,31 @@ export function createServer() {
           const entry = readEntry(detected.slug, args.id);
           if (!entry) return fail(`No existe la entrada \`${args.id}\` en \`${detected.slug}\`.`);
           if (cfg.mode === 'ask') {
-            audit('forget.pending', { project: detected.slug, id: args.id });
-            return text(`Modo \`ask\`: el borrado queda pendiente. Avisale al usuario que ejecute \`sharedctx forget ${detected.slug} ${args.id}\` para confirmarlo.`);
+            const item = addPending({
+              action: 'forget',
+              type: 'forget',
+              project: detected.slug,
+              entryId: args.id,
+              title: `Borrar: ${entry.title}`,
+              app: process.env.SHARED_MCP_APP || null,
+            });
+            audit('forget.pending', { project: detected.slug, id: args.id, pendingId: item.id });
+            return text([
+              `Borrado PENDIENTE de aprobación (modo \`ask\`).`,
+              ``,
+              `- Proyecto: \`${detected.slug}\``,
+              `- Id de la entrada: \`${args.id}\``,
+              `- Título: ${entry.title}`,
+              `- Id pendiente: \`${item.id}\``,
+              ``,
+              `Decile al usuario que ejecute en su terminal:`,
+              ``,
+              '```',
+              `sharedctx approve ${item.id}`,
+              '```',
+              ``,
+              `(o \`sharedctx approve all\`). La entrada no se eliminará hasta que lo apruebe.`,
+            ].join('\n'));
           }
           deleteEntry(detected.slug, args.id);
           audit('forget', { project: detected.slug, id: args.id });

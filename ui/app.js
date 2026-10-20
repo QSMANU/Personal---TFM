@@ -19,10 +19,132 @@ const fmtWhen = (iso) => {
 const STATE = { overview: null, apps: [], projects: [], tools: [], pending: [], audit: [], graph: null, insights: null, related: null };
 const COLORS = {
   project: '#6ea8fe', app: '#c792ea', appLive: '#3ddc97',
-  entry: '#6ea8fe', tag: '#3ddc97', file: '#c792ea',
+  entry: '#6ea8fe', handoff: '#ffd166', decision: '#3ddc97', task: '#f39c12', bug: '#ff6b6b', question: '#4ea8de',
+  tag: '#3ddc97', file: '#c792ea',
   tagEdge: 'rgba(61,220,151,.35)', fileEdge: 'rgba(199,146,234,.35)',
   mentionEdge: 'rgba(255,200,87,.6)', similarEdge: 'rgba(255,107,107,.7)',
 };
+let SEARCH_QUERY = '';
+
+function renderMarkdown(raw) {
+  if (!raw) return '';
+  const text = String(raw).replace(/\r\n?/g, '\n').trim();
+  const codeBlocks = [];
+  // Los bloques de código se apartan antes de parsear el resto: si no, un "#"
+  // dentro de un bloque se convertiría en título.
+  const sinBloques = text.replace(/```[^\n`]*\n([\s\S]*?)```/g, (_m, code) => {
+    const i = codeBlocks.push(`<pre><code>${esc(code.replace(/\n$/, ''))}</code></pre>`) - 1;
+    return `\u0001CODE${i}\u0001`;
+  });
+
+  const renderInline = (linea) => {
+    const codigos = [];
+    let out = esc(linea);
+    // El código inline va primero para que ** o * dentro de él no se formateen.
+    out = out.replace(/`([^`]+)`/g, (_m, code) => {
+      const i = codigos.push(code) - 1;
+      return `\u0002CODE${i}\u0002`;
+    });
+    out = out.replace(/\[\[([^\]]+)\]\]/g, '<span class="wikilink">[[$1]]</span>');
+    out = out.replace(/\[([^\]]+)\]\(([^)]+)\)/g, (_m, label, href) => {
+      const url = String(href).trim();
+      const seguro = /^(https?:\/\/|mailto:|#|\/|\.{1,2}\/)/i.test(url) ? url : '#';
+      return `<a href="${seguro}" target="_blank" rel="noopener noreferrer">${label}</a>`;
+    });
+    out = out.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+    out = out.replace(/(^|[^*])\*([^*]+)\*/g, '$1<em>$2</em>');
+    out = out.replace(/\u0002CODE(\d+)\u0002/g, (_m, i) => `<code>${codigos[Number(i)]}</code>`);
+    return out;
+  };
+
+  const out = [];
+  let lista = null;
+  let parrafo = [];
+  const cerrarParrafo = () => {
+    if (parrafo.length) { out.push(`<p>${parrafo.map(renderInline).join(' ')}</p>`); parrafo = []; }
+  };
+  const cerrarLista = () => {
+    if (lista) { out.push(`</${lista}>`); lista = null; }
+  };
+
+  for (const linea of sinBloques.split('\n')) {
+    const bloque = /^\u0001CODE(\d+)\u0001$/.exec(linea.trim());
+    if (bloque) {
+      cerrarParrafo(); cerrarLista();
+      out.push(codeBlocks[Number(bloque[1])]);
+      continue;
+    }
+    if (!linea.trim()) { cerrarParrafo(); cerrarLista(); continue; }
+
+    let m = /^(#{1,4})\s+(.+)$/.exec(linea);
+    if (m) {
+      cerrarParrafo(); cerrarLista();
+      out.push(`<h${m[1].length}>${renderInline(m[2])}</h${m[1].length}>`);
+      continue;
+    }
+    if (/^\s*(?:-{3,}|\*{3,}|_{3,})\s*$/.test(linea)) {
+      cerrarParrafo(); cerrarLista(); out.push('<hr>'); continue;
+    }
+    m = /^\s*>\s?(.*)$/.exec(linea);
+    if (m) {
+      cerrarParrafo(); cerrarLista();
+      out.push(`<blockquote>${renderInline(m[1])}</blockquote>`);
+      continue;
+    }
+    m = /^\s*[-*+]\s+(.+)$/.exec(linea);
+    if (m) {
+      cerrarParrafo();
+      if (lista !== 'ul') { cerrarLista(); out.push('<ul>'); lista = 'ul'; }
+      out.push(`<li>${renderInline(m[1])}</li>`);
+      continue;
+    }
+    m = /^\s*\d+[.)]\s+(.+)$/.exec(linea);
+    if (m) {
+      cerrarParrafo();
+      if (lista !== 'ol') { cerrarLista(); out.push('<ol>'); lista = 'ol'; }
+      out.push(`<li>${renderInline(m[1])}</li>`);
+      continue;
+    }
+    cerrarLista();
+    parrafo.push(linea.trim());
+  }
+  cerrarParrafo(); cerrarLista();
+  return out.join('\n');
+}
+
+function nodeMatches(n, query) {
+  if (!query) return true;
+  const q = query.toLowerCase();
+  const campos = [
+    n?.label, n?.entryId, n?.appId, n?.slug, n?.type, n?.full,
+    ...(Array.isArray(n?.tags) ? n.tags : []),
+    ...(Array.isArray(n?.files) ? n.files : []),
+  ];
+  return campos.some((v) => String(v || '').toLowerCase().includes(q));
+}
+
+function entryColor(n) {
+  switch (n?.type) {
+    case 'handoff': return COLORS.handoff;
+    case 'decision': return COLORS.decision;
+    case 'task': return COLORS.task;
+    case 'bug': return COLORS.bug;
+    case 'question': return COLORS.question;
+    default: return COLORS.entry;
+  }
+}
+
+function wakeGraph(st) {
+  if (!st) return;
+  st.idleFrames = 0;
+  st.sleeping = false;
+  ensureGraphLoop();
+}
+
+let graphLoopId = null;
+function ensureGraphLoop() {
+  if (graphLoopId == null) graphLoopId = requestAnimationFrame(loopGraphs);
+}
 
 async function get(path) {
   const res = await fetch(path, { cache: 'no-store' });
@@ -35,28 +157,108 @@ async function get(path) {
 function makeGraph(canvasId, { onActivate } = {}) {
   const canvas = document.getElementById(canvasId);
   if (!canvas) return null;
-  const st = { canvasEl: canvas, nodes: [], edges: [], drag: null, hover: null };
+  const st = {
+    canvasEl: canvas,
+    nodes: [],
+    edges: [],
+    drag: null,
+    hover: null,
+    camera: { panX: 0, panY: 0, zoom: 1 },
+    panning: false,
+    panStart: { x: 0, y: 0, origPanX: 0, origPanY: 0 },
+    idleFrames: 0,
+    sleeping: false,
+    moved: false,
+  };
 
-  const pos = (ev) => {
-    const r = canvas.getBoundingClientRect();
+  const screenPos = (ev) => {
+    const r = canvas.getBoundingClientRect ? canvas.getBoundingClientRect() : { left: 0, top: 0 };
     const p = ev.touches ? ev.touches[0] : ev;
-    return { x: (p.clientX - r.left) * devicePixelRatio, y: (p.clientY - r.top) * devicePixelRatio };
+    const clientX = p.clientX ?? 0;
+    const clientY = p.clientY ?? 0;
+    const scale = window.devicePixelRatio || 1;
+    return {
+      x: (clientX - (r.left || 0)) * scale,
+      y: (clientY - (r.top || 0)) * scale,
+      clientX,
+      clientY,
+    };
+  };
+
+  const worldPos = (ev) => {
+    const sp = screenPos(ev);
+    const zoom = st.camera.zoom || 1;
+    return {
+      x: (sp.x - (st.camera.panX || 0)) / zoom,
+      y: (sp.y - (st.camera.panY || 0)) / zoom,
+      clientX: sp.clientX,
+      clientY: sp.clientY,
+    };
+  };
+
+  canvas.onwheel = (ev) => {
+    if (ev.preventDefault) ev.preventDefault();
+    const sp = screenPos(ev);
+    const zoomFactor = ev.deltaY < 0 ? 1.15 : 0.87;
+    const oldZoom = st.camera.zoom || 1;
+    const newZoom = Math.max(0.3, Math.min(3.5, oldZoom * zoomFactor));
+    st.camera.panX = sp.x - (sp.x - (st.camera.panX || 0)) * (newZoom / oldZoom);
+    st.camera.panY = sp.y - (sp.y - (st.camera.panY || 0)) * (newZoom / oldZoom);
+    st.camera.zoom = newZoom;
+    wakeGraph(st);
   };
 
   canvas.onmousedown = (ev) => {
-    const { x, y } = pos(ev);
-    st.drag = st.nodes.find((n) => Math.hypot(n.x - x, n.y - y) < n.r + 8) || null;
-    if (st.drag) canvas.style.cursor = 'grabbing';
+    const wp = worldPos(ev);
+    st.drag = st.nodes.find((n) => Math.hypot(n.x - wp.x, n.y - wp.y) < n.r + 8) || null;
+    st.hover = st.drag;
+    st.moved = false;
+    if (st.drag) {
+      canvas.style.cursor = 'grabbing';
+      wakeGraph(st);
+    } else {
+      st.panning = true;
+      st.panStart = { x: wp.clientX, y: wp.clientY, origPanX: st.camera.panX || 0, origPanY: st.camera.panY || 0 };
+      canvas.style.cursor = 'grabbing';
+    }
   };
+
   canvas.onmousemove = (ev) => {
-    const { x, y } = pos(ev);
-    if (st.drag) { st.drag.x = x; st.drag.y = y; st.drag.vx = st.drag.vy = 0; return; }
-    st.hover = st.nodes.find((n) => Math.hypot(n.x - x, n.y - y) < n.r + 5) || null;
+    const wp = worldPos(ev);
+    if (st.drag) {
+      st.drag.x = wp.x; st.drag.y = wp.y; st.drag.vx = st.drag.vy = 0;
+      st.moved = true;
+      wakeGraph(st);
+      return;
+    }
+    if (st.panning) {
+      const scale = window.devicePixelRatio || 1;
+      const dx = (wp.clientX - st.panStart.x) * scale;
+      const dy = (wp.clientY - st.panStart.y) * scale;
+      if (Math.abs(dx) + Math.abs(dy) > 2) st.moved = true;
+      st.camera.panX = st.panStart.origPanX + dx;
+      st.camera.panY = st.panStart.origPanY + dy;
+      wakeGraph(st);
+      return;
+    }
+    st.hover = st.nodes.find((n) => Math.hypot(n.x - wp.x, n.y - wp.y) < n.r + 5) || null;
     canvas.style.cursor = st.hover ? 'pointer' : 'grab';
   };
-  canvas.onmouseup = () => { st.drag = null; canvas.style.cursor = 'grab'; };
-  canvas.onmouseleave = () => { st.drag = null; st.hover = null; };
-  canvas.onclick = () => { if (st.hover && onActivate) onActivate(st.hover); };
+
+  canvas.onmouseup = () => {
+    st.drag = null;
+    st.panning = false;
+    canvas.style.cursor = 'grab';
+  };
+  canvas.onmouseleave = () => {
+    st.drag = null;
+    st.panning = false;
+    st.hover = null;
+  };
+  canvas.onclick = () => {
+    if (st.moved) { st.moved = false; return; }
+    if (st.hover && onActivate) onActivate(st.hover);
+  };
 
   return st;
 }
@@ -67,7 +269,16 @@ function radiusFor(n) {
   if (n.kind === 'app') return 11 * scale;
   if (n.kind === 'tag') return 7 * scale;
   if (n.kind === 'file') return 9 * scale;
-  return (7 + Math.min(12, Math.sqrt((n.chars || 400) / 900))) * scale; // entry
+  const base = (7 + Math.min(12, Math.sqrt((n.chars || 400) / 900))) * scale;
+  return n.type === 'handoff' ? base + 3 * scale : base; // el handoff es el nodo principal
+}
+
+function graphSignature(data) {
+  return [
+    ...data.nodes.map((n) => `${n.id}:${n.label || ''}:${n.type || ''}:${n.weight || 0}:${n.live ? 1 : 0}`).sort(),
+    '|',
+    ...data.edges.map((e) => `${e.source}>${e.target}:${e.kind}:${Math.round((e.weight || 1) * 100)}`).sort(),
+  ].join(';');
 }
 
 function setGraphData(st, data) {
@@ -92,6 +303,10 @@ function setGraphData(st, data) {
   st.edges = data.edges
     .map((e) => ({ ...e, a: st.nodes.find((n) => n.id === e.source), b: st.nodes.find((n) => n.id === e.target) }))
     .filter((e) => e.a && e.b);
+  st.sig = graphSignature(data);
+  st.idleFrames = 0;
+  st.sleeping = false;
+  ensureGraphLoop();
 }
 
 function stepGraph(st) {
@@ -99,6 +314,7 @@ function stepGraph(st) {
   const canvas = st.canvasEl;
   const W = canvas.width; const H = canvas.height;
   const cx = W / 2; const cy = H / 2;
+  for (const n of st.nodes) { n.px = n.x; n.py = n.y; }
 
   for (let i = 0; i < st.nodes.length; i += 1) {
     const a = st.nodes[i];
@@ -133,6 +349,12 @@ function stepGraph(st) {
     n.x = Math.max(n.r, Math.min(W - n.r, n.x + n.vx));
     n.y = Math.max(n.r, Math.min(H - n.r, n.y + n.vy));
   }
+
+  // Energía real del frame: cuánto se movió cada nodo (incluye los empujes
+  // directos de la repulsión, que no pasan por vx/vy).
+  let movimiento = 0;
+  for (const n of st.nodes) movimiento += Math.hypot(n.x - (n.px ?? n.x), n.y - (n.py ?? n.y));
+  st.energy = movimiento;
 }
 
 function drawGraph(st) {
@@ -140,8 +362,15 @@ function drawGraph(st) {
   const canvas = st.canvasEl;
   const ctx = canvas.getContext('2d');
   ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.save();
+  ctx.translate(st.camera.panX || 0, st.camera.panY || 0);
+  ctx.scale(st.camera.zoom || 1, st.camera.zoom || 1);
+
+  const q = SEARCH_QUERY.trim();
 
   for (const e of st.edges) {
+    const visible = !q || (nodeMatches(e.a, q) && nodeMatches(e.b, q));
+    ctx.globalAlpha = visible ? 1 : 0.1;
     const color = e.kind === 'tag' ? COLORS.tagEdge
       : e.kind === 'file' ? COLORS.fileEdge
       : e.kind === 'menciona' ? COLORS.mentionEdge
@@ -153,13 +382,18 @@ function drawGraph(st) {
     ctx.beginPath(); ctx.moveTo(e.a.x, e.a.y); ctx.lineTo(e.b.x, e.b.y); ctx.stroke();
   }
   ctx.setLineDash([]);
+  ctx.globalAlpha = 1;
 
   for (const n of st.nodes) {
+    const visible = !q || nodeMatches(n, q);
     const hovered = st.hover === n;
+    const alpha = visible ? 1 : 0.25;
+    ctx.globalAlpha = alpha;
     const color = n.kind === 'app' ? (n.live ? COLORS.appLive : COLORS.app)
       : n.kind === 'tag' ? COLORS.tag
       : n.kind === 'file' ? COLORS.file
-      : COLORS.entry;
+      : n.kind === 'project' ? COLORS.project
+      : entryColor(n);
 
     ctx.beginPath();
     if (n.kind === 'app') {
@@ -183,6 +417,17 @@ function drawGraph(st) {
     ctx.lineWidth = (hovered ? 3 : 1.6) * devicePixelRatio;
     ctx.strokeStyle = color;
     ctx.stroke();
+
+    // Halo del handoff: es el nodo que la próxima herramienta lee primero.
+    if (n.type === 'handoff') {
+      ctx.beginPath();
+      ctx.arc(n.x, n.y, n.r + 4 * devicePixelRatio, 0, Math.PI * 2);
+      ctx.lineWidth = 1.8 * devicePixelRatio;
+      ctx.strokeStyle = color;
+      ctx.globalAlpha = alpha * 0.7;
+      ctx.stroke();
+      ctx.globalAlpha = alpha;
+    }
 
     if (n.kind === 'project' || n.kind === 'file') {
       ctx.fillStyle = '#cfd6e4';
@@ -210,18 +455,82 @@ function drawGraph(st) {
       ctx.textAlign = 'center';
       ctx.fillText('● conectada', n.x, n.y - n.r - 6 * devicePixelRatio);
     }
+    ctx.globalAlpha = 1;
   }
+  ctx.restore();
 }
 
 const GRAPH_CONTEXT = makeGraph('graph', { onActivate: (n) => n.kind === 'project' && openProject(n.slug) });
 const GRAPH_ENTRIES = makeGraph('egraph', { onActivate: (n) => { if (n.kind === 'entry') openEntry(n.project, n.entryId, n.label); } });
 
 function loopGraphs() {
+  graphLoopId = null;
+  let activo = false;
   for (const st of [GRAPH_CONTEXT, GRAPH_ENTRIES]) {
-    if (!st.canvasEl) continue;
-    if (st.nodes.length) { stepGraph(st); drawGraph(st); }
+    if (!st?.canvasEl || !st.nodes.length) continue;
+    if (st.sleeping) continue;
+    stepGraph(st);
+    drawGraph(st);
+    const umbral = 0.05 * (window.devicePixelRatio || 1);
+    if ((st.energy || 0) < umbral) st.idleFrames += 1;
+    else st.idleFrames = 0;
+    // Si hace ~0.75 s que no se mueve, se deja de pedir frames: el canvas queda
+    // dibujado y solo se despierta con una interacción o con datos nuevos.
+    if (st.idleFrames > 45) st.sleeping = true;
+    else activo = true;
   }
-  requestAnimationFrame(loopGraphs);
+  if (activo) graphLoopId = requestAnimationFrame(loopGraphs);
+}
+
+function resetView(st) {
+  if (!st) return;
+  st.camera = { panX: 0, panY: 0, zoom: 1 };
+  st.idleFrames = 0;
+  st.sleeping = false;
+  ensureGraphLoop();
+}
+
+function downloadCanvas(canvas, filename) {
+  if (!canvas?.toBlob) return false;
+  // El canvas es transparente (el fondo lo pone el CSS). Para el PNG se compone
+  // sobre el mismo fondo oscuro del panel, si no la imagen sale sin fondo.
+  const salida = document.createElement('canvas');
+  salida.width = canvas.width;
+  salida.height = canvas.height;
+  const ctx = salida.getContext('2d');
+  ctx.fillStyle = '#0f1115';
+  ctx.fillRect(0, 0, salida.width, salida.height);
+  ctx.drawImage(canvas, 0, 0);
+  salida.toBlob((blob) => {
+    if (!blob) return;
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = filename;
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+  }, 'image/png');
+  return true;
+}
+
+async function copyText(text) {
+  try {
+    if (navigator.clipboard?.writeText) {
+      await navigator.clipboard.writeText(text);
+      return true;
+    }
+  } catch { /* sigue el fallback */ }
+  try {
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    ta.setAttribute('readonly', '');
+    ta.style.position = 'fixed';
+    ta.style.opacity = '0';
+    document.body.appendChild(ta);
+    ta.select();
+    const ok = document.execCommand('copy');
+    ta.remove();
+    return ok;
+  } catch { return false; }
 }
 
 /* ================================================================== tarjetas */
@@ -262,7 +571,8 @@ async function loadEntryGraph() {
   if (!EG.project && STATE.projects.length) EG.project = STATE.overview?.activeProject?.slug || STATE.projects[0].slug;
   if (!EG.project) return;
   const data = await get(`/api/entrygraph?project=${encodeURIComponent(EG.project)}&tags=${EG.tags ? 1 : 0}&files=${EG.files ? 1 : 0}`);
-  setGraphData(GRAPH_ENTRIES, data);
+  // Refrescar cada 5 s no debe reiniciar la física ni el zoom si nada cambió.
+  if (GRAPH_ENTRIES.sig !== graphSignature(data)) setGraphData(GRAPH_ENTRIES, data);
   EG.stats = data.stats;
   const kinds = Object.entries(data.stats.byKind || {}).map(([k, n]) => `${k}: ${n}`).join(' · ');
   $('#eg-stats').textContent = `${data.stats.entries} entradas · ${data.stats.tags} etiquetas · ${data.stats.files} archivos · ${data.stats.links} relaciones (${kinds || 'sin relaciones'}) · ${data.stats.isolated} sin relación · ${data.stats.duplicates.length} posible(s) duplicado(s)`;
@@ -299,7 +609,7 @@ async function openEntry(slug, id, title) {
     <div class="tag">${esc(entry.type)} · ${esc(entry.app)} · ${esc(fmtWhen(entry.createdAt))} · <span class="mono">${esc(entry.id)}</span></div>
     ${entry.tags.length ? `<div class="tag">tags: ${esc(entry.tags.join(', '))}</div>` : ''}
     ${entry.files.length ? `<div class="tag">archivos: ${entry.files.map((f) => `<span class="mono">${esc(f)}</span>`).join(', ')}</div>` : ''}
-    <pre>${esc(entry.content.trim())}</pre>
+    <div class="md-body">${renderMarkdown(entry.content)}</div>
     ${related && related.length ? `<h3 style="font-size:13px;margin-top:16px">Relacionadas (así las encontraría el modelo)</h3>${related.map((r) => `
       <div class="entry"><h4>${esc(r.title)}</h4><div class="tag">${esc(r.type)} · ${esc(r.app)} · ${esc(r.razones.join(' · '))}</div></div>`).join('')}` : '<p class="hint" style="margin-top:12px">Sin entradas relacionadas.</p>'}`;
   $('#drawer').classList.remove('hidden');
@@ -411,13 +721,17 @@ function renderPending() {
   el.innerHTML = `
     <div class="panel-head"><h2>Pendientes de aprobación (${STATE.pending.length})</h2>
     <p class="hint">El panel es de solo lectura: aprobá desde la terminal con el comando que figura abajo.</p></div>
-    ${STATE.pending.map((p) => `
+    ${STATE.pending.map((p) => {
+      const esBorrado = p.action === 'forget' || p.type === 'forget';
+      return `
       <div class="proj">
         <h3>${esc(p.title)}</h3>
-        <div class="row"><span>proyecto: <span class="mono">${esc(p.project)}</span></span><span>tipo: ${esc(p.type)}</span><span>pedido por: ${esc(p.app)}</span><span>${esc(fmtWhen(p.createdAt))}</span></div>
-        <pre class="handoff">${esc(p.content.trim())}</pre>
+        <div class="row"><span>acción: <b>${esBorrado ? 'BORRADO' : 'PUBLICACIÓN'}</b></span><span>proyecto: <span class="mono">${esc(p.project)}</span></span><span>tipo: ${esc(p.type)}</span><span>pedido por: ${esc(p.app)}</span><span>${esc(fmtWhen(p.createdAt))}</span></div>
+        ${esBorrado ? `<div class="tag">entrada: <span class="mono">${esc(p.entryId || '')}</span></div>` : ''}
+        ${p.content ? `<div class="md-body">${renderMarkdown(p.content)}</div>` : ''}
         <div class="row" style="margin-top:8px"><code class="cmd">sharedctx approve ${esc(p.id)}</code></div>
-      </div>`).join('')}`;
+      </div>`;
+    }).join('')}`;
 }
 
 /* ================================================================= auditoría */
@@ -464,11 +778,15 @@ async function refresh() {
   const misma = GRAPH_CONTEXT.nodes.length === graph.nodes.length && GRAPH_CONTEXT.nodes.every((n) => graph.nodes.some((m) => m.id === n.id));
   if (!misma) setGraphData(GRAPH_CONTEXT, graph);
   else {
+    const antes = graphSignature({ nodes: GRAPH_CONTEXT.nodes, edges: GRAPH_CONTEXT.edges });
     GRAPH_CONTEXT.edges = graph.edges.map((e) => ({ ...e, a: GRAPH_CONTEXT.nodes.find((n) => n.id === e.source), b: GRAPH_CONTEXT.nodes.find((n) => n.id === e.target) })).filter((e) => e.a && e.b);
     for (const n of GRAPH_CONTEXT.nodes) {
       const act = graph.nodes.find((m) => m.id === n.id);
       if (act) { n.weight = act.weight; n.live = act.live; n.label = act.label; }
     }
+    // Si una app se conectó/desconectó o cambió el peso, hay que despertar el
+    // dibujo; si nada cambió, se deja dormir.
+    if (antes !== graphSignature({ nodes: GRAPH_CONTEXT.nodes, edges: GRAPH_CONTEXT.edges })) wakeGraph(GRAPH_CONTEXT);
   }
 
   // El grafo de entradas se recalcula cuando cambia el proyecto o los datos.
@@ -498,6 +816,45 @@ $('#eg-dot').onclick = async () => {
   URL.revokeObjectURL(a.href);
 };
 
+$('#eg-mermaid').onclick = async () => {
+  const btn = $('#eg-mermaid');
+  const original = btn.textContent;
+  try {
+    const { mermaid } = await get(`/api/mermaid?project=${encodeURIComponent(EG.project || '')}`);
+    if (!mermaid) { btn.textContent = 'Sin datos'; return; }
+    if (await copyText(mermaid)) btn.textContent = '¡Copiado!';
+    else {
+      const blob = new Blob([mermaid], { type: 'text/plain' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = `${EG.project || 'contexto'}.mmd`;
+      a.click();
+      URL.revokeObjectURL(a.href);
+      btn.textContent = 'Descargado .mmd';
+    }
+  } catch { btn.textContent = 'Error'; }
+  setTimeout(() => { btn.textContent = original; }, 1800);
+};
+
+$('#eg-png').onclick = () => {
+  if (!downloadCanvas(GRAPH_ENTRIES?.canvasEl, `${EG.project || 'contexto'}-entradas.png`)) {
+    $('#eg-png').textContent = 'Sin canvas';
+  }
+};
+$('#cg-png').onclick = () => {
+  if (!downloadCanvas(GRAPH_CONTEXT?.canvasEl, 'contexto-proyectos.png')) {
+    $('#cg-png').textContent = 'Sin canvas';
+  }
+};
+$('#eg-reset').onclick = () => resetView(GRAPH_ENTRIES);
+$('#cg-reset').onclick = () => resetView(GRAPH_CONTEXT);
+
+$('#graph-search').oninput = (ev) => {
+  SEARCH_QUERY = ev.target.value.trim();
+  wakeGraph(GRAPH_ENTRIES);
+  wakeGraph(GRAPH_CONTEXT);
+};
+
 $('#refresh').onclick = () => refresh().catch((e) => console.error(e));
 
 let timer = null;
@@ -510,4 +867,4 @@ $('#auto').onchange = (ev) => setAuto(ev.target.checked);
 refresh().then(() => setAuto(true)).catch((err) => {
   document.body.insertAdjacentHTML('afterbegin', `<p style="padding:16px;color:#ff6b6b">Error cargando el panel: ${esc(err.message)}</p>`);
 });
-loopGraphs();
+ensureGraphLoop();

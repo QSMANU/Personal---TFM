@@ -15,7 +15,7 @@ process.env.SHARED_MCP_APP = 'prueba-relaciones';
 const home = process.env.SHARED_MCP_HOME;
 
 const store = await import('../src/store.js');
-const { buildEntryGraph, insights, relatedEntries, graphToDot } = await import('../src/relations.js');
+const { buildEntryGraph, insights, relatedEntries, graphToDot, graphToMermaid } = await import('../src/relations.js');
 
 let failures = 0;
 function check(label, condition, detail = '') {
@@ -96,6 +96,29 @@ check('el diagnóstico se puede acotar a un proyecto', soloGrafo.scope === 'graf
 
 const dot = graphToDot(g, 'grafo');
 check('exporta DOT válido', dot.startsWith('digraph') && dot.trimEnd().endsWith('}') && dot.includes('->'));
+
+const mermaid = graphToMermaid(g, 'grafo');
+check('exporta Mermaid válido', mermaid.startsWith('flowchart TD') && mermaid.includes('-->') && mermaid.includes('["'));
+check('Mermaid incluye etiquetas y archivos', mermaid.includes('#arquitectura') && mermaid.includes('bus.ts'));
+
+/* La caché de similitudes no debe devolver un grafo viejo tras editar una entrada. */
+{
+  const antesDuplicados = g.stats.duplicates.length;
+  store.writeEntry({
+    project: 'Grafo',
+    id: huerfana.entryId,
+    title: 'Nota suelta',
+    content: 'El despliegue quedó pendiente de aprobación por el equipo de seguridad y se retoma el lunes.',
+    type: 'note',
+  });
+  const g2 = buildEntryGraph('grafo');
+  check('la caché de similitudes se invalida al editar una entrada',
+    g2.stats.duplicates.length > antesDuplicados,
+    `${antesDuplicados} → ${g2.stats.duplicates.length}`);
+  check('la entrada editada pasa a ser un posible duplicado',
+    g2.stats.duplicates.some((d) => d.a === huerfana.entryId || d.b === huerfana.entryId),
+    JSON.stringify(g2.stats.duplicates));
+}
 
 rmSync(home, { recursive: true, force: true });
 console.log(failures === 0 ? '\nTodo OK.' : `\n${failures} prueba(s) fallaron.`);

@@ -34,3 +34,23 @@ carpeta del sistema y sin esto habría que decirle el proyecto en cada sesión.
 
 **7. Todo local y sin red.**
 El transporte HTTP escucha solo en `127.0.0.1` (verificado con `netstat`). Datos en texto plano, sin nube.
+
+**8. El borrado del modelo también pasa por aprobación.**
+En modo `ask`, `shared_forget` no borra: crea un pendiente con `action: "forget"` que se ve en
+`sharedctx pending` y se aplica con `sharedctx approve <id>`. *Motivo:* el mismo candado humano para
+publicar y para borrar; el modelo no puede destruir contexto por su cuenta.
+
+**9. Escritura atómica y ids blindados.**
+`writeAtomicSync` escribe un temporal y renombra (con reintentos ante `EBUSY`/`EPERM` de Windows).
+`assertSafeId` rechaza `..`, separadores, nombres reservados y puntos iniciales. *Motivo:* varias apps
+MCP escriben a la vez en el mismo almacén y un id generado por un modelo no debe poder salir de `entries/`.
+
+**10. La caché del grafo se invalida por `mtime`, no por fecha de creación.**
+Actualizar una entrada conserva `id` y `createdAt`; por eso la firma de similitudes usa `mtime` + tamaño.
+*Motivo:* el panel refresca cada 5 s y el cálculo es cuadrático; sin invalidación correcta mostraría
+duplicados viejos después de editar.
+
+**11. El panel no gasta CPU cuando está quieto.**
+La física de los canvas se pausa cuando la energía cinética baja de un umbral y se despierta con
+interacción o datos nuevos. La cámara (zoom/pan) y el render de Markdown son propios, sin dependencias.
+*Motivo:* el panel puede quedar abierto todo el día; no debe consumir GPU en segundo plano.

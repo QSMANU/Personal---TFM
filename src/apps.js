@@ -45,10 +45,10 @@ export const KNOWN_APPS = [
     notes: 'El agente y el IDE comparten este mismo archivo.',
   },
   {
-    id: 'kimchi', name: 'Kimchi Studio', kind: 'json-mcpServers', root: 'mcpServers',
-    config: join(H, '.config', 'kimchi', 'harness', 'mcp.json'),
-    instructions: join(H, '.config', 'kimchi', 'harness', 'skills', 'contexto-compartido', 'SKILL.md'),
-    notes: 'Admite <repo>\\.kimchi\\mcp.json y "imports" de otras apps.',
+    id: 'kimi-code', name: 'Kimi Code', kind: 'json-mcpServers', root: 'mcpServers',
+    config: join(H, '.kimi-code', 'mcp.json'),
+    instructions: join(H, '.kimi-code', 'AGENTS.md'),
+    notes: 'Configuración global; también admite <repo>\\.kimi-code\\mcp.json.',
   },
   {
     id: 'vscode', name: 'VS Code (Copilot)', kind: 'json-servers', root: 'servers',

@@ -62,6 +62,60 @@ function ensureDir(dir) {
   return dir;
 }
 
+export function renameSyncSafe(from, to) {
+  try {
+    // En POSIX renombrar sobre el destino es atómico. En Windows suele fallar
+    // con EPERM/EEXIST si el destino existe; solo entonces se borra y reintenta.
+    return renameSync(from, to);
+  } catch (err) {
+    if (!['EEXIST', 'EPERM', 'EACCES'].includes(err.code)) throw err;
+    rmSync(to, { force: true });
+    return renameSync(from, to);
+  }
+}
+
+/**
+ * Escritura atómica tolerante a colisiones y bloqueos transitorios de Windows (EBUSY).
+ */
+export function writeAtomicSync(filePath, content, encoding = 'utf8') {
+  const dir = dirname(filePath);
+  ensureDir(dir);
+  const tmp = join(dir, `.${basename(filePath)}.${randomUUID().slice(0, 8)}.tmp`);
+  writeFileSync(tmp, content, encoding);
+  let attempts = 0;
+  while (true) {
+    try {
+      renameSyncSafe(tmp, filePath);
+      break;
+    } catch (err) {
+      attempts += 1;
+      if ((err.code === 'EBUSY' || err.code === 'EPERM') && attempts < 5) {
+        Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, attempts * 25);
+        continue;
+      }
+      try { rmSync(tmp, { force: true }); } catch { /* ignore */ }
+      throw err;
+    }
+  }
+}
+
+/**
+ * Valida que un identificador sea seguro para nombres de archivo y libre de path traversal.
+ */
+export function assertSafeId(id) {
+  if (!id || typeof id !== 'string') {
+    throw new Error('Id inválido o vacío.');
+  }
+  const clean = id.trim();
+  if (!/^[a-zA-Z0-9_\-\.]+$/.test(clean) || clean.includes('..') || clean.startsWith('.')
+    || clean.length > 120) {
+    throw new Error(`Id inválido: "${id}". Solo se permiten letras, números, guiones, puntos y guiones bajos.`);
+  }
+  const reservado = /^(con|prn|aux|nul|com[1-9]|lpt[1-9])(\..*)?$/i.test(clean);
+  if (reservado) throw new Error(`Id inválido: "${id}" es un nombre reservado de Windows.`);
+  return clean;
+}
+
 /* ----------------------------------------------------------------- config */
 
 export function getConfig() {
@@ -84,7 +138,7 @@ export function saveConfig(patch) {
     throw new Error(`modo inválido: ${patch.mode}. Válidos: ${MODES.join(', ')}`);
   }
   ensureDir(getHome());
-  writeFileSync(getConfigPath(), `${JSON.stringify(cfg, null, 2)}\n`, 'utf8');
+  writeAtomicSync(getConfigPath(), `${JSON.stringify(cfg, null, 2)}\n`, 'utf8');
   return cfg;
 }
 
@@ -139,8 +193,10 @@ export const NON_PROJECT_DIRS = new Set([
   'windows', 'system32', 'syswow64', 'program-files', 'program-files-x86', 'users',
   'appdata', 'roaming', 'local', 'locallow', 'temp', 'tmp', 'desktop', 'documents',
   'downloads', 'claude', 'cursor', 'antigravity', 'antigravity-ide', 'kimchi-studio',
+  'kimi-code', 'kimi-work',
   'deepseek-harness', 'code', 'node_modules', 'resources', 'app', 'bin', 'public',
   'src', 'dist', 'build', 'out', 'test', 'tests', 'global',
+  'repositories', 'repos', 'workspace', 'workspaces',
 ]);
 
 /**
@@ -211,7 +267,7 @@ export function ensureProject(name, { root = null, aliases = [] } = {}) {
   meta.slug = slug;
   if (root && !meta.roots.includes(root)) meta.roots.push(root);
   for (const a of aliases) if (a && !meta.aliases.includes(a)) meta.aliases.push(a);
-  writeFileSync(metaPath, `${JSON.stringify(meta, null, 2)}\n`, 'utf8');
+  writeAtomicSync(metaPath, `${JSON.stringify(meta, null, 2)}\n`, 'utf8');
   return meta;
 }
 
@@ -348,7 +404,7 @@ export function rememberProjectIdentity(slug, { aliases = [], roots = [] } = {})
     meta.roots.push(r);
     dirty = true;
   }
-  if (dirty) writeFileSync(join(projectDir(slug), 'project.json'), `${JSON.stringify(meta, null, 2)}\n`, 'utf8');
+  if (dirty) writeAtomicSync(join(projectDir(slug), 'project.json'), `${JSON.stringify(meta, null, 2)}\n`, 'utf8');
   return meta;
 }
 
@@ -368,7 +424,7 @@ export function setLastProjectForApp(app, slug) {
   state.lastByApp = state.lastByApp || {};
   state.lastByApp[app] = { slug, at: new Date().toISOString() };
   ensureDir(getHome());
-  writeFileSync(getStatePath(), `${JSON.stringify(state, null, 2)}\n`, 'utf8');
+  writeAtomicSync(getStatePath(), `${JSON.stringify(state, null, 2)}\n`, 'utf8');
 }
 
 export function getLastProjectForApp(app) {
@@ -407,7 +463,7 @@ export function setActive(project, note = '') {
 
   const meta = ensureProject(name, { root, aliases });
   ensureDir(getHome());
-  writeFileSync(getActivePath(), `${JSON.stringify({ slug: meta.slug, name: meta.name, note, at: new Date().toISOString() }, null, 2)}\n`, 'utf8');
+  writeAtomicSync(getActivePath(), `${JSON.stringify({ slug: meta.slug, name: meta.name, note, at: new Date().toISOString() }, null, 2)}\n`, 'utf8');
   return { slug: meta.slug, name: meta.name, matchedBy: match?.matchedBy || 'nuevo', linked: Boolean(root), root };
 }
 
@@ -665,15 +721,6 @@ export function ingestInbox({ defaultProject = null, app = 'inbox', move = true 
   return { processed, skipped };
 }
 
-function renameSyncSafe(from, to) {
-  try {
-    rmSync(to, { force: true });
-  } catch { /* ignore */ }
-  // renameSync importado arriba
-  return renameSync(from, to);
-}
-
-
 /* -------------------------------------------------------------- frontmatter */
 
 function serializeEntry(entry) {
@@ -712,7 +759,9 @@ function parseEntry(rawInput) {
 function toEntry(slug, id, raw) {
   const { content, meta } = parseEntry(raw);
   return {
-    id,
+    // El handoff.md se lee con id "handoff", pero su front-matter guarda el id
+    // real de la entrada: preservarlo permite borrarlo y enlazarlo bien.
+    id: meta.id || id,
     project: slug,
     title: meta.title || id,
     type: meta.type || 'note',
@@ -747,7 +796,7 @@ export function writeEntry({ project, title, content, type = 'note', tags = [], 
   }
   const meta = ensureProject(project, { root });
   const slug = meta.slug;
-  const nuevoId = id || newEntryId();
+  const nuevoId = id ? assertSafeId(id) : newEntryId();
   // Si se publica con un id existente, se ACTUALIZA: se conserva la fecha original
   // (así republicar un documento no duplica ni desordena el historial).
   const previa = existsSync(join(entriesDir(slug), `${nuevoId}.md`))
@@ -764,10 +813,10 @@ export function writeEntry({ project, title, content, type = 'note', tags = [], 
     files,
     content: String(content ?? ''),
   };
-  writeFileSync(join(entriesDir(slug), `${entry.id}.md`), serializeEntry(entry), 'utf8');
+  writeAtomicSync(join(entriesDir(slug), `${entry.id}.md`), serializeEntry(entry), 'utf8');
 
   if (type === 'handoff') {
-    writeFileSync(handoffPath(slug), serializeEntry(entry), 'utf8');
+    writeAtomicSync(handoffPath(slug), serializeEntry(entry), 'utf8');
     if (previa && previa.type === 'handoff') { /* ya era el handoff: se sobreescribió */ }
   }
   entry.updated = Boolean(previa);
@@ -779,26 +828,37 @@ export function listEntries(slug, { limit = 0, type = null } = {}) {
   if (!existsSync(dir)) return [];
   let entries = readdirSync(dir)
     .filter((n) => n.endsWith('.md'))
-    .map((n) => toEntry(slug, n.replace(/\.md$/, ''), readFileSync(join(dir, n), 'utf8')))
+    .map((n) => {
+      const full = join(dir, n);
+      const entry = toEntry(slug, n.replace(/\.md$/, ''), readFileSync(full, 'utf8'));
+      // mtime permite invalidar cachés (grafo, similitudes) cuando se actualiza
+      // una entrada conservando el mismo id y createdAt.
+      try { entry.mtime = statSync(full).mtimeMs; } catch { entry.mtime = 0; }
+      return entry;
+    })
     .sort((a, b) => String(b.createdAt).localeCompare(String(a.createdAt)));
   if (type) entries = entries.filter((e) => e.type === type);
   return limit > 0 ? entries.slice(0, limit) : entries;
 }
 
 export function readEntry(slug, id) {
+  assertSafeId(id);
   const path = join(entriesDir(slug), `${id}.md`);
   if (!existsSync(path)) return null;
   return toEntry(slug, id, readFileSync(path, 'utf8'));
 }
 
 export function deleteEntry(slug, id) {
+  assertSafeId(id);
   const path = join(entriesDir(slug), `${id}.md`);
   if (!existsSync(path)) return false;
   rmSync(path);
   const h = handoffPath(slug);
   if (existsSync(h)) {
-    const parsed = toEntry(slug, 'handoff', readFileSync(h, 'utf8'));
-    if (parsed.id === id) rmSync(h);
+    try {
+      const parsed = toEntry(slug, 'handoff', readFileSync(h, 'utf8'));
+      if (parsed.id === id) rmSync(h);
+    } catch { /* ignore */ }
   }
   return true;
 }
@@ -811,15 +871,17 @@ export function getHandoff(slug) {
 
 /* --------------------------------------------------------------- pendientes */
 
-export function addPending({ project, title, content, type = 'note', tags = [], files = [], app = null, requestedBy = 'mcp' }) {
+export function addPending({ project, title, content, type = 'note', tags = [], files = [], app = null, requestedBy = 'mcp', action = 'publish', entryId = null }) {
   const id = newEntryId();
   ensureDir(pendingRoot());
   const item = {
     id,
+    action,
     project: slugify(project),
     projectName: project,
-    title: String(title || '').trim() || '(sin título)',
-    type,
+    title: String(title || (action === 'forget' ? `Borrar entrada ${entryId}` : '(sin título)')).trim(),
+    type: action === 'forget' ? 'forget' : type,
+    entryId: entryId ? assertSafeId(entryId) : null,
     tags,
     files,
     content: String(content ?? ''),
@@ -827,7 +889,7 @@ export function addPending({ project, title, content, type = 'note', tags = [], 
     requestedBy,
     createdAt: new Date().toISOString(),
   };
-  writeFileSync(join(pendingRoot(), `${id}.json`), `${JSON.stringify(item, null, 2)}\n`, 'utf8');
+  writeAtomicSync(join(pendingRoot(), `${id}.json`), `${JSON.stringify(item, null, 2)}\n`, 'utf8');
   return item;
 }
 
@@ -860,18 +922,25 @@ export function approvePending(ids = 'all') {
   const wanted = ids === 'all' ? all : all.filter((p) => ids.includes(p.id));
   const done = [];
   for (const item of wanted) {
-    const entry = writeEntry({
-      project: item.projectName || item.project,
-      title: item.title,
-      content: item.content,
-      type: item.type,
-      tags: item.tags,
-      files: item.files,
-      app: item.app,
-    });
-    dropPending(item.id);
-    audit('approve', { project: item.project, id: entry.id, pendingId: item.id });
-    done.push(entry);
+    if (item.action === 'forget' || item.type === 'forget') {
+      const ok = deleteEntry(item.project, item.entryId);
+      dropPending(item.id);
+      audit('approve.forget', { project: item.project, id: item.entryId, pendingId: item.id, ok });
+      done.push({ id: item.entryId, project: item.project, title: item.title, action: 'forget', type: 'forget', ok });
+    } else {
+      const entry = writeEntry({
+        project: item.projectName || item.project,
+        title: item.title,
+        content: item.content,
+        type: item.type,
+        tags: item.tags,
+        files: item.files,
+        app: item.app,
+      });
+      dropPending(item.id);
+      audit('approve', { project: item.project, id: entry.id, pendingId: item.id });
+      done.push(entry);
+    }
   }
   return done;
 }

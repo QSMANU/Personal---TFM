@@ -1,6 +1,6 @@
 {
   "name": "shared-mcp-local",
-  "version": "0.1.0",
+  "version": "0.3.0",
   "private": true,
   "description": "Servidor MCP local de contexto compartido entre herramientas de AI, con consentimiento explicito (opt-in) y alcance por proyecto.",
   "type": "module",
@@ -14,7 +14,8 @@
     "http": "node src/http.js",
     "cli": "node src/cli.js",
     "check": "node --check src/store.js && node --check src/server.js && node --check src/stdio.js && node --check src/http.js && node --check src/cli.js",
-    "test": "node test/mcp-smoke.mjs && node test/robustness.mjs && node test/relations.mjs && node test/dashboard.mjs && node test/ui.mjs",
+    "test": "powershell -NoProfile -ExecutionPolicy Bypass -File test/install-detection.ps1 && node test/mcp-smoke.mjs && node test/robustness.mjs && node test/relations.mjs && node test/dashboard.mjs && node test/ui.mjs",
+    "test:install": "powershell -NoProfile -ExecutionPolicy Bypass -File test/install-detection.ps1",
     "test:smoke": "node test/mcp-smoke.mjs",
     "test:robust": "node test/robustness.mjs",
     "test:relations": "node test/relations.mjs",

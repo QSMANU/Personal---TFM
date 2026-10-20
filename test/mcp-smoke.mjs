@@ -76,6 +76,21 @@ try {
   const pull2 = await client.callTool({ name: 'shared_pull', arguments: {} });
   check('el handoff aparece en la cabecera', /migración de la tabla users/.test(pull2.content[0].text), pull2.content[0].text);
 
+  // Borrado con el mismo circuito de aprobación que las publicaciones.
+  const creada = cli('add', '--project', 'proyecto-demo', '--title', 'Entrada a borrar', '--content', 'esto se va a borrar');
+  const idBorrar = /publicado (\S+) en/.exec(creada.out)?.[1];
+  check('se crea una entrada para probar el borrado', creada.code === 0 && Boolean(idBorrar), creada.out);
+  const pedidoBorrado = await client.callTool({ name: 'shared_forget', arguments: { id: idBorrar, confirm: true } });
+  check('en ask el borrado queda pendiente', /PENDIENTE/.test(pedidoBorrado.content[0].text), pedidoBorrado.content[0].text);
+  const sigue = await client.callTool({ name: 'shared_list', arguments: { project: 'proyecto-demo' } });
+  check('la entrada sigue existiendo hasta aprobar', sigue.content[0].text.includes('Entrada a borrar'), sigue.content[0].text);
+  const aprobadoBorrado = cli('approve', 'all');
+  check('aprobar un pendiente de borrado lo elimina', /aprobado y borrado/.test(aprobadoBorrado.out), aprobadoBorrado.out);
+  const yaNo = await client.callTool({ name: 'shared_list', arguments: { project: 'proyecto-demo' } });
+  check('tras aprobar, la entrada desaparece', !yaNo.content[0].text.includes('Entrada a borrar'), yaNo.content[0].text);
+  const traversal = await client.callTool({ name: 'shared_forget', arguments: { id: '../fuera', confirm: true } });
+  check('shared_forget rechaza un id con path traversal', traversal.isError === true, traversal.content[0].text);
+
   const ajeno = await client.callTool({ name: 'shared_pull', arguments: { project: 'otro-proyecto' } });
   check('leer otro proyecto sin confirmación es rechazado', ajeno.isError === true, ajeno.content[0].text);
 

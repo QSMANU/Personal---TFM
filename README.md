@@ -8,7 +8,54 @@ herramientas de AI pueden leer y escribir… **solo cuando vos querés**.
 - Almacén: `C:\Users\QsManu-Movil\.shared-mcp` (texto plano, Markdown + JSON)
 
 Herramientas soportadas: Claude Desktop · Cursor · Codex / ChatGPT desktop · Antigravity (agente e IDE) ·
-Kimchi Studio · VS Code Copilot · Claude Code · DeepSeek Harness · y ChatGPT web por exportación a Markdown.
+Kimi Code · VS Code Copilot · Claude Code · DeepSeek Harness · y ChatGPT web por exportación a Markdown.
+
+## Flujo simple: continuar de ChatGPT en Claude Desktop
+
+Sí, es posible. Usá siempre el mismo nombre de proyecto, por ejemplo `Personal - TFM`.
+
+### Caso A: ChatGPT todavía responde
+
+En ChatGPT decí:
+
+> Actualizá el historial del MCP para el proyecto Personal - TFM. Guardá qué hicimos,
+> qué decisiones tomamos, qué quedó pendiente y cuál es el próximo paso.
+
+Si el modo es `ask`, ChatGPT te va a indicar que la publicación quedó pendiente. En ese caso,
+aprobala desde una consola:
+
+```powershell
+sharedctx pending
+sharedctx approve <id>
+```
+
+Después abrí Claude Desktop y decile:
+
+> Traé el contexto compartido del proyecto Personal - TFM y continuá desde donde quedó.
+
+### Caso B: ChatGPT ya no tiene tokens
+
+No necesitás que ChatGPT haga nada. Copiá primero el último resumen al portapapeles y ejecutá:
+
+```powershell
+sharedctx handoff --project "Personal - TFM" --clipboard
+```
+
+El comando lee el portapapeles y guarda ese texto como handoff. Luego continuá en Claude Desktop con:
+
+> Traé el contexto compartido del proyecto Personal - TFM y continuá desde donde quedó.
+
+### Qué hace falta y qué no
+
+- Hace falta que ChatGPT y Claude Desktop tengan instalado `QSMANU-LOCAL-SHARED-MCP`.
+- Hace falta que ambas usen exactamente `Personal - TFM` como proyecto.
+- No hace falta mantener un servidor web ni tener el panel abierto: cada app inicia el MCP local.
+- No se transfiere la conversación completa ni se comparten tokens; se comparte el resumen que
+  se guardó como handoff.
+- El archivo `.sharedctx.json` en la raíz del repositorio fija el proyecto y evita que una app
+  elija otro por error.
+
+El resto de este README describe instalación, importación, diagnóstico y opciones avanzadas.
 
 **Casos de uso concretos (personal vs. laboral, app bloqueada, migración selectiva):**
 [docs/CASOS-DE-USO.md](docs/CASOS-DE-USO.md)
@@ -22,7 +69,7 @@ Kimchi Studio · VS Code Copilot · Claude Code · DeepSeek Harness · y ChatGPT
    Claude ────┤              │   │                │   │              │
    Cursor ────┤ QSMANU-      │◄──┤ modo de        │   │ ~/.shared-mcp/
    Codex  ────┤ LOCAL-SHARED-├──►│ consentimiento │──►│ projects/<p>/
-   Kimchi ────┤ MCP          │   │ off/ro/ask/on  │   │  handoff.md
+   Kimi   ────┤ MCP          │   │ off/ro/ask/on  │   │  handoff.md
    VS Code ───┤ (MCP local)  │   └────────────────┘   │  entries/*.md
    DSH    ────┤ 8 herramientas│                       │ pending/ audit.log
               └──────────────┘                        └──────────────┘
@@ -34,9 +81,9 @@ Kimchi Studio · VS Code Copilot · Claude Code · DeepSeek Harness · y ChatGPT
 |---|---|
 | Nada se comparte automáticamente | No hay hooks, ni captura de conversaciones, ni resúmenes automáticos. Solo se publica si alguien llama a `shared_publish` |
 | El modelo no puede darse permiso | El modo de consentimiento **no es una herramienta MCP**: se cambia únicamente por CLI (`sharedctx mode ...`) |
-| Vos aprobás cada publicación | Modo `ask` (por defecto): lo publicado queda en `pending/` hasta que corras `sharedctx approve <id>` |
+| Vos aprobás cada publicación y cada borrado | Modo `ask` (por defecto): publicar o borrar deja un pendiente en `pending/` hasta que corras `sharedctx approve <id>` |
 | Un proyecto no se filtra a otro | Almacén separado por proyecto; leer otro exige `confirm_cross_project` y queda auditado |
-| El modelo no puede borrar ni ejecutar nada | 8 herramientas, ninguna de archivos, shell, git ni borrado masivo |
+| El modelo no puede tocar archivos ni ejecutar nada | 8 herramientas, ninguna de archivos, shell o git; `shared_forget` solo borra una entrada y también pasa por aprobación |
 | Todo es auditable | `audit.log` (JSONL) registra cada lectura, publicación, aprobación y cambio de modo |
 | Todo queda en tu disco | `~\.shared-mcp`; el servidor HTTP opcional escucha solo en `127.0.0.1` (verificado con netstat) |
 
@@ -81,9 +128,10 @@ en vez de duplicarlo. Si nada alcanza, **no inventa**: pregunta.
 | Cursor | `%USERPROFILE%\.cursor\mcp.json` | ✅ |
 | Codex / ChatGPT desktop | `%USERPROFILE%\.codex\config.toml` | ✅ con aprobación extra en `shared_publish` |
 | Antigravity (agente **e** IDE) | `%USERPROFILE%\.gemini\config\mcp_config.json` | ✅ (comparten el mismo archivo) |
-| Kimchi Studio | `%USERPROFILE%\.config\kimchi\harness\mcp.json` | ✅ |
+| Kimi Code | `%USERPROFILE%\.kimi-code\mcp.json` | Desinstalada; quedan archivos residuales que no activan la instalación |
 | VS Code (Copilot) | `%APPDATA%\Code\User\mcp.json` (`servers`, `type: stdio`) | ✅ |
-| Copilot global | `%USERPROFILE%\.copilot\mcp-config.json` | ✅ |
+| GitHub Copilot CLI | `%USERPROFILE%\.copilot\mcp-config.json` | CLI no detectado; configuración independiente de VS Code |
+| Perplexity Windows | Conector remoto desde la app | Instalada; MCP local solo disponible en macOS |
 | DeepSeek Harness | `%USERPROFILE%\.dsh\profiles\desktop\cordis.patch.yml` | ✅ plugin `dsh-mcp-client` |
 | Claude Code | vía `claude mcp add` | CLI no instalado; hooks automáticos ya eliminados |
 
@@ -92,8 +140,7 @@ Dos aclaraciones que salieron de auditar los binarios de cada app:
 - **Antigravity (agente) y Antigravity IDE comparten `~\.gemini\config\mcp_config.json`.**
   El IDE *no* usa `%APPDATA%\Antigravity IDE\User\mcp.json`; su carpeta `~\.gemini\antigravity-ide\mcp\`
   es solo caché de herramientas descubiertas.
-- **Kimchi Studio** acepta además configuración por proyecto (`<repo>\.kimchi\mcp.json`, `<repo>\.mcp.json`)
-  y sabe importar la config de otras apps: `{ "mcpServers": {}, "imports": ["claude-desktop", "cursor", "codex", "vscode"] }`.
+- **Kimi Code** admite además configuración por proyecto en `<repo>\.kimi-code\mcp.json`.
 
 El servidor anterior (`context-mcp-server`, de terceros) quedó **retirado** de las apps porque capturaba
 contexto de forma automática y exponía `delete_file`, `write_file` y `git_push` a todas las apps. También se
@@ -121,6 +168,26 @@ cd D:\Repositories\shared-mcp-local
 npm install                                        # idempotente
 powershell -ExecutionPolicy Bypass -File .\install.ps1 -DryRun
 ```
+
+El instalador primero hace un barrido de Windows (comandos, ejecutables, configuración existente y
+registro de aplicaciones instaladas) y solo configura las herramientas que detecta. Para inspeccionar
+el resultado sin escribir nada o acotar la selección:
+
+```powershell
+.\install.ps1 -ListApps
+.\install.ps1 -VerifyOnly  # revisa configs y prueba MCP sin modificar archivos
+.\install.ps1 -Apps cursor,codex,kimi-code -DryRun
+.\install.ps1 -ExcludeApps claude-code,dsh
+```
+
+`-Apps` también sirve como selección explícita cuando una instalación portable no puede detectarse.
+
+Las carpetas residuales no cuentan como instalación. El instalador revisa al terminar todas las apps
+detectadas: valida las entradas JSON y prueba el handshake MCP con esas configuraciones; para TOML
+y el perfil YAML comprueba el registro. Esto no confirma una sesión activa dentro de cada aplicación:
+reiniciala e invocá `shared_status` para comprobarla. `-VerifyOnly` devuelve código 1 si detecta problemas.
+Perplexity Windows aparece como integración manual, porque el MCP local está disponible solo en
+[macOS](https://www.perplexity.ai/help-center/en/articles/11502712-local-and-remote-mcps-for-perplexity).
 
 ### Paso 2 — Instalar (hace backup de todo)
 
@@ -159,7 +226,7 @@ sharedctx mode ask        # (recomendado) cada publicación la aprobás vos
 
 ### Paso 5 — Reiniciar las apps
 
-Cerrá y volvé a abrir Claude Desktop, Cursor, Antigravity, Kimchi Studio, VS Code y Codex.
+Cerrá y volvé a abrir Claude Desktop, Cursor, Antigravity, Kimi Code, VS Code y Codex.
 **DeepSeek Harness no hace falta**: recarga el perfil en caliente y las herramientas
 `mcp__QSMANU-LOCAL-SHARED-MCP__*` aparecen en la sesión en curso.
 
@@ -202,6 +269,7 @@ sharedctx ui --install       # arranque automático al iniciar sesión + lo arra
 sharedctx ui --status        # ¿está corriendo? ¿tiene arranque automático?
 sharedctx ui --uninstall     # quitar el arranque automático
 sharedctx ui --open          # arrancarlo a mano y abrir el navegador
+sharedctx ui --ensure        # levantarlo en segundo plano y salir (lo usan los accesos directos)
 sharedctx ui --port 3200     # otro puerto
 ```
 
@@ -209,7 +277,7 @@ sharedctx ui --port 3200     # otro puerto
 
 | Pieza | ¿Es un servidor? | Dónde corre |
 |---|---|---|
-| **El MCP** (`QSMANU-LOCAL-SHARED-MCP`) | **No** | Es un **proceso stdio que arranca cada app cuando la abrís**: Claude Desktop, Cursor, Codex, VS Code, Kimchi y DSH lanzan `node src\stdio.js` por su cuenta y lo cierran al salir. No hay nada que hostear ni que mantener levantado |
+| **El MCP** (`QSMANU-LOCAL-SHARED-MCP`) | **No** | Es un **proceso stdio que arranca cada app cuando la abrís**: Claude Desktop, Cursor, Codex, Kimi, VS Code y DSH lanzan `node src\stdio.js` por su cuenta y lo cierran al salir. No hay nada que hostear ni que mantener levantado |
 | Transporte MCP por HTTP | Sí (opcional) | `sharedctx serve --http` → `http://127.0.0.1:3111/mcp`. Solo hace falta si una app no soporta stdio |
 | **Panel** (`sharedctx ui`) | Sí | `http://127.0.0.1:3120` (solo loopback). Es lo único que conviene tener siempre arriba |
 | Almacén | No | `~\.shared-mcp`: archivos en disco, no un servicio |
@@ -231,13 +299,34 @@ Primero intenta una **tarea programada** de Windows (`schtasks /SC ONLOGON`). Si
 
 Arrancar dos veces no molesta: si el panel ya responde, el segundo intento sale sin hacer nada.
 
+### Botones en el escritorio (opcional)
+
+Si no querés abrir una consola, creá tres accesos directos con iconos nativos:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File tools\atajos.ps1
+```
+
+| Botón | Qué hace |
+|---|---|
+| **QSMANU - Panel de contexto** (`tools\panel.cmd`) | Levanta el panel si hace falta y lo abre |
+| **QSMANU - Estado del contexto** (`tools\estado.cmd`) | Modo, proyectos, salud y qué conviene arreglar |
+| **QSMANU - Reparar conexión** (`tools\reparar.cmd`) | Vuelve a configurar el MCP en las apps (con backup) |
+
+Los `.cmd` son envoltorios finos sobre `sharedctx ui --ensure` / `sharedctx insights` / `install.ps1`, así que
+el escritorio no guarda lógica: si movés o actualizás el repo, los botones siguen funcionando. Para quitarlos:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File tools\atajos.ps1 -Quitar
+```
+
 Una interfaz **de solo lectura** (y solo loopback) que muestra el estado real del servidor:
 
 | Sección | Qué muestra |
 |---|---|
 | Tarjetas | modo de consentimiento, **salud del contexto (0-100)**, proyectos, entradas, tamaño en disco, **apps conectadas ahora**, pendientes y última actividad |
-| **Grafo de contexto** | proyectos (círculos, tamaño = entradas) y apps (rombos) unidos por el contexto que aportó cada una; las conectadas en este momento se marcan en verde. Arrastrable, con detalle al hacer clic |
-| **Grafo de entradas** | cada entrada unida a las demás por **etiquetas**, **archivos**, **menciones** (`[[título]]` o id) y **contenido parecido** (los posibles duplicados van en rojo punteado). Tiene conmutadores de etiquetas/archivos, selector de proyecto, exportación a DOT y clic para leer la entrada con su vecindario |
+| **Grafo de contexto** | proyectos (círculos, tamaño = entradas) y apps (rombos) unidos por el contexto que aportó cada una; las conectadas en este momento se marcan en verde. Arrastrable, con zoom y pan, botón **Centrar**, **Descargar PNG** y detalle al hacer clic |
+| **Grafo de entradas** | cada entrada unida a las demás por **etiquetas**, **archivos**, **menciones** (`[[título]]` o id) y **contenido parecido** (los posibles duplicados van en rojo punteado). Colores por tipo (`handoff`, `decision`, `task`, `bug`, `question`), zoom/pan, buscador en vivo, conmutadores de etiquetas/archivos, selector de proyecto, exportación a **DOT**, **Mermaid** y **PNG**, y detalle con Markdown al hacer clic |
 | **Diagnóstico** | salud 0-100 y qué conviene arreglar: proyectos sin handoff, entradas huérfanas, duplicados, archivos compartidos entre proyectos, contexto escrito por una sola app, entradas viejas, pendientes olvidados. Cada aviso trae el comando para resolverlo |
 | Proyectos | entradas, última actualización, handoff completo, desglose por app y por tipo, y actividad de los últimos 30 días |
 | Apps conectadas | estado de configuración leído del archivo de cada app, **sesiones MCP vivas** (heartbeat real con pid y transporte), proyecto actual y proyectos con contexto de esa app |
@@ -246,7 +335,9 @@ Una interfaz **de solo lectura** (y solo loopback) que muestra el estado real de
 | Auditoría | últimos eventos de `audit.log` |
 
 El panel no expone ninguna ruta de escritura (probado: `POST` → 405), está atado a `127.0.0.1` y no
-permite salir de su carpeta de assets. Se refresca solo cada 5 segundos.
+permite salir de su carpeta de assets. Se refresca solo cada 5 segundos; los dos grafos **duermen** cuando
+la física queda quieta (dejan de pedir frames) y se despiertan al arrastrar, hacer zoom, buscar o recibir
+datos nuevos.
 
 **Lo mismo desde la terminal**, sin abrir el navegador:
 
@@ -255,6 +346,7 @@ sharedctx insights                          # salud + qué arreglar, con el coma
 sharedctx insights "Personal - TFM" --json  # acotado a un proyecto, en JSON
 sharedctx graph "Personal - TFM"            # entradas ordenadas por cantidad de relaciones
 sharedctx graph --type dot > contexto.dot   # para Graphviz / Obsidian / Gephi
+sharedctx graph --type mermaid > contexto.mmd  # para GitHub, PRs u Obsidian
 sharedctx graph --type md                   # para pegar en un README
 ```
 
@@ -267,10 +359,13 @@ sharedctx graph --type md                   # para pegar en un README
 > Publicá el handoff de este proyecto en el contexto compartido: qué hicimos, qué quedó pendiente y el próximo paso.
 
 ```powershell
-sharedctx pending            # ver qué espera tu aprobación
+sharedctx pending            # ver qué espera tu aprobación (publicaciones y borrados)
 sharedctx approve <id>       # o: sharedctx approve all
 sharedctx reject all         # o descartar
 ```
+
+Los borrados que pide el modelo (`shared_forget`) usan el mismo circuito: en modo `ask` no borran nada
+hasta que aprobás el pendiente.
 
 **Mantener un documento vivo sin duplicarlo:** publicá con un `--id` fijo (o `id:` en el encabezado del
 archivo de la bandeja). Republicar con el mismo id **actualiza** la entrada y conserva la fecha original:
@@ -329,7 +424,7 @@ sharedctx serve --http --port 3111
 # salud:  http://127.0.0.1:3111/health
 ```
 
-Kimchi discrimina por estructura, no por `type`: `command` ⇒ stdio, `url` ⇒ remoto
+Kimi Code usa `mcpServers` con `command`; el transporte HTTP queda para apps que solo aceptan MCP remoto
 (`"httpTransport": "sse"` si hiciera falta SSE).
 
 **Mover el almacén** (por ejemplo a otro disco):
@@ -356,10 +451,10 @@ $env:SHARED_MCP_HOME = 'D:\shared-context'   # y agregalo en el bloque env de ca
 Diagnóstico del servidor MCP sin abrir ninguna app:
 
 ```powershell
-npm test                     # 100 pruebas (30 protocolo + 16 robustez + 20 relaciones + 19 panel + 15 interfaz)
+npm test                     # 134 pruebas (36 protocolo + 27 robustez + 24 relaciones + 27 panel + 19 interfaz + 1 detección)
 node test\mcp-smoke.mjs      # protocolo MCP punta a punta
-node test\robustness.mjs     # contenido grande, unicode, BOM, candados, publicación idempotente
-node test\relations.mjs      # grafo de entradas y diagnóstico
+node test\robustness.mjs     # contenido grande, unicode, BOM, candados, ids y escritura atómica
+node test\relations.mjs      # grafo de entradas, diagnóstico y exportaciones
 node test\dashboard.mjs      # panel web: endpoints, solo lectura, assets
 node test\ui.mjs             # renderiza la interfaz de verdad (jsdom) y busca errores de runtime
 ```
@@ -392,17 +487,19 @@ shared-mcp-local\
   tools\merge-codex-toml.mjs         edición quirúrgica del config.toml de Codex
   tools\strip-context-mcp-hooks.mjs  quita hooks de captura automática
   tools\import-context-mcp.mjs       importación selectiva del contexto viejo
+  tools\atajos.ps1                   crea/quita los accesos directos del escritorio
+  tools\panel.cmd · estado.cmd · reparar.cmd   botones finos sobre sharedctx/install.ps1
   tools\recon\                       utilidades de auditoría de app.asar
   agents\contexto-compartido.md      bloque de instrucciones que se inyecta en cada app
   docs\CASOS-DE-USO.md               casos de uso por escenario
   docs\mcp-config-recon-report.md    auditoría de esquemas MCP de cada app
   docs\contexto\*.md                 las entradas de este proyecto publicadas en el contexto
-  test\mcp-smoke.mjs                 30 pruebas de protocolo MCP
-  test\robustness.mjs                16 pruebas de robustez (incluye publicación idempotente)
-  test\relations.mjs                 20 pruebas del grafo de entradas y el diagnóstico
-  test\dashboard.mjs                 19 pruebas del panel (API)
-  test\ui.mjs                        15 pruebas que renderizan la interfaz en jsdom
-  ui\index.html · app.js · style.css interfaz del panel (dos grafos, sin dependencias)
+  test\install-detection.ps1         1 prueba del barrido de apps instaladas
+  test\mcp-smoke.mjs                 36 pruebas de protocolo MCP
+  test\robustness.mjs                27 pruebas de robustez (ids, atomicidad, publicación idempotente)
+  test\relations.mjs                 24 pruebas del grafo de entradas y el diagnóstico
+  test\dashboard.mjs                 27 pruebas del panel (API)
+  test\ui.mjs                        19 pruebas que renderizan la interfaz en jsdom
   state\                             manifiesto, log y JSON temporales (ignorado por git)
 ```
 

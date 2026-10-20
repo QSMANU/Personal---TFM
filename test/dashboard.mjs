@@ -86,6 +86,9 @@ try {
   const dot = await (await fetch(`${base}/api/dot?project=personal-demo`)).json();
   check('se puede exportar el grafo a DOT', dot.dot.startsWith('digraph'));
 
+  const mermaid = await (await fetch(`${base}/api/mermaid?project=personal-demo`)).json();
+  check('se puede exportar el grafo a Mermaid', mermaid.mermaid.startsWith('flowchart TD') && mermaid.mermaid.includes('-->'));
+
   const pending = await (await fetch(`${base}/api/pending`)).json();
   check('los pendientes se listan', pending.pending.length === 1 && pending.pending[0].title === 'Pendiente demo');
 

@@ -81,7 +81,11 @@ canvas { width: 100%; display: block; border-radius: 10px; background: radial-gr
 .sw { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 6px; }
 .sw.project { background: var(--project); }
 .sw.app { background: var(--app); }
-.sw.app.live { box-shadow: 0 0 0 3px rgba(61,220,151,.35); }
+.sw.handoff { background: #ffd166; box-shadow: 0 0 0 2px rgba(255,209,102,.4); }
+.sw.decision { background: #3ddc97; }
+.sw.task { background: #f39c12; }
+.sw.bug { background: #ff6b6b; }
+.sw.question { background: #4ea8de; }
 .sw.entry { background: #6ea8fe; }
 .sw.tag { background: #3ddc97; }
 .sw.file { background: #c792ea; border-radius: 2px; }
@@ -141,3 +145,22 @@ details pre { overflow: auto; max-height: 260px; background: #0d1016; padding: 1
 .entry pre { white-space: pre-wrap; background: #0d1016; border: 1px solid var(--line); border-radius: 8px; padding: 10px; font-size: 12px; margin: 6px 0 0; }
 .tag { font-size: 11px; color: var(--dim); }
 code.cmd { font-family: var(--mono); background: #0d1016; border: 1px solid var(--line); border-radius: 6px; padding: 2px 6px; }
+
+.md-body {
+  font-size: 13px; line-height: 1.6; color: var(--txt);
+  background: #0d1016; border: 1px solid var(--line); border-radius: 8px; padding: 14px 16px; margin: 8px 0 0;
+}
+.md-body h1, .md-body h2, .md-body h3, .md-body h4 { margin: 12px 0 6px; font-weight: 600; color: #fff; }
+.md-body h1 { font-size: 16px; border-bottom: 1px solid var(--line); padding-bottom: 4px; }
+.md-body h2 { font-size: 14.5px; border-bottom: 1px solid var(--line); padding-bottom: 3px; }
+.md-body h3 { font-size: 13.5px; }
+.md-body p { margin: 0 0 8px; }
+.md-body ul, .md-body ol { margin: 0 0 8px 20px; padding: 0; }
+.md-body li { margin-bottom: 3px; }
+.md-body blockquote { margin: 0 0 8px; padding: 4px 10px; border-left: 3px solid var(--accent); background: #131720; color: var(--dim); border-radius: 0 6px 6px 0; }
+.md-body code { font-family: var(--mono); background: #171b24; border: 1px solid var(--line); border-radius: 4px; padding: 1px 5px; font-size: 12px; }
+.md-body pre { background: #07090d; border: 1px solid var(--line); border-radius: 6px; padding: 10px; overflow: auto; font-size: 12px; margin: 6px 0 8px; }
+.md-body pre code { background: none; border: none; padding: 0; font-size: inherit; }
+.md-body .wikilink { color: var(--accent); font-weight: 500; text-decoration: underline dotted; }
+.md-body a { color: var(--accent); text-decoration: none; }
+.md-body a:hover { text-decoration: underline; }

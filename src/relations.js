@@ -38,6 +38,37 @@ function extractMentions(entry, others) {
   return [...out];
 }
 
+const SIMILARITY_CACHE = new Map();
+
+function computeSimilarities(slug, candidatas, similarityThreshold) {
+  // El id y createdAt NO alcanzan: actualizar una entrada conserva ambos. El
+  // mtime + tamaño cambia con cualquier edición y evita devolver un grafo viejo.
+  const sig = candidatas.map((c) => `${c.id}:${c.mtime || c.createdAt || ''}:${c.chars || 0}`).join('|');
+  const cacheKey = `${slug}:${similarityThreshold}:${sig}`;
+  if (SIMILARITY_CACHE.has(cacheKey)) {
+    return SIMILARITY_CACHE.get(cacheKey);
+  }
+  const similares = [];
+  const fps = candidatas.map((c) => fingerprint(c));
+  for (let i = 0; i < candidatas.length; i += 1) {
+    for (let j = i + 1; j < candidatas.length; j += 1) {
+      const score = similarity(fps[i], fps[j]);
+      if (score >= similarityThreshold) {
+        similares.push({
+          a: candidatas[i].id,
+          b: candidatas[j].id,
+          aTitle: candidatas[i].title,
+          bTitle: candidatas[j].title,
+          score,
+        });
+      }
+    }
+  }
+  if (SIMILARITY_CACHE.size > 30) SIMILARITY_CACHE.clear();
+  SIMILARITY_CACHE.set(cacheKey, similares);
+  return similares;
+}
+
 /**
  * Grafo de entradas de un proyecto.
  * @returns {{nodes:Array, edges:Array, stats:Object}}
@@ -99,17 +130,11 @@ export function buildEntryGraph(slug, { includeTags = true, includeFiles = true,
     }
   }
 
-  // Similitud (posible duplicado). Con muchas entradas se acota a las más recientes.
+  // Similitud (posible duplicado) con caché memoizado.
   const candidatas = entries.length > 400 ? entries.slice(0, 400) : entries;
-  const similares = [];
-  for (let i = 0; i < candidatas.length; i += 1) {
-    for (let j = i + 1; j < candidatas.length; j += 1) {
-      const score = similarity(fingerprint(candidatas[i]), fingerprint(candidatas[j]));
-      if (score >= similarityThreshold) {
-        addEdge(`e:${candidatas[i].id}`, `e:${candidatas[j].id}`, 'similar', score);
-        similares.push({ a: candidatas[i].id, b: candidatas[j].id, aTitle: candidatas[i].title, bTitle: candidatas[j].title, score });
-      }
-    }
+  const similares = computeSimilarities(slug, candidatas, similarityThreshold);
+  for (const s of similares) {
+    addEdge(`e:${s.a}`, `e:${s.b}`, 'similar', s.score);
   }
 
   const grados = new Map(nodes.map((n) => [n.id, 0]));
@@ -353,6 +378,38 @@ export function graphToDot(graph, title = 'contexto') {
     lineas.push(`  "${esc(e.source)}" -> "${esc(e.target)}"${estilo};`);
   }
   lineas.push('}');
+  return lineas.join('\n');
+}
+
+/** Exporta el grafo a formato Mermaid (flowchart TD) para Obsidian, GitHub, PRs, etc. */
+export function graphToMermaid(graph, title = 'contexto') {
+  const sanitizeId = (id) => String(id || '').replace(/[^a-zA-Z0-9_]/g, '_');
+  const sanitizeLabel = (l) => String(l || '').replace(/["[\]()]/g, "'");
+  const lineas = ['flowchart TD'];
+  for (const n of graph.nodes) {
+    const sId = sanitizeId(n.id);
+    const label = sanitizeLabel(n.label);
+    if (n.kind === 'entry') {
+      lineas.push(`  ${sId}["${label} (${n.type || 'entry'})"]`);
+    } else if (n.kind === 'tag') {
+      lineas.push(`  ${sId}(["#${label}"])`);
+    } else if (n.kind === 'file') {
+      lineas.push(`  ${sId}[/"${label}"/]`);
+    } else {
+      lineas.push(`  ${sId}["${label}"]`);
+    }
+  }
+  for (const e of graph.edges) {
+    const sA = sanitizeId(e.source);
+    const sB = sanitizeId(e.target);
+    if (e.kind === 'similar') {
+      lineas.push(`  ${sA} -.->|similar| ${sB}`);
+    } else if (e.kind === 'menciona') {
+      lineas.push(`  ${sA} ==>|menciona| ${sB}`);
+    } else {
+      lineas.push(`  ${sA} --> ${sB}`);
+    }
+  }
   return lineas.join('\n');
 }
 

@@ -119,6 +119,22 @@ try {
   check('se abre el detalle de una entrada con su vecindario',
     !drawer.classList.contains('hidden') && /Relacionadas|Sin entradas relacionadas/.test(drawer.textContent),
     drawer.textContent.slice(0, 160));
+  check('el detalle usa el renderizador Markdown', drawer.querySelector('.md-body') !== null);
+
+  const md = window.renderMarkdown('# Título\n\n- uno\n- dos\n\n**fuerte** y `code`\n\n> cita');
+  check('el renderizador Markdown produce títulos, listas, énfasis y código',
+    /<h1>Título<\/h1>/.test(md) && /<ul>/.test(md) && /<li>uno<\/li>/.test(md)
+    && /<strong>fuerte<\/strong>/.test(md) && /<code>code<\/code>/.test(md) && /<blockquote>cita<\/blockquote>/.test(md),
+    md);
+  const enlacePeligroso = window.renderMarkdown('[click](javascript:alert(1))');
+  check('el renderizador neutraliza enlaces javascript:', enlacePeligroso.includes('href="#"') && !enlacePeligroso.includes('javascript:'), enlacePeligroso);
+
+  const search = window.document.querySelector('#graph-search');
+  search.value = 'panel';
+  search.dispatchEvent(new window.Event('input', { bubbles: true }));
+  search.value = '';
+  search.dispatchEvent(new window.Event('input', { bubbles: true }));
+  check('el buscador del grafo no rompe el panel', errores.length === 0, errores.join(' | '));
 
   check('la consola no acumula errores tras interactuar', errores.length === 0, errores.join(' | '));
 

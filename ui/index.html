@@ -38,13 +38,17 @@
     <div class="panel">
       <div class="panel-head">
         <h2>Grafo de contexto</h2>
-        <p class="hint">Proyectos (círculos) y apps (rombos). El grosor indica cuánto contexto aportó esa app a ese proyecto. Arrastrá los nodos; clic en un proyecto para abrir su detalle.</p>
+        <p class="hint">Proyectos (círculos) y apps (rombos). El grosor indica cuánto contexto aportó esa app a ese proyecto. Arrastrá los nodos o el fondo para moverte; rueda del ratón para zoom; clic en un proyecto para abrir su detalle.</p>
       </div>
       <canvas id="graph" height="520"></canvas>
       <div class="legend">
         <span><i class="sw project"></i> proyecto</span>
         <span><i class="sw app"></i> app configurada</span>
         <span><i class="sw app live"></i> app conectada ahora</span>
+        <span style="margin-left:auto;display:flex;gap:6px">
+          <button id="cg-reset" style="font-size:11px;padding:2px 8px;border-radius:6px">Centrar</button>
+          <button id="cg-png" style="font-size:11px;padding:2px 8px;border-radius:6px">Descargar PNG</button>
+        </span>
       </div>
     </div>
   </section>
@@ -53,18 +57,27 @@
     <div class="panel">
       <div class="panel-head">
         <h2>Grafo de entradas de contexto</h2>
-        <p class="hint">Cada entrada, unida a las demás por <b>etiquetas</b>, <b>archivos</b>, <b>menciones</b> y <b>contenido parecido</b>. Las líneas rojas punteadas son posibles duplicados. Clic en una entrada para leerla.</p>
+        <p class="hint">Cada entrada, unida a las demás por <b>etiquetas</b>, <b>archivos</b>, <b>menciones</b> y <b>contenido parecido</b>. Arrastrá el fondo para moverte; rueda para zoom; clic en una entrada para leerla.</p>
         <div class="controls">
           <label>Proyecto <select id="eg-project"></select></label>
+          <input type="search" id="graph-search" placeholder="Filtrar por texto, tag o archivo..." style="background:var(--panel-2);color:var(--txt);border:1px solid var(--line);border-radius:8px;padding:5px 8px;font:inherit;font-size:12px;width:210px">
           <label class="chk"><input type="checkbox" id="eg-tags" checked> etiquetas</label>
           <label class="chk"><input type="checkbox" id="eg-files" checked> archivos</label>
           <button id="eg-dot">Exportar DOT</button>
+          <button id="eg-mermaid">Copiar Mermaid</button>
+          <button id="eg-png">Descargar PNG</button>
+          <button id="eg-reset">Centrar</button>
           <span id="eg-stats" class="hint"></span>
         </div>
       </div>
       <canvas id="egraph" height="560"></canvas>
       <div class="legend">
-        <span><i class="sw entry"></i> entrada</span>
+        <span><i class="sw handoff"></i> handoff</span>
+        <span><i class="sw decision"></i> decisión</span>
+        <span><i class="sw task"></i> tarea</span>
+        <span><i class="sw bug"></i> bug</span>
+        <span><i class="sw question"></i> pregunta</span>
+        <span><i class="sw entry"></i> nota/otra</span>
         <span><i class="sw tag"></i> etiqueta</span>
         <span><i class="sw file"></i> archivo</span>
         <span><i class="sw dup"></i> posible duplicado</span>

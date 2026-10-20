@@ -64,12 +64,16 @@ Publicar (vos, sin depender de ninguna app)
   sharedctx forget P <id>                   borrar una entrada
 
 Aprobaciones (modo ask)
-  sharedctx pending [--json]                publicaciones esperando tu OK
-  sharedctx approve <id|all>                aprobar y publicar
+  sharedctx pending [--json]                publicaciones y borrados esperando tu OK
+  sharedctx approve <id|all>                aprobar y publicar o borrar
   sharedctx reject <id|all>                 descartar
 
 Integración
   sharedctx ui [--port 3120] [--open]       panel web local: estado, grafo, apps, métodos
+  sharedctx ui --ensure                     lo levanta en segundo plano y sale (accesos directos)
+  sharedctx ui --install|--status|--uninstall  arranque automático del panel
+  sharedctx graph [proyecto] [--type text|json|dot|mermaid|md]  grafo de relaciones
+  sharedctx insights [proyecto] [--json]    salud del contexto y qué conviene arreglar
   sharedctx export --project P --out DIR    exporta a Markdown (para ChatGPT web)
   sharedctx export --all --out DIR
   sharedctx serve --http [--port 3111]      servidor MCP por HTTP en loopback
@@ -77,8 +81,8 @@ Integración
 Modos
   off       no se lee ni se escribe nada compartido
   readonly  se lee; publicar bloqueado
-  ask       se lee; cada publicación queda pendiente de tu aprobación  (por defecto)
-  on        se lee; se publica directo (todo queda auditado)
+  ask       se lee; publicar y borrar quedan pendientes de tu aprobación  (por defecto)
+  on        se lee; se publica y borra directo (todo queda auditado)
 `;
 
 function readStdin() {
@@ -117,8 +121,8 @@ async function resolveContent(values) {
 
 function requireWriteMode() {
   const cfg = getConfig();
-  if (cfg.mode === 'off') {
-    console.error('El contexto compartido está en modo `off`. Activalo primero:\n  sharedctx mode ask      (aprobación por publicación)\n  sharedctx mode readonly (solo lectura)');
+  if (cfg.mode === 'off' || cfg.mode === 'readonly') {
+    console.error(`El contexto compartido está en modo \`${cfg.mode}\` y no permite escribir. Activalo primero:\n  sharedctx mode ask      (aprobación por publicación)\n  sharedctx mode on       (publicación directa)`);
     process.exit(2);
   }
   return cfg;
@@ -368,7 +372,7 @@ async function main() {
     }
 
     case 'graph': {
-      const { buildEntryGraph, graphToDot } = await import('./relations.js');
+      const { buildEntryGraph, graphToDot, graphToMermaid } = await import('./relations.js');
       const requested = values.project || rest[0] || detectProject().name;
       const match = findProjectMatch(requested);
       const slug = match ? match.slug : slugify(requested);
@@ -380,6 +384,7 @@ async function main() {
       const formato = values.type || 'text';
       if (formato === 'json') { console.log(JSON.stringify(g, null, 2)); return; }
       if (formato === 'dot') { console.log(graphToDot(g, slug)); return; }
+      if (formato === 'mermaid') { console.log(graphToMermaid(g, slug)); return; }
       if (formato === 'md') {
         console.log(`# Grafo de contexto · ${match ? match.name : slug}\n`);
         console.log(`- Entradas: ${g.stats.entries} · etiquetas: ${g.stats.tags} · archivos: ${g.stats.files} · relaciones: ${g.stats.links}`);
@@ -435,12 +440,15 @@ async function main() {
       const pending = listPending();
       if (values.json) { console.log(JSON.stringify(pending, null, 2)); return; }
       if (pending.length === 0) { console.log('No hay publicaciones pendientes.'); return; }
-      console.log(`${pending.length} publicación(es) esperando tu aprobación:\n`);
+      console.log(`${pending.length} elemento(s) esperando tu aprobación:\n`);
       for (const p of pending) {
+        const esBorrado = p.action === 'forget' || p.type === 'forget';
         console.log(`■ ${p.title}   [${p.id}]`);
-        console.log(`  proyecto: ${p.project}  ·  tipo: ${p.type}  ·  pedido por: ${p.app}  ·  ${p.createdAt}`);
-        const preview = p.content.trim().split('\n').slice(0, 6).join('\n    ');
-        console.log(`    ${preview}${p.content.trim().split('\n').length > 6 ? '\n    …' : ''}\n`);
+        console.log(`  acción: ${esBorrado ? 'BORRADO' : 'PUBLICACIÓN'}  ·  proyecto: ${p.project}  ·  pedido por: ${p.app}  ·  ${p.createdAt}`);
+        if (p.content) {
+          const preview = p.content.trim().split('\n').slice(0, 6).join('\n    ');
+          console.log(`    ${preview}${p.content.trim().split('\n').length > 6 ? '\n    …' : ''}\n`);
+        }
       }
       console.log('Aprobar:  sharedctx approve <id>   |   todo: sharedctx approve all');
       console.log('Descartar: sharedctx reject <id>   |   todo: sharedctx reject all');
@@ -448,10 +456,17 @@ async function main() {
     }
 
     case 'approve': {
+      requireWriteMode();
       const target = rest[0] || 'all';
       const done = approvePending(target === 'all' ? 'all' : [target]);
       if (done.length === 0) { console.log('No había nada que aprobar con ese id.'); return; }
-      for (const e of done) console.log(`aprobado y publicado: ${e.id}  (${e.title}) → proyecto ${e.project}`);
+      for (const e of done) {
+        if (e.action === 'forget' || e.type === 'forget') {
+          console.log(`aprobado y borrado: ${e.id}  (${e.title}) en proyecto ${e.project}`);
+        } else {
+          console.log(`aprobado y publicado: ${e.id}  (${e.title}) → proyecto ${e.project}`);
+        }
+      }
       return;
     }
 
@@ -600,6 +615,25 @@ async function main() {
         if (process.argv.includes('--open')) spawn('cmd', ['/c', 'start', '', ya.url], { detached: true, stdio: 'ignore' }).unref();
         return;
       }
+
+      // --ensure: levanta el panel en segundo plano y sale (es lo que usan los
+      // botones del escritorio: no dejan ninguna consola colgada).
+      if (process.argv.includes('--ensure')) {
+        const arranque = dash.runTaskNow();
+        let arriba = null;
+        for (let i = 0; i < 20 && !arriba; i += 1) {
+          await new Promise((r) => setTimeout(r, 400));
+          arriba = await dash.panelRunning(port);
+        }
+        if (!arriba) {
+          console.error(`No pude levantar el panel (${arranque.error || 'sin detalle'}). Mirá: ${join(getHome(), 'dashboard.log')}`);
+          process.exit(1);
+        }
+        console.log(`Panel corriendo en ${arriba.url}`);
+        if (process.argv.includes('--open')) spawn('cmd', ['/c', 'start', '', arriba.url], { detached: true, stdio: 'ignore' }).unref();
+        return;
+      }
+
       const { url, server } = await dash.startDashboard({ port, open: process.argv.includes('--open') });
       console.log(`Panel del contexto compartido: ${url}`);
       console.log(`Almacén: ${getHome()} · modo: ${getConfig().mode}`);

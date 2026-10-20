@@ -2,7 +2,7 @@
 /**
  * http.js — entrada MCP Streamable HTTP, atada a loopback.
  *
- * Pensada para apps que solo aceptan servidores MCP remotos (Kimchi Studio, por
+ * Pensada para apps que solo aceptan servidores MCP remotos (Kimi Code, por
  * ejemplo) o para compartir el mismo proceso entre varias herramientas.
  *
  *   POST /mcp     JSON-RPC

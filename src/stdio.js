@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * stdio.js — entrada MCP por stdio (Claude Desktop, Cursor, Codex, VS Code Copilot,
- * Claude Code, Antigravity, Kimchi Studio).
+ * Claude Code, Antigravity, Kimi Code).
  *
  * Nada debe escribirse en stdout salvo JSON-RPC: los logs van a stderr.
  */
@@ -16,6 +16,11 @@ process.on('unhandledRejection', (err) => log(`unhandledRejection: ${err?.stack 
 const APP = process.env.SHARED_MCP_APP || 'desconocida';
 const server = createServer();
 const transport = new StdioServerTransport();
+
+// Claude Desktop y otros clientes pueden cerrar el canal antes de enviar una
+// llamada. Dejarlo en el log local evita que un timeout quede sin diagnóstico.
+transport.onerror = (err) => log(`stdio transport error · app=${APP} · ${err?.stack || err?.message || err}`);
+transport.onclose = () => log(`stdio transport closed · app=${APP}`);
 
 // Heartbeat de sesión: es lo que el panel (`sharedctx ui`) muestra como "conectada ahora".
 registerSession({ app: APP, transport: 'stdio' });

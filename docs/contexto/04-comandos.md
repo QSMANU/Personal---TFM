@@ -25,14 +25,24 @@ Get-Content log.txt | sharedctx handoff --project "OAT - Architecture" --file -
 sharedctx note --project "Personal - TFM"     # Bloc de notas con plantilla
 sharedctx inbox && sharedctx ingest           # bandeja: dejás archivos y los publica
 
-# aprobaciones (modo ask)
+# aprobaciones (modo ask): publicaciones y borrados
 sharedctx pending
 sharedctx approve all      |  sharedctx reject all
 
-# leer y exportar
+# leer, diagnosticar y exportar
 sharedctx list "Personal - TFM"
 sharedctx show <id> --project "Personal - TFM"
+sharedctx insights "Personal - TFM"           # salud 0-100 y qué arreglar
+sharedctx graph "Personal - TFM"               # entradas por cantidad de relaciones
+sharedctx graph --type dot|mermaid|md|json     # Graphviz, Obsidian/GitHub, README, JSON
 sharedctx export --project "Personal - TFM" --out "C:\...\ChatGPT\Personal - TFM\.shared"
+
+# panel web local (solo loopback)
+sharedctx ui --open                            # abrirlo a mano
+sharedctx ui --install                         # arranque automático al iniciar sesión
+sharedctx ui --ensure                          # levantarlo en segundo plano y salir
+sharedctx ui --status                          # ¿corriendo? ¿con arranque automático?
+powershell -ExecutionPolicy Bypass -File tools\atajos.ps1   # botones del escritorio
 
 # servidor HTTP opcional (solo loopback)
 sharedctx serve --http --port 3111        # MCP: http://127.0.0.1:3111/mcp
