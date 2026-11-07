@@ -9,6 +9,7 @@ try {
   $localAppData = Join-Path $profile 'AppData\Local'
   New-Item -ItemType Directory -Force -Path (Join-Path $profile '.cursor') | Out-Null
   New-Item -ItemType Directory -Force -Path (Join-Path $profile '.kimi-code') | Out-Null
+  New-Item -ItemType Directory -Force -Path (Join-Path $profile '.config\opencode') | Out-Null
   New-Item -ItemType Directory -Force -Path (Join-Path $appData 'Code\User') | Out-Null
   $storeClaude = Join-Path $localAppData 'Packages\Claude_test\LocalCache\Roaming\Claude\claude_desktop_config.json'
   New-Item -ItemType Directory -Force -Path (Split-Path -Parent $storeClaude) | Out-Null
@@ -35,6 +36,7 @@ try {
   Assert-Installed 'claude-desktop' $true
   Assert-Installed 'claude-code' $true
   Assert-Installed 'dsh' $true
+  Assert-Installed 'opencode' $false
   Assert-Installed 'codex' $false
   Assert-Installed 'antigravity' $false
   Assert-Installed 'copilot' $false
@@ -65,6 +67,35 @@ try {
   if ((Get-TestConnection 'vscode').Configured) { throw 'Ruta de servidor incorrecta apareció válida' }
   Set-Content -LiteralPath $configPath -Value '{invalid json'
   if ((Get-TestConnection 'vscode').Configured) { throw 'JSON roto apareció válido' }
+
+  # Claude Desktop actual (Microsoft Store): %LOCALAPPDATA%\Claude-Data\<familia>.
+  $claudeDataDir = Join-Path $localAppData 'Claude-Data\claude_test'
+  New-Item -ItemType Directory -Force -Path $claudeDataDir | Out-Null
+  $claudeCfg = Join-Path $claudeDataDir 'claude_desktop_config.json'
+  @{ mcpServers = @{ 'QSMANU-LOCAL-SHARED-MCP' = @{ command=(Get-Command node).Source; args=@((Join-Path $repo 'src\stdio.js')); env=@{ SHARED_MCP_APP='claude-desktop' } } } } | ConvertTo-Json -Depth 8 | Set-Content -LiteralPath $claudeCfg
+  if (-not (Get-TestConnection 'claude-desktop').Configured) { throw 'Claude Desktop (Claude-Data) no se detectó' }
+
+  # OpenCode V2: mcp.servers.sharedctx con command como array y "environment".
+  $ocPath = Join-Path $profile '.config\opencode\opencode.json'
+  $ocServer = @{ type='local'; command=@((Get-Command node).Source, (Join-Path $repo 'src\stdio.js')); environment=@{ SHARED_MCP_APP='opencode' } }
+  function Save-TestOpenCode {
+    @{ mcp = @{ servers = @{ sharedctx = $ocServer } } } | ConvertTo-Json -Depth 10 | Set-Content -LiteralPath $ocPath
+  }
+  if ((Get-TestConnection 'opencode').Configured) { throw 'OpenCode sin config apareció conectado' }
+  Save-TestOpenCode
+  if (-not (Get-TestConnection 'opencode').Configured) { throw 'OpenCode con configuración válida no pasó' }
+  $ocServer.type = 'remote'
+  Save-TestOpenCode
+  if ((Get-TestConnection 'opencode').Configured) { throw 'OpenCode con tipo incorrecto apareció válido' }
+  $ocServer.type = 'local'
+  $ocServer.environment.SHARED_MCP_APP = 'otra-app'
+  Save-TestOpenCode
+  if ((Get-TestConnection 'opencode').Configured) { throw 'OpenCode con SHARED_MCP_APP incorrecto apareció válido' }
+  $ocServer.environment.SHARED_MCP_APP = 'opencode'
+  $ocServer.command = @((Get-Command node).Source)
+  Save-TestOpenCode
+  if ((Get-TestConnection 'opencode').Configured) { throw 'OpenCode sin stdio.js apareció válido' }
+
   if ((Get-TestConnection 'perplexity').Status -ne 'MANUAL') { throw 'Perplexity no informó integración manual' }
   Write-Host 'OK: detección sin falsos positivos por restos, Store y validación de configuración MCP'
 } finally {

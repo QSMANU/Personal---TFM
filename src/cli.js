@@ -13,6 +13,7 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync, rmSync } from 'node
 import { join, resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { tmpdir } from 'node:os';
+import { prepareMaintenance, queueMaintenance } from './maintenance.js';
 import {
   MODES, approvePending, audit, clearActive, deleteEntry, describeGate, detectProject, getActive,
   getConfig, getHome, inboxDir, ingestInbox, listEntries, listPending, listProjects, readAudit,
@@ -37,6 +38,7 @@ const OPTIONS = {
   clipboard: { type: 'boolean' },
   json: { type: 'boolean' },
   help: { type: 'boolean', short: 'h' },
+  queue: { type: 'boolean' },
 };
 
 const HELP = `sharedctx — contexto compartido local entre herramientas de AI (opt-in)
@@ -67,6 +69,8 @@ Aprobaciones (modo ask)
   sharedctx pending [--json]                publicaciones y borrados esperando tu OK
   sharedctx approve <id|all>                aprobar y publicar o borrar
   sharedctx reject <id|all>                 descartar
+  sharedctx organize --file plan.json      revisar traslado/consolidación, sin escribir
+  sharedctx organize --file plan.json --queue  dejar el plan pendiente de aprobación
 
 Integración
   sharedctx ui [--port 3120] [--open]       panel web local: estado, grafo, apps, métodos
@@ -436,6 +440,19 @@ async function main() {
       return;
     }
 
+    case 'organize': {
+      if (!values.file || values.file === '-') throw new Error('Falta --file con un plan JSON local.');
+      const plan = JSON.parse(readFileSync(resolve(values.file), 'utf8').replace(/^\uFEFF/, ''));
+      const changes = prepareMaintenance(plan);
+      console.log(`${plan.title}: ${plan.changes.length} operaciones; ${changes.length} archivos. Sin cambios publicados.`);
+      if (values.queue) {
+        requireWriteMode();
+        const item = queueMaintenance(plan);
+        console.log(`PENDIENTE ${item.id}. Revisar el plan y aprobar: sharedctx approve ${item.id}`);
+      }
+      return;
+    }
+
     case 'pending': {
       const pending = listPending();
       if (values.json) { console.log(JSON.stringify(pending, null, 2)); return; }
@@ -444,7 +461,7 @@ async function main() {
       for (const p of pending) {
         const esBorrado = p.action === 'forget' || p.type === 'forget';
         console.log(`■ ${p.title}   [${p.id}]`);
-        console.log(`  acción: ${esBorrado ? 'BORRADO' : 'PUBLICACIÓN'}  ·  proyecto: ${p.project}  ·  pedido por: ${p.app}  ·  ${p.createdAt}`);
+        console.log(`  acción: ${p.action === 'maintenance' ? 'ORGANIZACIÓN CON RESPALDO' : esBorrado ? 'BORRADO' : 'PUBLICACIÓN'}  ·  proyecto: ${p.project}  ·  pedido por: ${p.app}  ·  ${p.createdAt}`);
         if (p.content) {
           const preview = p.content.trim().split('\n').slice(0, 6).join('\n    ');
           console.log(`    ${preview}${p.content.trim().split('\n').length > 6 ? '\n    …' : ''}\n`);
@@ -461,7 +478,9 @@ async function main() {
       const done = approvePending(target === 'all' ? 'all' : [target]);
       if (done.length === 0) { console.log('No había nada que aprobar con ese id.'); return; }
       for (const e of done) {
-        if (e.action === 'forget' || e.type === 'forget') {
+        if (e.action === 'maintenance') {
+          console.log(`aprobado y organizado: ${e.id} (${e.title}); respaldo: ${e.backup}`);
+        } else if (e.action === 'forget' || e.type === 'forget') {
           console.log(`aprobado y borrado: ${e.id}  (${e.title}) en proyecto ${e.project}`);
         } else {
           console.log(`aprobado y publicado: ${e.id}  (${e.title}) → proyecto ${e.project}`);

@@ -5,6 +5,9 @@
  *
  *   node tools/merge-mcp-json.mjs <config.json> <rootKey> <serverName> <server.json> [--retire a,b]
  *
+ * `rootKey` acepta una ruta con puntos para configuraciones anidadas, por
+ * ejemplo `mcp.servers` (OpenCode V2).
+ *
  * Mantiene el resto del archivo intacto a nivel de datos (se reescribe con
  * formato estable de 2 espacios). Siempre conviene tener backup: lo hace el
  * instalador.
@@ -46,20 +49,31 @@ if (typeof config !== 'object' || config === null || Array.isArray(config)) {
   process.exit(1);
 }
 
-if (typeof config[rootKey] !== 'object' || config[rootKey] === null || Array.isArray(config[rootKey])) {
-  config[rootKey] = {};
+// rootKey puede ser una ruta con puntos: "mcp.servers" (OpenCode V2).
+const ruta = rootKey.split('.').filter(Boolean);
+let contenedor = config;
+for (const clave of ruta.slice(0, -1)) {
+  if (typeof contenedor[clave] !== 'object' || contenedor[clave] === null || Array.isArray(contenedor[clave])) {
+    contenedor[clave] = {};
+  }
+  contenedor = contenedor[clave];
+}
+
+const hoja = ruta.at(-1);
+if (typeof contenedor[hoja] !== 'object' || contenedor[hoja] === null || Array.isArray(contenedor[hoja])) {
+  contenedor[hoja] = {};
 }
 
 const removed = [];
 for (const name of retire) {
-  if (Object.prototype.hasOwnProperty.call(config[rootKey], name)) {
-    delete config[rootKey][name];
+  if (Object.prototype.hasOwnProperty.call(contenedor[hoja], name)) {
+    delete contenedor[hoja][name];
     removed.push(name);
   }
 }
 
-const action = Object.prototype.hasOwnProperty.call(config[rootKey], serverName) ? 'actualizado' : 'agregado';
-config[rootKey][serverName] = server;
+const action = Object.prototype.hasOwnProperty.call(contenedor[hoja], serverName) ? 'actualizado' : 'agregado';
+contenedor[hoja][serverName] = server;
 
 mkdirSync(dirname(configPath), { recursive: true });
 writeFileSync(configPath, `${JSON.stringify(config, null, 2)}\n`, 'utf8');

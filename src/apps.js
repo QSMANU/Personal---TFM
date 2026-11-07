@@ -6,6 +6,7 @@
  * `kind` describe la forma del archivo:
  *   json-mcpServers  { "mcpServers": { "<nombre>": { command, args, env } } }
  *   json-servers     { "servers":     { "<nombre>": { type, command, args } } }   (VS Code)
+ *   json-opencode    { "mcp": { "servers": { "<nombre>": { type, command[], environment } } } } (OpenCode)
  *   toml             [mcp_servers.<nombre>]                                       (Codex)
  *   dsh-patch        patch YAML del perfil de DeepSeek Harness
  *   cli              se registra con un comando propio (Claude Code)
@@ -73,6 +74,12 @@ export const KNOWN_APPS = [
     config: join(H, '.dsh', 'profiles', 'desktop', 'cordis.patch.yml'),
     instructions: null,
     notes: 'Recarga el perfil en caliente: no hace falta reiniciar.',
+  },
+  {
+    id: 'opencode', name: 'OpenCode', kind: 'json-opencode', root: 'mcp.servers', serverName: 'sharedctx',
+    config: join(H, '.config', 'opencode', 'opencode.json'),
+    instructions: join(H, '.config', 'opencode', 'AGENTS.md'),
+    notes: 'V2: command es un array y las variables van en "environment"; recarga la config en caliente.',
   },
 ];
 

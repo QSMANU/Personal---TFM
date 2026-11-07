@@ -74,7 +74,11 @@ try {
   window.eval(readFileSync(join(ROOT, 'ui', 'app.js'), 'utf8'));
 
   // Espera a que terminen los fetch y los frames.
-  await new Promise((r) => setTimeout(r, 700));
+  const readyDeadline = Date.now() + 10000;
+  while (!/Salud del contexto/.test(window.document.querySelector('#cards').textContent) && Date.now() < readyDeadline) {
+    await new Promise(r => setTimeout(r, 50));
+  }
+  await new Promise(r => setTimeout(r, 30));
 
   check('el panel arranca sin errores de runtime', errores.length === 0, errores.join(' | '));
   check('se dibujaron los dos grafos con el contexto 2D',
@@ -83,13 +87,14 @@ try {
 
   const cards = window.document.querySelector('#cards');
   check('las tarjetas se completan', cards && /Salud del contexto/.test(cards.textContent), cards?.textContent?.slice(0, 120));
-  check('la tarjeta muestra la salud en 0-100', /9\d|100/.test(cards.textContent));
+  const expectedHealth = (await (await fetch(`${base}/api/insights`)).json()).score;
+  check('la tarjeta muestra el diagnóstico real en 0-100', expectedHealth >= 0 && expectedHealth <= 100 && cards.textContent.includes(String(expectedHealth)));
 
   const egStats = window.document.querySelector('#eg-stats').textContent;
   check('el grafo de entradas informa sus estadísticas', /\d+ entradas .* \d+ relaciones/.test(egStats), egStats);
 
   const tools = window.document.querySelector('#tools').textContent;
-  check('los 8 métodos MCP se listan con su esquema', window.document.querySelectorAll('#tools details').length >= 8);
+  check('los 10 métodos MCP se listan con su esquema', window.document.querySelectorAll('#tools details').length >= 10);
 
   const insights = window.document.querySelector('#insights').textContent;
   check('el diagnóstico se renderiza con la salud', /salud/i.test(insights) && insights.length > 40, insights.slice(0, 120));

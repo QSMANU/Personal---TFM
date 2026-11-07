@@ -11,7 +11,7 @@ con `SHARED_MCP_APP` distinto en cada una (sirve para la memoria por app y la au
 
 | App | Archivo | Clave | App-id |
 |---|---|---|---|
-| Claude Desktop | `%APPDATA%\Claude\claude_desktop_config.json` (o `LocalCache\Roaming\Claude\...` si es la versión de Microsoft Store) | `mcpServers` | claude-desktop |
+| Claude Desktop | `%APPDATA%\Claude\claude_desktop_config.json`, `%LOCALAPPDATA%\Claude-Data\<familia>\claude_desktop_config.json` (Store actual) o `LocalCache\Roaming\Claude\...` (Store anterior) | `mcpServers` | claude-desktop |
 | Cursor | `%USERPROFILE%\.cursor\mcp.json` | `mcpServers` | cursor |
 | Antigravity (agente **e** IDE) | `%USERPROFILE%\.gemini\config\mcp_config.json` | `mcpServers` | antigravity |
 | Kimi Code | `%USERPROFILE%\.kimi-code\mcp.json` | `mcpServers` | kimi-code |

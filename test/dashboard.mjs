@@ -47,7 +47,7 @@ try {
     typeof overview.instructions === 'string' && overview.instructions.includes('NUNCA publiques'));
 
   const tools = await (await fetch(`${base}/api/tools`)).json();
-  check('los métodos MCP se exponen con su esquema', tools.tools.length === 8 && tools.tools.every((t) => t.name && t.inputSchema));
+  check('los métodos MCP se exponen con su esquema', tools.tools.length === 10 && tools.tools.every((t) => t.name && t.inputSchema));
 
   const apps = await (await fetch(`${base}/api/apps`)).json();
   const cursor = apps.apps.find((a) => a.id === 'cursor');

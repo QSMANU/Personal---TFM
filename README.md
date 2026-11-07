@@ -8,7 +8,66 @@ herramientas de AI pueden leer y escribir… **solo cuando vos querés**.
 - Almacén: `C:\Users\QsManu-Movil\.shared-mcp` (texto plano, Markdown + JSON)
 
 Herramientas soportadas: Claude Desktop · Cursor · Codex / ChatGPT desktop · Antigravity (agente e IDE) ·
-Kimi Code · VS Code Copilot · Claude Code · DeepSeek Harness · y ChatGPT web por exportación a Markdown.
+Kimi Code · VS Code Copilot · Claude Code · DeepSeek Harness · OpenCode · y ChatGPT web por exportación a Markdown.
+
+
+## Recuperación estructurada y acotada (v0.5.0)
+
+- `shared_pull` trae por defecto una **vista parcial explícita** del handoff (hasta 1600 caracteres) y tres notas recientes. No es un resumen semántico ni garantiza contener todas las decisiones: leer completo el handoff antes de ejecutar trabajo que dependa de sus restricciones.
+- `shared_read` lee un ID concreto o `id: "handoff"`. Las páginas incluyen revisión y offset de continuación; no se pierde contenido. `shared_search` busca localmente palabras en títulos, etiquetas, rutas y cuerpos, sin llamadas a modelos.
+- `max_chars` limita las respuestas de lectura (defecto 6000; rango 512–20000). `handoff_mode` acepta brief, full u omit. `include_content` controla las vistas de cuerpos de notas. El texto completo se obtiene mediante shared_read.
+- Los límites son enteros: cero omite la lista, negativos/fracciones se rechazan. Los filtros se aplican antes de paginar. `type: "handoff"` permite consultar el historial.
+- `since_revision` evita repetir una vista ya recibida: reutilizar solo después de haber consumido esa vista. No enviarlo al continuar otra página de shared_read.
+- Todas las lecturas de otro proyecto (incluidas listas por proyecto, búsquedas y relacionadas) exigen pedido del usuario y `confirm_cross_project: true`. Enumerar nombres de proyectos sigue permitido.
+- audit.log mide caracteres, bytes y duración de respuestas, sin cuerpos ni búsquedas. No son tokens exactos ni facturación.
+
+### Árbol y grafo para AI
+
+shared_pull conserva format: "markdown" por defecto para mantener compatibilidad y una respuesta breve. format: "tree" ofrece identidad del proyecto, revisión, cantidad de pendientes del proyecto, handoff seleccionado y entradas agrupadas por rol. format: "graph" devuelve JSON válido con schema "sharedctx.context.v1", nodes, edges y page.next_offset. No añade herramientas al catálogo.
+
+- selected_handoff indica cuál está seleccionado, no que sus afirmaciones estén vigentes o verificadas. history identifica handoffs anteriores. Para verlos: type: "handoff"; no se cargan todos por defecto.
+- Las aristas son mentions (ID delimitado o enlace [[título]]), shared_tag o shared_file. Se calculan solo entre los nodos devueltos del proyecto autorizado. No infieren causalidad, aprobación, depende_de ni reemplaza_a. La ausencia de aristas tampoco prueba ausencia de relación.
+- El grafo poda fragmentos, aristas y nodos completos para respetar max_chars. Nunca corta JSON por la mitad; partial, edges_omitted y next_offset explican lo omitido. Si no cabe ningún resultado, aumentar el presupuesto; no repetir el mismo offset indefinidamente. La estructura es una página, no el grafo exhaustivo del proyecto.
+- Un handoff pendiente no reemplaza al aprobado hasta aprobación. Solo se devuelve pending_count del proyecto; no se exponen cuerpos ni títulos pendientes en pull.
+- since_revision incluye formato, filtros, presupuesto y cantidad de pendientes. En graph, una respuesta sin cambios es JSON con unchanged: true.
+
+Ejemplos de argumentos:
+
+    {"format":"tree","limit":3}
+    {"format":"graph","handoff_mode":"omit","type":"handoff","limit":5,"max_chars":6000}
+    {"id":"<ID devuelto>"}  // shared_read
+
+El árbol prioriza orientación y lectura selectiva; JSON facilita procesamiento. No se asume que JSON o grafos gasten menos tokens que texto: depende de los datos y del tokenizer. Medir tamaños y ampliar solo lo pertinente.
+
+Flujo recomendado: estado → pull breve → búsqueda/relacionadas → read de IDs relevantes. No hacer pulls completos repetidos ni cargar todo el historial por rutina.
+
+### Organización de datos con aprobación (v0.6.0)
+
+Release Cycle e INEE pueden mantenerse como dos fichas temáticas dentro de OAT - Architecture: índice breve del proyecto, ficha de cada tema y originales históricos. El grafo sirve para navegar relaciones; resumir y recuperar por tema es lo que evita cargar todo el historial.
+
+    sharedctx organize --file plan.json          # validar y revisar, sin escribir
+    sharedctx organize --file plan.json --queue  # dejar el lote pendiente
+    sharedctx pending --json                    # revisar el plan completo
+    sharedctx approve <id>                      # lo ejecuta la persona
+
+Los planes version 1 admiten move (conservar ID/cuerpo/fecha/app y corregir proyecto), archive (original exacto en archive/<id>.md.gz) y publish (ficha consolidada nueva). Cada fuente lleva expectedHash SHA-256 de sus bytes; un handoff nuevo incluye expectedHandoffHash. Se validan todos los proyectos, IDs, fuentes y destinos antes de escribir. No se admiten sobrescrituras ni archivar el handoff seleccionado sin reemplazo en el mismo lote. El modo off/readonly lo bloquea; organize nunca cambia el consentimiento ni aprueba por su cuenta.
+
+Al aprobar se conserva un respaldo con hashes y originales en backups/maintenance-<id>, se bloquean lotes concurrentes y se revierten las escrituras si falla una operación. Un cambio concurrente en una fuente hace fallar el plan en lugar de sobrescribirlo. El rechazo de un pendiente no altera los originales. Los planes locales y resúmenes para revisión se preparan fuera del almacén activo.
+
+Las entradas archivadas quedan fuera de pull/list/search/grafo habituales. shared_read con su ID las descomprime y etiqueta como historial; conserva el permiso por proyecto. No es un grafo exhaustivo ni una búsqueda sobre todo lo archivado. El índice y las fichas deben conservar los IDs de sus fuentes. shared_status/list muestran la cantidad de históricas comprimidas; no reutilizar esos IDs para publicaciones nuevas. Una petición explícita de olvidar una entrada también puede borrar su copia archivada con el mismo consentimiento.
+
+Reiniciar los clientes MCP después de actualizar y antes de aprobar una consolidación para que shared_read conozca el formato de archivo. La compresión reduce bytes del historial; las cifras de texto activo o caracteres de respuesta no son tokens ni facturación. Los respaldos de recuperación ocupan espacio adicional y no se borran automáticamente.
+
+### Reparación reversible de metadata
+
+La reparación administrativa no publica entradas ni cambia su cuerpo, ID, fecha, proyecto o consentimiento. Primero revisar el plan:
+
+    node tools/repair-metadata.mjs
+    node tools/repair-metadata.mjs --apply
+
+Registra raíces desde los .sharedctx.json existentes. Conserva las raíces antiguas en historicalRoots cuando hay una raíz actual comprobada. Las referencias legadas [object Object], que ya perdieron la ruta original, pasan a unresolved_files y siguen apareciendo en el diagnóstico hasta recuperar su origen. No se inventan rutas ni se borran entradas. Los archivos originales y sus hashes quedan respaldados en <almacén>/backups/metadata-<fecha>/; la operación es idempotente, detecta cambios concurrentes y revierte sus escrituras si falla.
+
+El panel y MCP HTTP validan Host/Origin y solo escuchan en loopback; la contención de rutas también rechaza junctions/symlinks que salgan del proyecto. Reiniciar cada cliente MCP tras actualizar el código para que descubra las diez herramientas y los nuevos parámetros.
 
 ## Flujo simple: continuar de ChatGPT en Claude Desktop
 
@@ -71,7 +130,7 @@ El resto de este README describe instalación, importación, diagnóstico y opci
    Codex  ────┤ LOCAL-SHARED-├──►│ consentimiento │──►│ projects/<p>/
    Kimi   ────┤ MCP          │   │ off/ro/ask/on  │   │  handoff.md
    VS Code ───┤ (MCP local)  │   └────────────────┘   │  entries/*.md
-   DSH    ────┤ 8 herramientas│                       │ pending/ audit.log
+   DSH    ────┤ 10 herramientas│                       │ pending/ audit.log
               └──────────────┘                        └──────────────┘
 ```
 
@@ -83,7 +142,7 @@ El resto de este README describe instalación, importación, diagnóstico y opci
 | El modelo no puede darse permiso | El modo de consentimiento **no es una herramienta MCP**: se cambia únicamente por CLI (`sharedctx mode ...`) |
 | Vos aprobás cada publicación y cada borrado | Modo `ask` (por defecto): publicar o borrar deja un pendiente en `pending/` hasta que corras `sharedctx approve <id>` |
 | Un proyecto no se filtra a otro | Almacén separado por proyecto; leer otro exige `confirm_cross_project` y queda auditado |
-| El modelo no puede tocar archivos ni ejecutar nada | 8 herramientas, ninguna de archivos, shell o git; `shared_forget` solo borra una entrada y también pasa por aprobación |
+| El modelo no puede tocar archivos ni ejecutar nada | 10 herramientas, ninguna de archivos, shell o git; `shared_forget` solo borra una entrada y también pasa por aprobación |
 | Todo es auditable | `audit.log` (JSONL) registra cada lectura, publicación, aprobación y cambio de modo |
 | Todo queda en tu disco | `~\.shared-mcp`; el servidor HTTP opcional escucha solo en `127.0.0.1` (verificado con netstat) |
 
@@ -124,7 +183,7 @@ en vez de duplicarlo. Si nada alcanza, **no inventa**: pregunta.
 
 | App | Archivo de configuración | Estado |
 |---|---|---|
-| Claude Desktop | `%APPDATA%\Claude\claude_desktop_config.json` | ✅ `QSMANU-LOCAL-SHARED-MCP` |
+| Claude Desktop | `%APPDATA%\Claude\claude_desktop_config.json` (o `%LOCALAPPDATA%\Claude-Data\<familia>\` en la versión actual de Microsoft Store) | ✅ `QSMANU-LOCAL-SHARED-MCP` |
 | Cursor | `%USERPROFILE%\.cursor\mcp.json` | ✅ |
 | Codex / ChatGPT desktop | `%USERPROFILE%\.codex\config.toml` | ✅ con aprobación extra en `shared_publish` |
 | Antigravity (agente **e** IDE) | `%USERPROFILE%\.gemini\config\mcp_config.json` | ✅ (comparten el mismo archivo) |
@@ -133,6 +192,7 @@ en vez de duplicarlo. Si nada alcanza, **no inventa**: pregunta.
 | GitHub Copilot CLI | `%USERPROFILE%\.copilot\mcp-config.json` | CLI no detectado; configuración independiente de VS Code |
 | Perplexity Windows | Conector remoto desde la app | Instalada; MCP local solo disponible en macOS |
 | DeepSeek Harness | `%USERPROFILE%\.dsh\profiles\desktop\cordis.patch.yml` | ✅ plugin `dsh-mcp-client` |
+| OpenCode (V2) | `%USERPROFILE%\.config\opencode\opencode.json` | ✅ entrada `sharedctx` en `mcp.servers` |
 | Claude Code | vía `claude mcp add` | CLI no instalado; hooks automáticos ya eliminados |
 
 Dos aclaraciones que salieron de auditar los binarios de cada app:
@@ -158,7 +218,7 @@ Detalle técnico de la auditoría: [docs/mcp-config-recon-report.md](docs/mcp-co
 ### Paso 0 — Requisitos
 
 ```powershell
-node --version    # 20 o superior
+node --version    # 24 o superior
 ```
 
 ### Paso 1 — Revisar qué va a hacer (sin escribir nada)
@@ -229,6 +289,8 @@ sharedctx mode ask        # (recomendado) cada publicación la aprobás vos
 Cerrá y volvé a abrir Claude Desktop, Cursor, Antigravity, Kimi Code, VS Code y Codex.
 **DeepSeek Harness no hace falta**: recarga el perfil en caliente y las herramientas
 `mcp__QSMANU-LOCAL-SHARED-MCP__*` aparecen en la sesión en curso.
+**OpenCode tampoco**: vigila `opencode.json` y recarga los servidores MCP al guardar
+(las herramientas aparecen como `sharedctx`); si no, `/reload` o `opencode service restart`.
 
 ### Paso 6 — Verificar
 
@@ -330,7 +392,7 @@ Una interfaz **de solo lectura** (y solo loopback) que muestra el estado real de
 | **Diagnóstico** | salud 0-100 y qué conviene arreglar: proyectos sin handoff, entradas huérfanas, duplicados, archivos compartidos entre proyectos, contexto escrito por una sola app, entradas viejas, pendientes olvidados. Cada aviso trae el comando para resolverlo |
 | Proyectos | entradas, última actualización, handoff completo, desglose por app y por tipo, y actividad de los últimos 30 días |
 | Apps conectadas | estado de configuración leído del archivo de cada app, **sesiones MCP vivas** (heartbeat real con pid y transporte), proyecto actual y proyectos con contexto de esa app |
-| Métodos MCP | las 8 herramientas con su descripción y su JSON Schema, más las instrucciones opt-in que recibe el modelo |
+| Métodos MCP | las 10 herramientas con su descripción y su JSON Schema, más las instrucciones opt-in que recibe el modelo |
 | Pendientes | lo que espera tu aprobación, con el comando exacto para aprobarlo |
 | Auditoría | últimos eventos de `audit.log` |
 
@@ -416,6 +478,27 @@ Flujos completos y ejemplos por escenario: [docs/CASOS-DE-USO.md](docs/CASOS-DE-
 Este repo ya lo tiene con `Personal - Shared-MCP-Local`, así cualquier app que abra esta carpeta resuelve
 el mismo proyecto que DeepSeek Harness.
 
+**OpenCode** usa la forma de V2 (`mcp.servers`, `command` como array y variables en
+`environment`) y un nombre de servidor más corto, `sharedctx`, para que las herramientas
+queden como `sharedctx_shared_status` en vez de un nombre larguísimo:
+
+```json
+{
+  "mcp": {
+    "servers": {
+      "sharedctx": {
+        "type": "local",
+        "command": ["C:\\Program Files\\nodejs\\node.exe", "D:\\Repositories\\shared-mcp-local\\src\\stdio.js"],
+        "environment": { "SHARED_MCP_APP": "opencode" }
+      }
+    }
+  }
+}
+```
+
+No lleva `cwd` a propósito: así el servidor arranca en la carpeta de cada proyecto y la
+autodetección sigue funcionando en todos los repos.
+
 **Servidor HTTP** (si alguna app solo acepta MCP remoto, o para compartir un único proceso):
 
 ```powershell
@@ -451,7 +534,7 @@ $env:SHARED_MCP_HOME = 'D:\shared-context'   # y agregalo en el bloque env de ca
 Diagnóstico del servidor MCP sin abrir ninguna app:
 
 ```powershell
-npm test                     # 134 pruebas (36 protocolo + 27 robustez + 24 relaciones + 27 panel + 19 interfaz + 1 detección)
+npm test                     # suite de protocolo, seguridad, recuperación, metadata y vistas AI
 node test\mcp-smoke.mjs      # protocolo MCP punta a punta
 node test\robustness.mjs     # contenido grande, unicode, BOM, candados, ids y escritura atómica
 node test\relations.mjs      # grafo de entradas, diagnóstico y exportaciones
@@ -476,7 +559,7 @@ shared-mcp-local\
   install.ps1                        instalador idempotente: backups, manifiesto, -Restore, -DryRun
   .sharedctx.json                    fija el nombre del proyecto para cualquier app que abra esta carpeta
   src\store.js                       almacén, modos, identidad de proyectos, bandeja, sesiones, auditoría
-  src\server.js                      las 8 herramientas MCP + protocolo opt-in
+  src\server.js                      las 10 herramientas MCP + protocolo opt-in
   src\relations.js                   grafo de entradas (tags/archivos/menciones/similitud) + diagnóstico
   src\stdio.js / src\http.js         entradas MCP por stdio y por HTTP (loopback)
   src\dashboard.js                   panel web local (API JSON + estáticos, solo lectura)

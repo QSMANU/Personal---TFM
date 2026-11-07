@@ -14,12 +14,13 @@
  */
 
 import { createServer } from 'node:http';
+import { allowLocalRequest, loopback } from './local-http.js';
 import { readFileSync, writeFileSync, mkdirSync, existsSync, statSync } from 'node:fs';
 import { join, dirname, extname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { spawn, spawnSync } from 'node:child_process';
 import {
-  ACTIVITY_DAYS, audit as logAudit, describeGate, getActive, getConfig, getHome, getState,
+  ACTIVITY_DAYS, audit as logAudit, describeGate, getActive, getConfig, getHome, getState, projectDir,
   listEntries, listPending, listProjects, listSessions, projectSummary, readAudit, readEntry,
   storeSize, MODES, ENTRY_TYPES, getLastProjectForApp,
 } from './store.js';
@@ -53,6 +54,16 @@ function appStatus() {
       if (app.kind === 'cli') {
         configured = existsSync(app.config) && readFileSync(app.config, 'utf8').includes(SERVER_NAME);
         detail = configured ? 'registrado' : 'el CLI no está instalado';
+      } else if (app.kind === 'json-opencode') {
+        const serverName = app.serverName || 'sharedctx';
+        if (!existsSync(app.config)) {
+          detail = 'archivo no encontrado';
+        } else {
+          const raw = readFileSync(app.config, 'utf8').replace(/^\uFEFF/, '');
+          const entrada = JSON.parse(raw)?.mcp?.servers?.[serverName];
+          configured = Boolean(entrada) && entrada.disabled !== true;
+          detail = configured ? 'configurado' : 'sin nuestra entrada';
+        }
       } else {
         const raw = existsSync(app.config) ? readFileSync(app.config, 'utf8') : '';
         configured = raw.includes(SERVER_NAME);
@@ -181,6 +192,7 @@ function overview() {
 }
 
 function apiData(pathname, query) {
+  if (query.get('project')) projectDir(query.get('project'));
   switch (pathname) {
     case '/api/overview': return overview();
     case '/api/apps': return { apps: appStatus() };
@@ -350,6 +362,7 @@ export function runTaskNow() {
 
 export function createDashboardServer() {
   return createServer((req, res) => {
+    if (!allowLocalRequest(req, res)) return;
     const url = new URL(req.url, `http://${req.headers.host || '127.0.0.1'}`);
 
     if (req.method !== 'GET' && req.method !== 'HEAD') {
@@ -369,7 +382,7 @@ export function createDashboardServer() {
         res.writeHead(200, { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store' });
         res.end(JSON.stringify(data, null, 2));
       } catch (err) {
-        res.writeHead(500, { 'content-type': 'application/json; charset=utf-8' });
+        res.writeHead(/Proyecto inválido|fuera del almacén|Id inválido/.test(err.message) ? 400 : 500, { 'content-type': 'application/json; charset=utf-8' });
         res.end(JSON.stringify({ error: err.message }));
       }
       return;
@@ -388,6 +401,7 @@ export function createDashboardServer() {
 }
 
 export function startDashboard({ port = 3120, host = '127.0.0.1', open = false } = {}) {
+  loopback(host);
   const server = createDashboardServer();
   return new Promise((resolve, reject) => {
     server.on('error', (err) => {

@@ -87,13 +87,18 @@ function Write-Utf8NoBom {
   [System.IO.File]::WriteAllText($Path, $Text, $enc)
 }
 
+function Read-Utf8Text {
+  # Windows PowerShell 5.1 lee sin BOM como ANSI: forzamos UTF-8 al leer.
+  param([string]$Path)
+  if (-not (Test-Path -LiteralPath $Path)) { return '' }
+  return [System.IO.File]::ReadAllText($Path, [System.Text.Encoding]::UTF8)
+}
+
 function Get-ClaudeDesktopConfigPath {
-  # La versión clásica usa %APPDATA%\Claude; la distribuida por Microsoft Store
-  # guarda la misma configuración dentro de LocalCache del paquete.
-  $storePattern = Join-Path $env:LOCALAPPDATA 'Packages\Claude_*\LocalCache\Roaming\Claude\claude_desktop_config.json'
-  $storeConfig = @(Get-Item -Path $storePattern -ErrorAction SilentlyContinue | Sort-Object LastWriteTime -Descending | Select-Object -First 1)
-  if ($storeConfig.Count -gt 0) { return $storeConfig[0].FullName }
-  return Join-Path $env:APPDATA 'Claude\claude_desktop_config.json'
+  # La resolución real vive en tools\detect-installed-apps.ps1: cubre la versión
+  # clásica (%APPDATA%\Claude), la actual de Microsoft Store
+  # (%LOCALAPPDATA%\Claude-Data\<familia>) y la anterior (LocalCache del paquete).
+  return Get-SharedCtxClaudeConfigPath
 }
 
 function Backup-Config {
@@ -134,6 +139,20 @@ function New-CodexServerJson {
   return $tmp
 }
 
+function New-OpenCodeServerJson {
+  # OpenCode V2: command es un array (ejecutable + argumentos) y las variables
+  # de entorno van en "environment", no en "env".
+  param([string]$AppId)
+  $obj = [ordered]@{
+    type        = 'local'
+    command     = @($Node, $StdioJs)
+    environment = [ordered]@{ SHARED_MCP_APP = $AppId }
+  }
+  $tmp = Join-Path $StateDir "server-$AppId.json"
+  Write-Utf8NoBom -Path $tmp -Text ($obj | ConvertTo-Json -Depth 8)
+  return $tmp
+}
+
 function Invoke-Node {
   param([string[]]$NodeArgs)
   $out = & node @NodeArgs 2>&1
@@ -143,15 +162,15 @@ function Invoke-Node {
 }
 
 function Add-JsonServer {
-  param([string]$AppId, [string]$Label, [string]$ConfigPath, [string]$RootKey = 'mcpServers', [switch]$KeepServer, [switch]$IncludeType, [string[]]$RetireList)
+  param([string]$AppId, [string]$Label, [string]$ConfigPath, [string]$RootKey = 'mcpServers', [switch]$KeepServer, [switch]$IncludeType, [switch]$OpenCode, [string]$Name = $ServerName, [string[]]$RetireList)
   Write-Host "`n== $Label" -ForegroundColor Cyan
   Write-Host "   config: $ConfigPath"
-  if ($DryRun) { Write-Host "   (dry-run) agregaría $RootKey.$ServerName"; return }
+  if ($DryRun) { Write-Host "   (dry-run) agregaría $RootKey.$Name"; return }
 
   if (-not $RetireList) { $RetireList = $Retired }
   Backup-Config -Path $ConfigPath | Out-Null
-  $serverJson = New-ServerJson -AppId $AppId -IncludeType:$IncludeType
-  $nodeArgs = @((Join-Path $Repo 'tools\merge-mcp-json.mjs'), $ConfigPath, $RootKey, $ServerName, $serverJson)
+  $serverJson = if ($OpenCode) { New-OpenCodeServerJson -AppId $AppId } else { New-ServerJson -AppId $AppId -IncludeType:$IncludeType }
+  $nodeArgs = @((Join-Path $Repo 'tools\merge-mcp-json.mjs'), $ConfigPath, $RootKey, $Name, $serverJson)
   if (-not $KeepServer) { $nodeArgs += @('--retire', ($RetireList -join ',')) }
   $out = Invoke-Node -NodeArgs $nodeArgs
   $out | ForEach-Object { Write-Host "   $_" -ForegroundColor DarkGray }
@@ -207,7 +226,7 @@ function Set-MarkerBlock {
   $begin = '<!-- sharedctx:begin -->'
   $end = '<!-- sharedctx:end -->'
   $existing = ''
-  if (Test-Path -LiteralPath $File) { $existing = Get-Content -LiteralPath $File -Raw }
+  if (Test-Path -LiteralPath $File) { $existing = Read-Utf8Text -Path $File }
   Backup-Config -Path $File | Out-Null
 
   if ($existing -and $existing.Contains($begin)) {
@@ -234,7 +253,7 @@ function Remove-BloqueMarcado {
   $begin = '<!-- sharedctx:begin -->'
   $end = '<!-- sharedctx:end -->'
   if (-not (Test-Path -LiteralPath $Path)) { return $false }
-  $texto = Get-Content -LiteralPath $Path -Raw
+  $texto = Read-Utf8Text -Path $Path
   if (-not $texto.Contains($begin)) { return $false }
   $patron = [regex]::Escape($begin) + '(?s).*?' + [regex]::Escape($end)
   $nuevo = ([regex]::Replace($texto, $patron, '')).TrimEnd() + "`r`n"
@@ -260,6 +279,8 @@ function Undo-Install {
     @{ path = (Join-Path $env:APPDATA 'Code\User\mcp.json'); modo = 'borrar-json-nuestro' },
     @{ path = (Join-Path $env:USERPROFILE '.copilot\mcp-config.json'); modo = 'borrar-json-nuestro' },
     @{ path = (Join-Path $env:USERPROFILE '.dsh\profiles\desktop\cordis.patch.yml'); modo = 'restaurar' },
+    @{ path = (Join-Path $env:USERPROFILE '.config\opencode\opencode.json'); modo = 'restaurar-o-borrar' },
+    @{ path = (Join-Path $env:USERPROFILE '.config\opencode\AGENTS.md'); modo = 'quitar-bloque' },
     @{ path = (Join-Path $env:USERPROFILE '.claude\settings.json'); modo = 'restaurar' },
     @{ path = (Join-Path $env:USERPROFILE '.claude\CLAUDE.md'); modo = 'quitar-bloque' },
     @{ path = (Join-Path $env:USERPROFILE '.codex\AGENTS.md'); modo = 'quitar-bloque' },
@@ -300,7 +321,7 @@ function Undo-Install {
         # Este archivo NO existía antes de la instalación: si lo creamos nosotros,
         # se borra. Si existía y el usuario tenía otras entradas, se limpian solo las nuestras.
         if (-not (Test-Path -LiteralPath $o.path)) { continue }
-        $json = Get-Content -LiteralPath $o.path -Raw | ConvertFrom-Json
+        $json = Read-Utf8Text -Path $o.path | ConvertFrom-Json
         $raiz = if ($json.PSObject.Properties['servers']) { 'servers' } elseif ($json.PSObject.Properties['mcpServers']) { 'mcpServers' } else { $null }
         if (-not $raiz) { Write-Host "sin tocar   $($o.path)  (no tiene estructura MCP)" -ForegroundColor DarkGray; continue }
         $nombres = @($json.$raiz.PSObject.Properties.Name)
@@ -358,10 +379,12 @@ function Save-Manifest {
 
 $NodeCmd = Get-Command node -ErrorAction SilentlyContinue
 if (-not $NodeCmd) {
-  Write-Host 'No encontré node en el PATH. Instalá Node.js 20+ y volvé a ejecutar.' -ForegroundColor Red
+  Write-Host 'No encontré node en el PATH. Instalá Node.js 24+ y volvé a ejecutar.' -ForegroundColor Red
   exit 1
 }
 $Node = $NodeCmd.Source
+$NodeMajor = [int]((& $Node --version).TrimStart('v').Split('.')[0])
+if ($NodeMajor -lt 24) { throw 'Se requiere Node.js 24 o superior. No se modificó ninguna configuración.' }
 if (-not (Test-Path -LiteralPath $StdioJs)) {
   Write-Host "Falta $StdioJs" -ForegroundColor Red
   exit 1
@@ -373,7 +396,7 @@ Write-Host "  node:  $Node"
 Write-Host "  modo:  $((& node $CliJs status | Select-Object -First 2) -join ' | ')"
 if ($Restore) { Undo-Install -Latest:$RestoreLatest; exit 0 }
 
-$block = if (Test-Path -LiteralPath $Snippet) { Get-Content -LiteralPath $Snippet -Raw } else { '' }
+$block = Read-Utf8Text -Path $Snippet
 $keepServer = [bool]$KeepContextMcp
 
 # ----------------------------------------------------------------------- apps
@@ -417,8 +440,9 @@ function Show-Connections {
     Write-Host ("  {0,-14} {1,-18} {2}" -f $app.Id, $connection.Status, $connection.Detail)
     if ($app.AutoConfigurable -and -not $connection.Configured) { $issues++ }
     if ($connection.Configured -and $connection.Status -eq 'CONFIG VALIDADA' -and -not $ListApps) {
-      $rootKey = if ($app.Id -eq 'vscode') { 'servers' } else { 'mcpServers' }
-      & $Node (Join-Path $Repo 'tools\probe-mcp.mjs') $connection.Path $rootKey | ForEach-Object { Write-Host "    $_" }
+      $rootKey = switch ($app.Id) { 'vscode' { 'servers' } 'opencode' { 'mcp.servers' } default { 'mcpServers' } }
+      $probeName = if ($app.Id -eq 'opencode') { 'sharedctx' } else { $ServerName }
+      & $Node (Join-Path $Repo 'tools\probe-mcp.mjs') $connection.Path $rootKey $probeName | ForEach-Object { Write-Host "    $_" }
       if ($LASTEXITCODE -ne 0) { $issues++ }
     }
   }
@@ -530,12 +554,11 @@ if ((Use-App 'claude-code') -and $claudeCli) {
   Write-Host "   el CLI ``claude`` no está instalado: se omite (si lo instalás, corré: claude mcp add --scope user $ServerName -e SHARED_MCP_APP=claude-code -- <node> <stdio.js>)" -ForegroundColor Yellow
 }
 
-# DeepSeek Harness — plugin oficial dsh-mcp-client insertado en el patch del perfil
-$dshPatch = Join-Path $env:USERPROFILE '.dsh\profiles\desktop\cordis.patch.yml'
+# DeepSeek Harness — plugin oficial dsh-mcp-client insertado en el patch del perfil$dshPatch = Join-Path $env:USERPROFILE '.dsh\profiles\desktop\cordis.patch.yml'
 if (Use-App 'dsh') {
   Write-Host "`n== DeepSeek Harness" -ForegroundColor Cyan
   Write-Host "   patch: $dshPatch"
-  $patchText = if (Test-Path -LiteralPath $dshPatch) { Get-Content -LiteralPath $dshPatch -Raw } else { '' }
+  $patchText = Read-Utf8Text -Path $dshPatch
   $marcaIni = '# >>> sharedctx / QSMANU-LOCAL-SHARED-MCP (generado por install.ps1)'
   $marcaFin = '# <<< sharedctx / QSMANU-LOCAL-SHARED-MCP'
   $marcaLegacy = '# Contexto compartido local (opt-in)'
@@ -592,6 +615,14 @@ if (Use-App 'dsh') {
   }
 }
 
+# OpenCode (V2) — ~/.config/opencode/opencode.json, entrada mcp.servers.sharedctx
+# command es un array (ejecutable + args) y las variables van en "environment".
+$opencodeCfg = Join-Path $env:USERPROFILE '.config\opencode\opencode.json'
+if (Use-App 'opencode') {
+  Add-JsonServer -AppId 'opencode' -Label 'OpenCode' -ConfigPath $opencodeCfg -RootKey 'mcp.servers' -Name 'sharedctx' -OpenCode -RetireList @('context-mcp')
+  $configured++
+}
+
 # -------------------------------------------------------------- instrucciones
 
 if (-not $SkipInstructions -and $block) {
@@ -606,6 +637,9 @@ if (-not $SkipInstructions -and $block) {
 
   $kimiMd = Join-Path $env:USERPROFILE '.kimi-code\AGENTS.md'
   if (Use-App 'kimi-code') { Set-MarkerBlock -Label 'Kimi Code (AGENTS.md)' -File $kimiMd -Block $block }
+
+  $opencodeMd = Join-Path $env:USERPROFILE '.config\opencode\AGENTS.md'
+  if (Use-App 'opencode') { Set-MarkerBlock -Label 'OpenCode (AGENTS.md)' -File $opencodeMd -Block $block }
 
   $cursorRule = Join-Path $env:USERPROFILE '.cursor\rules\contexto-compartido.mdc'
   if (Use-App 'cursor') {

@@ -63,7 +63,7 @@ check('marca el par casi idéntico como posible duplicado', g.stats.duplicates.l
 
 const huerfana = g.nodes.find((n) => n.kind === 'entry' && n.label === 'Nota suelta');
 check('la entrada sin relaciones queda aislada', huerfana && huerfana.degree === 0, JSON.stringify(huerfana));
-check('cuenta cuántas entradas están aisladas', g.stats.isolated === 1, String(g.stats.isolated));
+check('cuenta aislamientos reales, incluida etiqueta única', g.stats.isolated === 2, String(g.stats.isolated));
 
 /* Vecindario (lo que expone la herramienta MCP shared_related) */
 

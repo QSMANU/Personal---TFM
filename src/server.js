@@ -1,7 +1,7 @@
 /**
  * server.js — superficie MCP del contexto compartido.
  *
- * Ocho herramientas, ninguna destructiva y ninguna capaz de cambiar el modo de
+ * Diez herramientas, sin acceso destructivo a archivos y ninguna capaz de cambiar el modo de
  * consentimiento (eso es solo por CLI). Las descripciones de las herramientas
  * son el contrato de "solo si quiero": le dicen al modelo, explícitamente, que
  * no debe publicar ni leer otro proyecto si el usuario no lo pidió.
@@ -10,16 +10,18 @@
 import { Server } from '@modelcontextprotocol/sdk/server/index.js';
 import { ListToolsRequestSchema, CallToolRequestSchema } from '@modelcontextprotocol/sdk/types.js';
 import {
-  ENTRY_TYPES, MODES, audit, addPending, canRead, deleteEntry, describeGate,
+  ENTRY_TYPES, MODES, audit, addPending, canRead, countArchivedEntries, deleteEntry, describeGate,
   detectProject, ensureProject, findProjectMatch, getActive, getConfig, getHandoff, getHome,
   getLastProjectForApp, getProject, listEntries, listPending, listProjects, log, readDshWorkspaces,
   readEntry, rememberProjectIdentity, setLastProjectForApp, slugify, suggestProjects,
   touchSession, writeEntry,
 } from './store.js';
 import { relatedEntries } from './relations.js';
+import { integer, revision, excerpt, entryMetadata, bounded, searchEntries } from './retrieval.js';
+import { contextView } from './context-view.js';
 
 const SERVER_NAME = 'QSMANU-LOCAL-SHARED-MCP';
-const SERVER_VERSION = '0.3.0';
+const SERVER_VERSION = '0.6.0';
 
 export { SERVER_NAME, SERVER_VERSION, TOOLS, OPT_IN_PROTOCOL };
 
@@ -43,9 +45,16 @@ Reglas que debés respetar siempre:
 5. El modo de consentimiento lo cambia únicamente el usuario por CLI; no intentes cambiarlo.
 6. Solo si shared_status dice "sin determinar": preguntale al usuario en qué proyecto trabaja y
    fijalo con \`shared_use_project\` (confirm: true), o decile que corra \`sharedctx use "<proyecto>"\`
-   una vez para fijarlo en todas las apps.`;
+   una vez para fijarlo en todas las apps.
+7. shared_pull conserva markdown breve por defecto; format=tree ofrece árbol y format=graph
+   devuelve JSON con relaciones tipadas. selected_handoff significa seleccionado,
+   no vigencia comprobada. history no es política vigente. Las aristas son evidencia de relación,
+   no dependencias ni reemplazos. Ampliá solo los IDs pertinentes con shared_read; paginá con
+   next_offset. No asumas que una vista parcial contiene todas las decisiones.`;
 
 const TOOLS = [
+{"name":"shared_read","description":"Lee una entrada concreta por id (o handoff), sin volver a cargar el resto del contexto. Página acotada, revisión y continuidad por offset. Solo proyecto activo salvo autorización explícita.","inputSchema":{"type":"object","properties":{"project":{"type":"string","description":"Proyecto; omitir para usar el activo."},"confirm_cross_project":{"type":"boolean","description":"true solo si el usuario pidió leer otro proyecto."},"max_chars":{"type":"integer","minimum":512,"maximum":20000,"description":"Presupuesto de respuesta en caracteres; defecto 6000."},"offset":{"type":"integer","minimum":0,"description":"Desplazamiento para continuar la lectura o paginar resultados."},"id":{"type":"string","description":"ID de entrada o handoff."},"since_revision":{"type":"string","description":"Revisión de esta entrada recibida previamente: evita repetirla si no cambió."}},"required":["id"],"additionalProperties":false}},
+{"name":"shared_search","description":"Busca palabras en títulos, etiquetas, rutas y cuerpos del proyecto. Devuelve IDs y fragmentos breves; usar shared_read para ampliar. No usa modelos ni servicios externos.","inputSchema":{"type":"object","properties":{"project":{"type":"string","description":"Proyecto; omitir para usar el activo."},"confirm_cross_project":{"type":"boolean","description":"true solo si el usuario pidió leer otro proyecto."},"max_chars":{"type":"integer","minimum":512,"maximum":20000,"description":"Presupuesto de respuesta en caracteres; defecto 6000."},"offset":{"type":"integer","minimum":0,"description":"Desplazamiento para continuar la lectura o paginar resultados."},"query":{"type":"string","minLength":2,"maxLength":200,"description":"Palabras a buscar (todas deben aparecer)."},"limit":{"type":"integer","minimum":0,"maximum":20,"description":"Resultados por página; defecto 5."},"type":{"type":"string","enum":["handoff","note","decision","task","bug","question","snippet","reference"]}},"required":["query"],"additionalProperties":false}},
   {
     name: 'shared_status',
     description:
@@ -55,12 +64,17 @@ const TOOLS = [
   {
     name: 'shared_pull',
     description:
-      'Lee el contexto compartido del proyecto activo: la nota de traspaso (handoff) y las últimas entradas. Usalo cuando el usuario pida "traé el contexto", "en qué quedamos", "seguí desde donde estaba" o al continuar trabajo hecho en otra herramienta. Es de solo lectura y está limitado al proyecto activo salvo pedido explícito del usuario (confirm_cross_project).',
+      'Trae contexto breve del proyecto (markdown por defecto); format=tree ofrece árbol y format=graph grafo JSON. IDs para shared_read; historial con type=handoff. Relaciones son evidencia, no dependencias ni vigencia. Usalo al retomar trabajo. Solo proyecto activo salvo pedido explícito (confirm_cross_project).',
     inputSchema: {
       type: 'object',
       properties: {
         project: { type: 'string', description: 'Nombre del proyecto. Omitilo para usar el proyecto detectado automáticamente.' },
-        limit: { type: 'number', description: 'Cantidad máxima de entradas recientes (por defecto 8, máximo 50).' },
+        format: { type: 'string', enum: ['tree', 'graph', 'markdown'], description: 'markdown breve por defecto; tree: árbol; graph: JSON válido schema sharedctx.context.v1 con aristas tipadas. JSON no garantiza menos tokens.' },
+        limit: { type: 'integer', minimum: 0, maximum: 50, description: 'Entradas recientes, filtradas antes del límite (por defecto 3; 0 omite la lista).' },
+        offset: { type: 'integer', minimum: 0, description: 'Desplazamiento para paginar entradas.' },
+        handoff_mode: { type: 'string', enum: ['brief', 'full', 'omit'], description: 'brief (defecto) es una vista parcial de hasta 1600 caracteres; full solicita el handoff completo dentro del presupuesto; omit lo excluye.' },
+        max_chars: { type: 'integer', minimum: 512, maximum: 20000, description: 'Presupuesto de respuesta en caracteres; por defecto 6000. Las vistas parciales lo indican.' },
+        since_revision: { type: 'string', description: 'Revisión previamente recibida con los mismos parámetros: evita repetir contenido si no cambió.' },
         include_content: { type: 'boolean', description: 'Si es true, incluye el cuerpo completo de las entradas (por defecto false: solo títulos y metadata).' },
         type: { type: 'string', enum: ENTRY_TYPES, description: 'Filtra por tipo de entrada.' },
         confirm_cross_project: { type: 'boolean', description: 'Debe ser true solo si el usuario pidió explícitamente leer OTRO proyecto. Queda auditado.' },
@@ -75,7 +89,10 @@ const TOOLS = [
       type: 'object',
       properties: {
         project: { type: 'string', description: 'Si se indica, lista las entradas de ese proyecto; si se omite, lista los proyectos.' },
-        limit: { type: 'number', description: 'Máximo de entradas a listar (por defecto 20).' },
+        limit: { type: 'integer', minimum: 0, maximum: 100, description: 'Máximo de entradas (defecto 20).' },
+        offset: { type: 'integer', minimum: 0, description: 'Desplazamiento para paginación.' },
+        max_chars: { type: 'integer', minimum: 512, maximum: 20000, description: 'Presupuesto de respuesta; defecto 6000.' },
+        confirm_cross_project: { type: 'boolean', description: 'true solo si el usuario pidió leer ese otro proyecto.' },
         type: { type: 'string', enum: ENTRY_TYPES, description: 'Filtra por tipo de entrada.' },
       },
       additionalProperties: false,
@@ -123,7 +140,9 @@ const TOOLS = [
       properties: {
         id: { type: 'string', description: 'Id de la entrada base. Si se omite, se usa el handoff del proyecto.' },
         project: { type: 'string', description: 'Proyecto. Omitilo para usar el detectado.' },
-        limit: { type: 'number', description: 'Cuántas entradas relacionadas devolver (por defecto 6, máximo 20).' },
+        limit: { type: 'integer', minimum: 0, maximum: 20, description: 'Entradas relacionadas, defecto 6.' },
+        max_chars: { type: 'integer', minimum: 512, maximum: 20000, description: 'Presupuesto de respuesta; defecto 6000.' },
+        confirm_cross_project: { type: 'boolean', description: 'true solo si el usuario pidió leer ese otro proyecto.' },
       },
       additionalProperties: false,
     },
@@ -288,6 +307,50 @@ function fmtEntry(entry, { includeContent = false } = {}) {
   return `${head}${tags}${files}${body}`;
 }
 
+
+function authorizeRead(args, cfg) {
+  if (!canRead(cfg)) throw new Error('Contexto compartido desactivado (modo off).');
+  const base = resolveProject(null);
+  let detected = base;
+  if (args.project) {
+    if (typeof args.project !== 'string') throw new Error('project debe ser texto.');
+    const match = findProjectMatch(args.project, { fuzzyThreshold: 1 });
+    detected = match ? { slug: match.slug, name: match.name, source: 'pedido', reliable: true } : { slug: null, reliable: false };
+    if (!match) throw new Error('Proyecto inexistente. Consultar shared_list; no se crea ni se adivina al leer.');
+  }
+  const cross = Boolean(args.project) && detected.slug !== base.slug;
+  if (cross && args.confirm_cross_project !== true) {
+    audit('pull.crossproject.blocked', { requested: detected.slug, active: base.slug });
+    throw new Error('Leer otro proyecto requiere pedido explícito del usuario y confirm_cross_project: true.');
+  }
+  return { detected, cross };
+}
+
+function readOptions(args) {
+  return { maxChars: integer(args.max_chars, 6000, 20000, 'max_chars', 512), offset: integer(args.offset, 0, 100000000, 'offset') };
+}
+
+function validateArguments(name, args) {
+  const schema = TOOLS.find(t => t.name === name)?.inputSchema;
+  if (!schema) return;
+  for (const key of schema.required || []) if (args[key] === undefined) throw new Error(key + ': argumento requerido.');
+  for (const [key, value] of Object.entries(args)) {
+    const rule = schema.properties[key];
+    if (!rule) throw new Error('Argumento desconocido: ' + key);
+    if (rule.type === 'integer') integer(value, 0, rule.maximum ?? 100000000, key, rule.minimum ?? 0);
+    else if (rule.type === 'string' && typeof value !== 'string') throw new Error(key + ': se requiere texto.');
+    else if (rule.type === 'boolean' && typeof value !== 'boolean') throw new Error(key + ': se requiere boolean.');
+    else if (rule.type === 'array' && (!Array.isArray(value) || value.some(v => typeof v !== 'string' || /[\r\n]/.test(v)))) throw new Error(key + ': array de textos sin saltos de línea.');
+    if (rule.enum && !rule.enum.includes(value)) throw new Error(key + ': valor inválido.');
+    if (typeof value === 'string' && (value.length < (rule.minLength || 0) || value.length > (rule.maxLength || 2000000))) throw new Error(key + ': longitud inválida.');
+  }
+  if (args.title && /[\r\n]/.test(args.title)) throw new Error('title no admite saltos de línea.');
+}
+
+function replyRead(value, maxChars, metadata = {}) {
+  return { ...text(bounded(value, maxChars)), _meta: { ...metadata, partial: value.length > maxChars } };
+}
+
 /* ------------------------------------------------------------------ server */
 
 export function createServer() {
@@ -298,13 +361,14 @@ export function createServer() {
 
   server.setRequestHandler(ListToolsRequestSchema, async () => ({ tools: TOOLS }));
 
-  server.setRequestHandler(CallToolRequestSchema, async (request) => {
+  const handleCall = async (request) => {
     const { name, arguments: args = {} } = request.params;
     const cfg = getConfig();
     // Heartbeat para que el panel muestre esta app como conectada ahora mismo.
     touchSession(APP());
 
     try {
+      validateArguments(name, args);
       switch (name) {
         case 'shared_status': {
           const detected = resolveProject(null);
@@ -319,6 +383,7 @@ export function createServer() {
             `- Proyecto activo: ${reliable ? `**${detected.name}** (\`${detected.slug}\`) · detectado por: ${detected.source}` : '**sin determinar**'}`,
             detected.root && reliable ? `- Raíz: \`${detected.root}\`` : null,
             reliable ? `- Entradas del proyecto: ${listEntries(detected.slug).length}` : null,
+            reliable && countArchivedEntries(detected.slug) ? `- Históricas comprimidas: ${countArchivedEntries(detected.slug)} (lectura explícita con shared_read por ID)` : null,
             reliable ? `- Handoff: ${getHandoff(detected.slug) ? 'sí' : 'todavía no hay'}` : null,
             `- Pendientes de aprobación: ${pending.length}`,
             `- Proyectos con contexto: ${listProjects().length}`,
@@ -349,69 +414,76 @@ export function createServer() {
         }
 
         case 'shared_pull': {
-          if (!canRead(cfg)) {
-            audit('pull.blocked', { reason: 'mode=off' });
-            return fail(`El contexto compartido está desactivado (modo \`off\`). El usuario puede activarlo con: sharedctx mode readonly`);
-          }
-          const base = resolveProject(null);
-          const detected = resolveProject(args.project);
-          if (!args.project && !detected.slug) {
-            audit('pull.noproject', {});
-            return text(unknownProjectHint(detected));
-          }
-          const isCross = Boolean(args.project) && Boolean(base.slug) && detected.slug !== base.slug;
-          if (isCross && args.confirm_cross_project !== true) {
-            audit('pull.crossproject.blocked', { requested: detected.slug, active: base.slug });
-            return fail(
-              `Pediste el proyecto \`${detected.slug}\` pero el proyecto activo es \`${base.slug}\`. ` +
-              `Leer otro proyecto requiere que el usuario lo haya pedido: si te lo pidió, repetí la llamada con confirm_cross_project: true.`,
-            );
-          }
-          rememberUsage(detected);
-          const limit = Math.min(Number(args.limit) || 8, 50);
+          const { detected, cross } = authorizeRead(args, cfg);
+          if (!detected.slug) return text(unknownProjectHint(detected));
+          const { maxChars, offset } = readOptions(args);
+          const limit = integer(args.limit, 3, 50, 'limit');
+          const mode = args.handoff_mode ?? 'brief';
+          const format = args.format ?? 'markdown';
+          if (!['brief', 'full', 'omit'].includes(mode)) throw new Error('handoff_mode inválido.');
           const handoff = getHandoff(detected.slug);
-          const entries = listEntries(detected.slug, { limit, type: args.type || null })
-            .filter((e) => e.type !== 'handoff');
-          audit('pull', { project: detected.slug, limit, cross: isCross });
-
-          if (!handoff && entries.length === 0) {
-            return text(`El proyecto \`${detected.slug}\` no tiene contexto compartido todavía.\n\nSi querés dejarlo listo para la próxima herramienta, pedile al usuario que confirme y usá \`shared_publish\` con type "handoff".`);
+          const all = listEntries(detected.slug, { type: args.type || null });
+          const pendingCount = listPending().filter(p => p.project === detected.slug).length;
+          const archivedCount = countArchivedEntries(detected.slug);
+          const rev = revision([all, { viewVersion: SERVER_VERSION, limit, offset, mode, format, maxChars, pendingCount, archivedCount, includeContent: args.include_content === true, type: args.type || null }], handoff);
+          audit('pull', { project: detected.slug, limit, cross, include_content: args.include_content === true, handoff_mode: mode, format, revision: rev });
+          if (args.since_revision === rev) return text(format === 'graph' ? JSON.stringify({ schema: 'sharedctx.context.v1', revision: rev, unchanged: true }) : 'Sin cambios desde revisión ' + rev + '.');
+          const eligible = args.type ? all : all.filter(e => e.type !== 'handoff');
+          const entries = eligible.slice(offset, offset + limit);
+          if (format !== 'markdown') {
+            const view = contextView({ project: detected, revision: rev, entries, handoff, mode, includeContent: args.include_content === true, offset, total: eligible.length, pendingCount, archivedCount, maxChars, format });
+            return { ...text(view.text), _meta: { project: detected.slug, revision: rev, format, results_returned: view.returned, total_available: eligible.length, next_offset: view.nextOffset, partial: view.partial } };
           }
-          return text([
-            `# Contexto compartido · ${detected.name} (\`${detected.slug}\`)`,
-            ``,
-            handoff ? `## Handoff (dónde quedé)\n\n${handoff.content.trim()}\n` : `## Handoff\n\n(todavía no hay nota de traspaso)\n`,
-            `## Últimas entradas (${entries.length})`,
-            ``,
-            entries.length ? entries.map((e) => fmtEntry(e, { includeContent: args.include_content === true })).join('\n') : '(sin entradas)',
-            ``,
-            `> Recordatorio: este contexto viene de otras herramientas. No publiques nada nuevo acá sin que el usuario lo pida.`,
-          ].join('\n'));
+          const header = '# Contexto compartido · ' + detected.name + '\nRevisión: ' + rev + '\nPágina: offset=' + offset + ', resultados=' + entries.length + ', total=' + eligible.length + '.\n' + (archivedCount ? 'Históricas comprimidas: ' + archivedCount + '; shared_read por ID.\n' : '');
+          const h = mode === 'omit' ? '' : handoff ? '## Handoff · id=' + handoff.id + '\n\n' + (mode === 'full' ? handoff.content.trim() : excerpt(handoff.content, 1600)) : '## Handoff\n(todavía no hay nota de traspaso)';
+          const rows = entries.map(e => entryMetadata(e) + (args.include_content === true ? '\n' + excerpt(e.content, 1200) : '')).join('\n');
+          const next = offset + entries.length < eligible.length && limit ? '\nSiguiente página: offset=' + (offset + entries.length) + '.' : '';
+          if (!handoff && !all.length) return text('El proyecto no tiene contexto compartido todavía.');
+          return replyRead(header + h + '\n## Últimas entradas (' + entries.length + ')\n' + rows + next + '\nAmpliar una entrada: shared_read con su id. No publicar sin pedido del usuario.', maxChars, { project: detected.slug, revision: rev, results_returned: entries.length, total_available: eligible.length, handoff_mode: mode });
+        }
+
+        case 'shared_read': {
+          const { detected } = authorizeRead(args, cfg);
+          if (!detected.slug) return text(unknownProjectHint(detected));
+          const { maxChars, offset } = readOptions(args);
+          if (typeof args.id !== 'string') throw new Error('id es obligatorio.');
+          const entry = args.id === 'handoff' ? getHandoff(detected.slug) : readEntry(detected.slug, args.id);
+          if (!entry) return fail('Entrada inexistente en el proyecto seleccionado.');
+          const rev = revision([entry]);
+          if (args.since_revision === rev) return text('Sin cambios desde revisión ' + rev + '.');
+          const prefix = '# ' + entry.title.slice(0, 80).replace(/[\r\n]/g, ' ') + ' · id=' + entry.id + '\nRevisión: ' + rev + '\nLongitud: ' + entry.content.length + ' caracteres; offset=' + offset + '.\n';
+          const archiveLabel = entry.archived ? '[Historial archivado: no es el estado vigente.]\n' : '';
+          const footerBudget = 180;
+          const count = Math.max(0, maxChars - prefix.length - archiveLabel.length - footerBudget);
+          let end = Math.min(entry.content.length, offset + count);
+          if (end < entry.content.length && /[\uD800-\uDBFF]/.test(entry.content[end - 1])) end--;
+          const chunk = entry.content.slice(offset, end);
+          const next = offset + chunk.length < entry.content.length ? '\n[Contenido parcial. Continuar shared_read con id=' + entry.id + ', offset=' + (offset + chunk.length) + '.]' : '\n[Fin de la entrada.]';
+          return replyRead(prefix + archiveLabel + chunk + next, maxChars, { project: detected.slug, revision: rev, archived: entry.archived === true, results_returned: 1, next_offset: offset + chunk.length, complete: offset + chunk.length >= entry.content.length });
+        }
+
+        case 'shared_search': {
+          const { detected } = authorizeRead(args, cfg);
+          if (!detected.slug) return text(unknownProjectHint(detected));
+          const { maxChars, offset } = readOptions(args);
+          const limit = integer(args.limit, 5, 20, 'limit');
+          const results = searchEntries(listEntries(detected.slug, { type: args.type || null }), args.query);
+          const page = results.slice(offset, offset + limit);
+          return replyRead('# Búsqueda · ' + detected.name + '\nTotal=' + results.length + '; offset=' + offset + '.\n' + page.map(r => entryMetadata(r.entry) + '\n  ' + r.snippet).join('\n') + (offset + page.length < results.length && limit ? '\nSiguiente página: offset=' + (offset + page.length) : '') + '\nAmpliar: shared_read con el id.', maxChars);
         }
 
         case 'shared_list': {
-          if (!canRead(cfg)) return fail(`Contexto compartido desactivado (modo \`off\`).`);
+          if (!canRead(cfg)) return fail('Contexto compartido desactivado (modo off).');
+          const { maxChars, offset } = readOptions(args);
+          const limit = integer(args.limit, 20, 100, 'limit');
           if (args.project) {
-            const slug = slugify(args.project);
-            const entries = listEntries(slug, { limit: Math.min(Number(args.limit) || 20, 100), type: args.type || null });
-            if (entries.length === 0) return text(`El proyecto \`${slug}\` no tiene entradas.`);
-            return text(`# Entradas de \`${slug}\` (${entries.length})\n\n${entries.map((e) => fmtEntry(e)).join('\n')}`);
+            const { detected } = authorizeRead(args, cfg);
+            const all = listEntries(detected.slug, { type: args.type || null });
+            const page = all.slice(offset, offset + limit);
+            return replyRead('# Entradas de ' + detected.name + ' · total=' + all.length + ', offset=' + offset + '\n' + page.map(e => entryMetadata(e)).join('\n') + (offset + page.length < all.length && limit ? '\nSiguiente página: offset=' + (offset + page.length) : ''), maxChars);
           }
           const projects = listProjects();
-          if (projects.length === 0) return text('Todavía no hay proyectos con contexto compartido.');
-          const activo = resolveProject(null);
-          return text([
-            `# Proyectos con contexto compartido (${projects.length})`,
-            ``,
-            projects.map((p) => {
-              const marca = p.slug === activo.slug ? ' ← activo' : '';
-              const alias = p.aliases?.length ? `\n    alias: ${p.aliases.join(' · ')}` : '';
-              const roots = p.roots?.length ? `\n    rutas: ${p.roots.join(' · ')}` : '';
-              return `- **${p.name}** (\`${p.slug}\`) · ${p.entries} entradas · handoff: ${p.handoff ? 'sí' : 'no'}${marca}${alias}${roots}`;
-            }).join('\n'),
-            ``,
-            `Los nombres equivalentes se emparejan solos; para leer otro proyecto hace falta pedido explícito + confirm_cross_project.`,
-          ].join('\n'));
+          return replyRead('# Proyectos con contexto compartido (' + projects.length + ')\n' + projects.slice(offset, offset + limit).map(p => '- **' + p.name + '** (' + p.slug + ') · ' + p.entries + ' entradas' + (p.archivedEntries ? ' · ' + p.archivedEntries + ' históricas comprimidas' : '') + ' · handoff: ' + (p.handoff ? 'sí' : 'no')).join('\n') + (offset + limit < projects.length && limit ? '\nSiguiente página: offset=' + (offset + limit) : ''), maxChars);
         }
 
         case 'shared_publish': {
@@ -473,21 +545,22 @@ export function createServer() {
 
         case 'shared_related': {
           if (!canRead(cfg)) return fail(`El contexto compartido está desactivado (modo \`off\`).`);
-          const detected = resolveProject(args.project);
+          const { detected } = authorizeRead(args, cfg);
           if (!detected.slug) return text(unknownProjectHint(detected));
-          const res = relatedEntries(detected.slug, { id: args.id || null, limit: Math.min(Number(args.limit) || 6, 20) });
+          const limit = integer(args.limit, 6, 20, 'limit');
+          const res = relatedEntries(detected.slug, { id: args.id || null, limit });
           audit('related', { project: detected.slug, base: res.base?.id || null });
           if (!res.base) return text(`El proyecto \`${detected.slug}\` no tiene entradas todavía.`);
           if (res.related.length === 0) {
             return text(`Base: **${res.base.title}** (\`${res.base.id}\`).\n\nNo hay entradas relacionadas: ninguna comparte etiquetas, archivos ni contenido parecido. Si querés que sean recuperables después, publicalas con \`tags\` y \`files\`.`);
           }
-          return text([
+          return replyRead([
             `# Relacionadas con: ${res.base.title} (\`${res.base.id}\`)`,
             ``,
             res.related.map((r) => `- **${r.title}** · \`${r.id}\` · ${r.type} · ${r.app} · ${r.createdAt}\n  por qué: ${r.razones.join(' · ')}`).join('\n'),
             ``,
-            `Para leer alguna completa: \`shared_pull\` (trae el handoff y las últimas) o pedime el id concreto.`,
-          ].join('\n'));
+            `Para leer alguna completa: shared_read con su id.`,
+          ].join('\n'), readOptions(args).maxChars);
         }
 
         case 'shared_pending': {
@@ -550,9 +623,17 @@ export function createServer() {
       }
     } catch (err) {
       log(`error en ${name}: ${err.stack || err.message}`);
-      audit('error', { tool: name, message: err.message });
+      audit('error', { tool: name, message: String(err.message).slice(0, 500) });
       return fail(`Error en ${name}: ${err.message}`);
     }
+  };
+  server.setRequestHandler(CallToolRequestSchema, async request => {
+    const started = performance.now();
+    const result = await handleCall(request);
+    const value = result.content?.filter(c => c.type === 'text').map(c => c.text).join('\n') || '';
+    const args = request.params.arguments || {};
+    audit('response', { tool: request.params.name, response_chars: value.length, response_bytes: Buffer.byteLength(value), duration_ms: Math.round(performance.now() - started), ok: !result.isError, include_content: args.include_content === true, limit: Number.isInteger(args.limit) ? args.limit : null, offset: Number.isInteger(args.offset) ? args.offset : 0, ...result._meta });
+    return result;
   });
 
   return server;

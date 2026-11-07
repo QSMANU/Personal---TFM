@@ -13,6 +13,7 @@
  * vocabulario de tags inconsistente. Cada uno trae el comando para arreglarlo.
  */
 
+import { existsSync } from 'node:fs';
 import {
   listEntries, listProjects, listPending, similarity, slugify, getHandoff,
 } from './store.js';
@@ -49,11 +50,15 @@ function computeSimilarities(slug, candidatas, similarityThreshold) {
     return SIMILARITY_CACHE.get(cacheKey);
   }
   const similares = [];
-  const fps = candidatas.map((c) => fingerprint(c));
+  // Whole-body lexical overlap avoids bigram matches between unrelated reports.
+  const texts = candidatas.map(c => norm(c.content));
+  const words = texts.map(t => new Set(t.match(/[\p{L}\p{N}]+/gu) || []));
   for (let i = 0; i < candidatas.length; i += 1) {
     for (let j = i + 1; j < candidatas.length; j += 1) {
-      const score = similarity(fps[i], fps[j]);
-      if (score >= similarityThreshold) {
+      const common = [...words[i]].filter(w => words[j].has(w)).length;
+      const union = words[i].size + words[j].size - common;
+      const score = texts[i] && texts[i] === texts[j] ? 1 : union ? common / union : 0;
+      if (score >= Math.max(0.8, similarityThreshold)) {
         similares.push({
           a: candidatas[i].id,
           b: candidatas[j].id,
@@ -143,6 +148,13 @@ export function buildEntryGraph(slug, { includeTags = true, includeFiles = true,
     grados.set(e.target, (grados.get(e.target) || 0) + 1);
   }
   for (const n of nodes) n.degree = grados.get(n.id) || 0;
+  // A singleton tag/file is metadata, not a connection to another entry.
+  for (const n of nodes.filter(n => n.kind === 'entry')) {
+    n.relatedDegree = edges.filter(e => e.source === n.id || e.target === n.id).filter(e => {
+      const other = nodes.find(x => x.id === (e.source === n.id ? e.target : e.source));
+      return other?.kind === 'entry' || (other?.weight || 0) > 1;
+    }).length;
+  }
 
   return {
     project: slug,
@@ -154,7 +166,7 @@ export function buildEntryGraph(slug, { includeTags = true, includeFiles = true,
       files: files.size,
       links: edges.length,
       byKind: edges.reduce((acc, e) => { acc[e.kind] = (acc[e.kind] || 0) + 1; return acc; }, {}),
-      isolated: nodes.filter((n) => n.kind === 'entry' && n.degree === 0).length,
+      isolated: nodes.filter((n) => n.kind === 'entry' && n.relatedDegree === 0).length,
       duplicates: similares.sort((x, y) => y.score - x.score),
     },
   };
@@ -179,7 +191,7 @@ export function relatedEntries(slug, { id = null, limit = 6 } = {}) {
     .filter((e) => e.id !== base.id)
     // Excluye la copia con el mismo contenido que la base (los handoff viven en
     // entries/ y además en handoff.md: no son "relacionados", son el mismo texto).
-    .filter((e) => similarity(baseFp, fingerprint(e)) < 0.97)
+    .filter((e) => norm(base.content) !== norm(e.content))
     .map((e) => {
       const tagsComunes = e.tags.map(norm).filter((t) => baseTags.has(t));
       const filesComunes = e.files.map(norm).filter((f) => baseFiles.has(f));
@@ -196,7 +208,7 @@ export function relatedEntries(slug, { id = null, limit = 6 } = {}) {
       if (razones.length === 0) razones.push(`contenido apenas parecido (${Math.round(sim * 100)}%)`);
       return { entry: e, score, razones };
     })
-    .filter((p) => p.score > 0)
+    .filter((p) => p.razones.some(r => !r.startsWith('contenido apenas parecido')))
     .sort((a, b) => b.score - a.score)
     .slice(0, limit);
 
@@ -242,9 +254,10 @@ export function insights(slug = null) {
   const unaApp = proyectos.filter((p) => p.entries > 1 && Object.keys(projectAppCount(p.slug)).length === 1);
   if (unaApp.length) {
     salida.push({
-      id: 'una-sola-app', severity: 'tip',
+      id: 'una-sola-app', severity: 'info',
+      scorePenalty: 0,
       title: `${unaApp.length} proyecto(s) con contexto de una sola herramienta`,
-      detail: 'Todo el contexto lo escribió la misma app. Si vas a saltar de herramienta, publicá el handoff desde la otra para validar que se lee bien.',
+      detail: 'Dato informativo: una sola app autora no implica mala calidad ni exige publicar más contexto.',
       items: unaApp.map((p) => ({ label: `${p.name} · ${Object.keys(projectAppCount(p.slug))[0]}`, ref: p.slug })),
       action: 'sharedctx projects',
     });
@@ -268,7 +281,7 @@ export function insights(slug = null) {
       title: `${cruzados.length} archivo(s) referenciados por más de un proyecto`,
       detail: 'El mismo archivo vive en dos contextos separados: o son el mismo proyecto con dos nombres, o el contexto está repartido.',
       items: cruzados.slice(0, 10).map(([f, set]) => ({ label: f, ref: [...set].join(' ↔ ') })),
-      action: 'sharedctx alias "<proyecto A>" "<proyecto B>"   (para unificarlos)',
+      action: 'Revisar pertenencia de las referencias; no unificar proyectos automáticamente.',
     });
   }
 
@@ -277,7 +290,10 @@ export function insights(slug = null) {
     // Para detectar huérfanas hay que mirar TODAS las relaciones (tags y archivos incluidos).
     const g = buildEntryGraph(p.slug, { includeTags: true, includeFiles: true, limit: 200 });
     const entries = listEntries(p.slug);
-    const huerfanas = g.nodes.filter((n) => n.kind === 'entry' && n.degree === 0);
+    const current = getHandoff(p.slug);
+    const huerfanas = g.nodes.filter(n => n.kind === 'entry' && n.relatedDegree === 0 && (n.type !== 'handoff' || n.entryId === current?.id));
+    // A standalone current handoff is usable without inventing links.
+    if (entries.length === 1 && current) huerfanas.length = 0;
     const sinTags = entries.filter((e) => e.tags.length === 0);
     const viejas = entries.filter((e) => e.type !== 'handoff' && e.createdAt
       && (Date.now() - Date.parse(e.createdAt)) / 86400000 > DIAS_VIEJO);
@@ -309,7 +325,7 @@ export function insights(slug = null) {
       title: `${duplicados.length} par(es) de entradas muy parecidas`,
       detail: 'Probablemente la misma idea publicada dos veces (por ejemplo al reintentar). Unificar deja el contexto más limpio.',
       items: duplicados.map((d) => ({ label: `${Math.round(d.score * 100)}% · ${d.aTitle} ≈ ${d.bTitle}`, ref: `${d.a} / ${d.b}` })),
-      action: 'sharedctx forget <proyecto> <id>',
+      action: 'Comparar los cuerpos con shared_read antes de proponer consolidación; no borrar automáticamente.',
     });
   }
 
@@ -348,9 +364,15 @@ export function insights(slug = null) {
     });
   }
 
+  const staleRoots = proyectos.flatMap(p => (p.roots || []).filter(r => !existsSync(r)).map(r => ({label: p.name + ' · ' + r, ref: p.slug})));
+  if (staleRoots.length) salida.push({ id: 'raices-obsoletas', severity: 'warn', title: staleRoots.length + ' raíz(es) registrada(s) no localizables', detail: 'Actualizar la identidad de rutas sin renombrar proyectos ni reescribir el historial.', items: staleRoots, action: 'Revisar project.json y los marcadores .sharedctx.json; conservar respaldo.' });
+  const invalid = proyectos.flatMap(p => listEntries(p.slug).filter(e => e.files.some(f => f === '[object Object]') || e.unresolvedFiles?.length).map(e => ({label:p.name + ' · ' + e.title, ref:e.id})));
+  if (invalid.length) salida.push({id:'metadata-invalida',severity:'warn',title:invalid.length+' entrada(s) con referencias de archivo inválidas',detail:'Recuperar desde fuentes o registrar la pérdida explícitamente; nunca inventar rutas.',items:invalid,action:'Revisar metadata de origen y preservar copia de seguridad.'});
+  const large = proyectos.map(p => ({p,h:getHandoff(p.slug)})).filter(x => (x.h?.content.length || 0) > 3000);
+  if(large.length) salida.push({id:'handoff-extenso',severity:'info',scorePenalty:0,title:large.length+' handoff(s) de más de 3000 caracteres',detail:'Usar vista breve y shared_read para ampliar; no recortar ni borrar decisiones del almacén.',items:large.map(x=>({label:x.p.name+' · '+x.h.content.length+' caracteres',ref:x.h.id})),action:'shared_pull (brief), shared_search y shared_read por id.'});
   const orden = { warn: 0, tip: 1, info: 2 };
   salida.sort((a, b) => orden[a.severity] - orden[b.severity]);
-  const descuento = salida.reduce((a, i) => a + (i.severity === 'warn' ? 12 : i.severity === 'tip' ? 5 : 2), 0);
+  const descuento = salida.reduce((a, i) => a + (i.scorePenalty ?? (i.severity === 'warn' ? 12 : i.severity === 'tip' ? 5 : 2)), 0);
 
   return {
     scope: slug || 'todos los proyectos',

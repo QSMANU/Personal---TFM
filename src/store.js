@@ -24,11 +24,13 @@
 
 import {
   existsSync, mkdirSync, readFileSync, writeFileSync, appendFileSync,
-  readdirSync, rmSync, statSync, renameSync,
+  readdirSync, rmSync, statSync, renameSync, realpathSync,
 } from 'node:fs';
-import { join, resolve, basename, dirname, sep } from 'node:path';
+import { join, resolve, basename, dirname, sep, relative, isAbsolute } from 'node:path';
 import { homedir } from 'node:os';
 import { randomUUID } from 'node:crypto';
+import { gunzipSync } from 'node:zlib';
+import { archivePath, applyMaintenance } from './maintenance.js';
 
 export const MODES = ['off', 'readonly', 'ask', 'on'];
 export const ENTRY_TYPES = ['handoff', 'note', 'decision', 'task', 'bug', 'question', 'snippet', 'reference'];
@@ -53,9 +55,23 @@ export function getConfigPath() { return join(getHome(), 'config.json'); }
 export function getAuditPath() { return join(getHome(), 'audit.log'); }
 export function projectsRoot() { return join(getHome(), 'projects'); }
 export function pendingRoot() { return join(getHome(), 'pending'); }
-export function projectDir(slug) { return join(projectsRoot(), slug); }
-export function entriesDir(slug) { return join(projectDir(slug), 'entries'); }
-export function handoffPath(slug) { return join(projectDir(slug), 'handoff.md'); }
+export function containedPath(base, target) {
+  const inside = (root, candidate) => { const rel = relative(root, candidate); return rel === '' || (!rel.startsWith('..' + sep) && rel !== '..' && !isAbsolute(rel)); };
+  if (!inside(resolve(base), resolve(target))) throw new Error('Ruta fuera del almacén permitido.');
+  if (existsSync(base)) {
+    let existing = target;
+    while (!existsSync(existing) && existing !== dirname(existing)) existing = dirname(existing);
+    if (!inside(realpathSync(base), realpathSync(existing))) throw new Error('Enlace fuera del almacén permitido.');
+  }
+  return target;
+}
+export function projectDir(slug) {
+  if (typeof slug !== 'string' || !/^[a-z0-9][a-z0-9-]{0,119}$/.test(slug)) throw new Error('Proyecto inválido.');
+  assertSafeId(slug);
+  return containedPath(projectsRoot(), join(projectsRoot(), slug));
+}
+export function entriesDir(slug) { const base = projectDir(slug); return containedPath(base, join(base, 'entries')); }
+export function handoffPath(slug) { const base = projectDir(slug); return containedPath(base, join(base, 'handoff.md')); }
 
 function ensureDir(dir) {
   if (!existsSync(dir)) mkdirSync(dir, { recursive: true });
@@ -63,15 +79,8 @@ function ensureDir(dir) {
 }
 
 export function renameSyncSafe(from, to) {
-  try {
-    // En POSIX renombrar sobre el destino es atómico. En Windows suele fallar
-    // con EPERM/EEXIST si el destino existe; solo entonces se borra y reintenta.
-    return renameSync(from, to);
-  } catch (err) {
-    if (!['EEXIST', 'EPERM', 'EACCES'].includes(err.code)) throw err;
-    rmSync(to, { force: true });
-    return renameSync(from, to);
-  }
+  // Never unlink the valid destination before a replacement succeeds.
+  return renameSync(from, to);
 }
 
 /**
@@ -89,7 +98,7 @@ export function writeAtomicSync(filePath, content, encoding = 'utf8') {
       break;
     } catch (err) {
       attempts += 1;
-      if ((err.code === 'EBUSY' || err.code === 'EPERM') && attempts < 5) {
+      if (['EBUSY', 'EPERM', 'EACCES', 'EEXIST'].includes(err.code) && attempts < 5) {
         Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, attempts * 25);
         continue;
       }
@@ -282,13 +291,18 @@ export function listProjects() {
   const root = projectsRoot();
   if (!existsSync(root)) return [];
   return readdirSync(root)
-    .filter((n) => statSync(join(root, n)).isDirectory())
+    .filter((n) => /^[a-z0-9][a-z0-9-]{0,119}$/.test(n) && statSync(join(root, n)).isDirectory())
     .map((slug) => {
       const raw = getProject(slug) || { slug, name: slug };
       const meta = { aliases: [], roots: [], ...raw, slug };
-      return { ...meta, entries: listEntries(slug).length, handoff: existsSync(handoffPath(slug)) };
+      return { ...meta, entries: listEntries(slug).length, archivedEntries: countArchivedEntries(slug), handoff: existsSync(handoffPath(slug)) };
     })
     .sort((a, b) => a.slug.localeCompare(b.slug));
+}
+
+export function countArchivedEntries(slug) {
+  const base = projectDir(slug), dir = containedPath(base, join(base, 'archive'));
+  return existsSync(dir) ? readdirSync(dir).filter(n => /^[a-zA-Z0-9_.-]+\.md\.gz$/.test(n)).length : 0;
 }
 
 /* --------------------------------------------------- identidad de proyectos */
@@ -723,9 +737,9 @@ export function ingestInbox({ defaultProject = null, app = 'inbox', move = true 
 
 /* -------------------------------------------------------------- frontmatter */
 
-function serializeEntry(entry) {
-  const tags = (entry.tags || []).join(', ');
-  const files = (entry.files || []).join(', ');
+export function serializeEntry(entry) {
+  const tags = JSON.stringify(entry.tags || []);
+  const files = JSON.stringify(entry.files || []);
   const head = [
     '---',
     `id: ${entry.id}`,
@@ -736,6 +750,7 @@ function serializeEntry(entry) {
     `createdAt: ${entry.createdAt}`,
     `tags: ${tags}`,
     `files: ${files}`,
+    `unresolved_files: ${JSON.stringify(entry.unresolvedFiles || [])}`,
     '---',
     '',
   ].join('\n');
@@ -756,6 +771,17 @@ function parseEntry(rawInput) {
   return { content: match[2], meta };
 }
 
+export function parseListMetadata(value) {
+  if (!value) return [];
+  if (value.trim().startsWith('[') && value.trim() !== '[object Object]') {
+    try {
+      const parsed = JSON.parse(value);
+      if (Array.isArray(parsed)) return parsed.filter(x => typeof x === 'string' && x.trim());
+    } catch { /* old comma-separated metadata remains readable */ }
+  }
+  return value.split(',').map(t => t.trim()).filter(Boolean);
+}
+
 function toEntry(slug, id, raw) {
   const { content, meta } = parseEntry(raw);
   return {
@@ -767,8 +793,9 @@ function toEntry(slug, id, raw) {
     type: meta.type || 'note',
     app: meta.app || 'desconocida',
     createdAt: meta.createdAt || null,
-    tags: meta.tags ? meta.tags.split(',').map((t) => t.trim()).filter(Boolean) : [],
-    files: meta.files ? meta.files.split(',').map((t) => t.trim()).filter(Boolean) : [],
+    tags: parseListMetadata(meta.tags),
+    files: parseListMetadata(meta.files),
+    unresolvedFiles: parseListMetadata(meta.unresolved_files),
     content,
     chars: content.length,
   };
@@ -791,12 +818,17 @@ export function newEntryId() {
 /* ---------------------------------------------------------------- entradas */
 
 export function writeEntry({ project, title, content, type = 'note', tags = [], files = [], app = null, id = null, createdAt = null, root = null }) {
+  for (const [key, values] of Object.entries({ tags, files })) {
+    if (!Array.isArray(values) || values.some(v => typeof v !== 'string' || /[\r\n]/.test(v))) throw new Error(key + ': se requiere un array de textos sin saltos de línea.');
+  }
+  if (/[\r\n]/.test(String(title))) throw new Error('title no admite saltos de línea.');
   if (!ENTRY_TYPES.includes(type)) {
     throw new Error(`tipo inválido: ${type}. Válidos: ${ENTRY_TYPES.join(', ')}`);
   }
   const meta = ensureProject(project, { root });
   const slug = meta.slug;
   const nuevoId = id ? assertSafeId(id) : newEntryId();
+  if (existsSync(archivePath(slug, nuevoId))) throw new Error('ID archivado: usar un ID nuevo para conservar la procedencia.');
   // Si se publica con un id existente, se ACTUALIZA: se conserva la fecha original
   // (así republicar un documento no duplica ni desordena el historial).
   const previa = existsSync(join(entriesDir(slug), `${nuevoId}.md`))
@@ -811,11 +843,13 @@ export function writeEntry({ project, title, content, type = 'note', tags = [], 
     createdAt: createdAt || previa?.createdAt || new Date().toISOString(),
     tags,
     files,
+    unresolvedFiles: previa?.unresolvedFiles || [],
     content: String(content ?? ''),
   };
   writeAtomicSync(join(entriesDir(slug), `${entry.id}.md`), serializeEntry(entry), 'utf8');
 
-  if (type === 'handoff') {
+  const currentHandoff = getHandoff(slug);
+  if (type === 'handoff' && (!currentHandoff || currentHandoff.id === entry.id || String(entry.createdAt) >= String(currentHandoff.createdAt))) {
     writeAtomicSync(handoffPath(slug), serializeEntry(entry), 'utf8');
     if (previa && previa.type === 'handoff') { /* ya era el handoff: se sobreescribió */ }
   }
@@ -829,7 +863,7 @@ export function listEntries(slug, { limit = 0, type = null } = {}) {
   let entries = readdirSync(dir)
     .filter((n) => n.endsWith('.md'))
     .map((n) => {
-      const full = join(dir, n);
+      const full = containedPath(dir, join(dir, n));
       const entry = toEntry(slug, n.replace(/\.md$/, ''), readFileSync(full, 'utf8'));
       // mtime permite invalidar cachés (grafo, similitudes) cuando se actualiza
       // una entrada conservando el mismo id y createdAt.
@@ -843,14 +877,20 @@ export function listEntries(slug, { limit = 0, type = null } = {}) {
 
 export function readEntry(slug, id) {
   assertSafeId(id);
-  const path = join(entriesDir(slug), `${id}.md`);
-  if (!existsSync(path)) return null;
+  const dir = entriesDir(slug);
+  const path = containedPath(dir, join(dir, `${id}.md`));
+  if (!existsSync(path)) {
+    const archived = archivePath(slug, id);
+    if (!existsSync(archived)) return null;
+    const raw = gunzipSync(readFileSync(archived), { maxOutputLength: 2 * 1024 * 1024 }).toString('utf8');
+    return { ...toEntry(slug, id, raw), archived: true };
+  }
   return toEntry(slug, id, readFileSync(path, 'utf8'));
 }
 
 export function deleteEntry(slug, id) {
   assertSafeId(id);
-  const path = join(entriesDir(slug), `${id}.md`);
+  const path = existsSync(join(entriesDir(slug), `${id}.md`)) ? containedPath(entriesDir(slug), join(entriesDir(slug), `${id}.md`)) : archivePath(slug, id);
   if (!existsSync(path)) return false;
   rmSync(path);
   const h = handoffPath(slug);
@@ -922,7 +962,10 @@ export function approvePending(ids = 'all') {
   const wanted = ids === 'all' ? all : all.filter((p) => ids.includes(p.id));
   const done = [];
   for (const item of wanted) {
-    if (item.action === 'forget' || item.type === 'forget') {
+    if (item.action === 'maintenance') {
+      done.push(applyMaintenance(item));
+      dropPending(item.id);
+    } else if (item.action === 'forget' || item.type === 'forget') {
       const ok = deleteEntry(item.project, item.entryId);
       dropPending(item.id);
       audit('approve.forget', { project: item.project, id: item.entryId, pendingId: item.id, ok });

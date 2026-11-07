@@ -15,26 +15,33 @@
 import { createServer as createHttpServer } from 'node:http';
 import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js';
 import { createServer } from './server.js';
+import { allowLocalRequest, loopback } from './local-http.js';
 import { endSession, getConfig, getHome, log, registerSession } from './store.js';
 
 const cfg = getConfig();
 const portArgIdx = process.argv.indexOf('--port');
 const port = portArgIdx !== -1 ? Number(process.argv[portArgIdx + 1]) : cfg.port;
-const host = cfg.host || '127.0.0.1';
+const host = loopback(cfg.host || '127.0.0.1');
 const APP = process.env.SHARED_MCP_APP || 'desconocida';
 
 registerSession({ app: APP, transport: 'http' });
 
 async function readBody(req) {
   const chunks = [];
-  for await (const chunk of req) chunks.push(chunk);
+  let size = 0;
+  for await (const chunk of req) {
+    size += chunk.length;
+    if (size > 1024 * 1024) throw Object.assign(new Error('Cuerpo HTTP demasiado grande (máximo 1 MiB).'), { statusCode: 413 });
+    chunks.push(chunk);
+  }
   if (chunks.length === 0) return undefined;
   const raw = Buffer.concat(chunks).toString('utf8');
   try { return JSON.parse(raw); } catch { return undefined; }
 }
 
 const http = createHttpServer(async (req, res) => {
-  const url = new URL(req.url, `http://${req.headers.host || `${host}:${port}`}`);
+  if (!allowLocalRequest(req, res)) return;
+  const url = new URL(req.url, 'http://127.0.0.1');
 
   if (url.pathname === '/health') {
     const current = getConfig();
@@ -55,6 +62,13 @@ const http = createHttpServer(async (req, res) => {
     return;
   }
 
+  if (Number(req.headers['content-length']) > 1024 * 1024) {
+    res.writeHead(413, { 'content-type': 'application/json; charset=utf-8' });
+    res.end(JSON.stringify({ error: 'Cuerpo HTTP demasiado grande (máximo 1 MiB).' }));
+    req.resume();
+    return;
+  }
+
   // Modo stateless: un servidor nuevo por request; el estado vive en disco.
   const server = createServer();
   const transport = new StreamableHTTPServerTransport({ sessionIdGenerator: undefined, enableJsonResponse: true });
@@ -70,7 +84,7 @@ const http = createHttpServer(async (req, res) => {
   } catch (err) {
     log(`error HTTP: ${err.stack || err.message}`);
     if (!res.headersSent) {
-      res.writeHead(500, { 'content-type': 'application/json; charset=utf-8' });
+      res.writeHead(err.statusCode || 500, { 'content-type': 'application/json; charset=utf-8' });
       res.end(JSON.stringify({ jsonrpc: '2.0', error: { code: -32603, message: String(err.message) }, id: null }));
     }
   }

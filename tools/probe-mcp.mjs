@@ -1,9 +1,10 @@
 // Read-only MCP handshake using the server actually stored in an app's JSON config.
+// Soporta raíces anidadas ("mcp.servers" en OpenCode V2) y command como array.
 import { readFileSync } from 'node:fs';
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio.js';
 
-const [configPath, root = 'mcpServers'] = process.argv.slice(2);
+const [configPath, root = 'mcpServers', serverName = 'QSMANU-LOCAL-SHARED-MCP'] = process.argv.slice(2);
 const timer = setTimeout(() => {
   console.error('MCP no respondió en 15 segundos');
   process.exit(1);
@@ -12,11 +13,16 @@ let transport;
 let client;
 try {
   const config = JSON.parse(readFileSync(configPath, 'utf8').replace(/^\uFEFF/, ''));
-  const server = config[root]?.['QSMANU-LOCAL-SHARED-MCP'];
+  const servers = root.split('.').filter(Boolean)
+    .reduce((nodo, clave) => (nodo && typeof nodo === 'object' ? nodo[clave] : undefined), config);
+  const server = servers?.[serverName];
   if (!server?.command || server.disabled) throw new Error('Servidor ausente o deshabilitado');
+  const commandArray = Array.isArray(server.command) ? server.command : null;
+  const command = commandArray ? commandArray[0] : server.command;
+  const args = commandArray ? commandArray.slice(1) : (server.args || []);
   transport = new StdioClientTransport({
-    command: server.command, args: server.args || [],
-    env: { ...process.env, ...server.env }, stderr: 'pipe',
+    command, args,
+    env: { ...process.env, ...(server.env || server.environment) }, stderr: 'pipe',
   });
   client = new Client({ name: 'sharedctx-install-check', version: '1.0.0' });
   await client.connect(transport);

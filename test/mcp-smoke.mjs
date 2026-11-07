@@ -37,7 +37,7 @@ await client.connect(transport);
 
 try {
   const tools = (await client.listTools()).tools.map((t) => t.name).sort();
-  check('expone exactamente las 8 herramientas previstas', tools.length === 8, tools.join(', '));
+  check('expone exactamente las 10 herramientas previstas', tools.length === 10, tools.join(', '));
   check('no expone ninguna herramienta destructiva de archivos/git',
     !tools.some((t) => /file|git|delete_dir|exec|shell/i.test(t)), tools.join(', '));
   check('no expone ninguna herramienta para cambiar el modo de consentimiento',
@@ -73,7 +73,7 @@ try {
   });
   check('handoff publicable', /PENDIENTE|Publicado/.test(handoff.content[0].text));
   cli('approve', 'all');
-  const pull2 = await client.callTool({ name: 'shared_pull', arguments: {} });
+  const pull2 = await client.callTool({ name: 'shared_pull', arguments: { format: 'graph' } });
   check('el handoff aparece en la cabecera', /migración de la tabla users/.test(pull2.content[0].text), pull2.content[0].text);
 
   // Borrado con el mismo circuito de aprobación que las publicaciones.
@@ -112,6 +112,8 @@ try {
   const exp = cli('export', '--project', 'proyecto-demo', '--out', join(home, 'export'));
   check('export a Markdown funciona (para ChatGPT web)', exp.code === 0 && /exportado/.test(exp.out), exp.out);
 
+  const handoffId = JSON.parse(pull2.content[0].text).nodes.find(n => n.role === 'selected_handoff').id;
+  cli('add', '--project', 'proyecto-demo', '--title', 'Seguimiento de migración', '--content', 'Referencia: ' + handoffId);
   const rel = await client.callTool({ name: 'shared_related', arguments: { limit: 5 } });
   check('shared_related devuelve el vecindario del handoff', !rel.isError && /Relacionadas con/.test(rel.content[0].text), rel.content[0].text);
   check('el vecindario explica el motivo de cada relación', /por qué:/.test(rel.content[0].text), rel.content[0].text);
