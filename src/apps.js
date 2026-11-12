@@ -13,7 +13,9 @@
  */
 
 import { homedir } from 'node:os';
-import { join } from 'node:path';
+import { existsSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
+import { join, resolve } from 'node:path';
 
 const H = homedir();
 const APPDATA = process.env.APPDATA || join(H, 'AppData', 'Roaming');
@@ -95,4 +97,22 @@ export function getApp(id) {
 
 export function appName(id) {
   return getApp(id)?.name || id;
+}
+
+// Valida la configuración local; una sesión viva se informa por separado.
+export function jsonAppConfigured(app, config) {
+  const root = app.kind === 'json-opencode' ? config?.mcp?.servers : config?.[app.root];
+  const server = root?.[app.serverName || SERVER_NAME];
+  if (!server || server.disabled === true || server.enabled === false) return false;
+  const openCode = app.kind === 'json-opencode';
+  if (openCode && server.type !== 'local') return false;
+  if (app.id === 'vscode' && server.type !== 'stdio') return false;
+  const command = openCode ? server.command : [server.command, ...(Array.isArray(server.args) ? server.args : [])];
+  const env = openCode ? server.environment : server.env;
+  const entry = fileURLToPath(new URL('./stdio.js', import.meta.url));
+  return Array.isArray(command) && command.length === 2
+    && command.every(value => typeof value === 'string' && value.length > 0)
+    && resolve(command[1]) === resolve(entry)
+    && existsSync(command[0]) && existsSync(command[1])
+    && env?.SHARED_MCP_APP === app.id;
 }

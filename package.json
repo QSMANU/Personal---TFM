@@ -14,7 +14,7 @@
     "http": "node src/http.js",
     "cli": "node src/cli.js",
     "check": "node tools/check-syntax.mjs",
-    "test": "powershell -NoProfile -ExecutionPolicy Bypass -File test/install-detection.ps1 && node test/mcp-smoke.mjs && node test/robustness.mjs && node test/relations.mjs && node test/dashboard.mjs && node test/ui.mjs && node test/retrieval.mjs && node test/security.mjs && node test/toml.mjs && node test/metadata.mjs && node test/context-view.mjs && node test/maintenance.mjs",
+    "test": "powershell -NoProfile -ExecutionPolicy Bypass -File test/install-detection.ps1 && node test/mcp-smoke.mjs && node test/robustness.mjs && node test/relations.mjs && node test/dashboard.mjs && node test/ui.mjs && node test/retrieval.mjs && node test/security.mjs && node test/toml.mjs && node test/metadata.mjs && node test/context-view.mjs && node test/maintenance.mjs && node test/app-config.mjs && powershell -NoProfile -ExecutionPolicy Bypass -File test/install-instructions.ps1",
     "test:install": "powershell -NoProfile -ExecutionPolicy Bypass -File test/install-detection.ps1",
     "test:smoke": "node test/mcp-smoke.mjs",
     "test:robust": "node test/robustness.mjs",

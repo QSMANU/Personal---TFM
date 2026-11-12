@@ -51,16 +51,26 @@ if (typeof config !== 'object' || config === null || Array.isArray(config)) {
 
 // rootKey puede ser una ruta con puntos: "mcp.servers" (OpenCode V2).
 const ruta = rootKey.split('.').filter(Boolean);
+if (!ruta.length || [...ruta, serverName, ...retire].some(key => ['__proto__', 'constructor', 'prototype'].includes(key))) {
+  throw new Error('Ruta o nombre de servidor no permitido');
+}
+const isObject = value => value !== null && typeof value === 'object' && !Array.isArray(value);
 let contenedor = config;
 for (const clave of ruta.slice(0, -1)) {
-  if (typeof contenedor[clave] !== 'object' || contenedor[clave] === null || Array.isArray(contenedor[clave])) {
+  if (Object.hasOwn(contenedor, clave) && !isObject(contenedor[clave])) {
+    throw new Error('Sección incompatible: ' + clave + '; no se modificó la configuración');
+  }
+  if (!Object.hasOwn(contenedor, clave)) {
     contenedor[clave] = {};
   }
   contenedor = contenedor[clave];
 }
 
 const hoja = ruta.at(-1);
-if (typeof contenedor[hoja] !== 'object' || contenedor[hoja] === null || Array.isArray(contenedor[hoja])) {
+if (Object.hasOwn(contenedor, hoja) && !isObject(contenedor[hoja])) {
+  throw new Error('Sección incompatible: ' + hoja + '; no se modificó la configuración');
+}
+if (!Object.hasOwn(contenedor, hoja)) {
   contenedor[hoja] = {};
 }
 

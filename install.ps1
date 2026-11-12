@@ -218,7 +218,7 @@ function Add-TomlServer {
 }
 
 function Set-MarkerBlock {
-  param([string]$Label, [string]$File, [string]$Block)
+  param([string]$Label, [string]$File, [string]$Block, [string]$Preamble)
   Write-Host "`n== $Label (instrucciones)" -ForegroundColor Cyan
   Write-Host "   archivo: $File"
   if ($DryRun) { Write-Host '   (dry-run) insertaría el bloque sharedctx'; return }
@@ -238,6 +238,7 @@ function Set-MarkerBlock {
     $new = $Block + "`r`n"
   }
 
+  if ($Preamble -and $new -notmatch '^\s*---\r?\n') { $new = $Preamble + $new }
   Write-Utf8NoBom -Path $File -Text $new
   [void]$script:Changes.Add([pscustomobject]@{ ts = (Get-Date).ToString('s'); kind = 'instructions'; path = $File })
   Write-Host '   bloque de instrucciones escrito' -ForegroundColor DarkGray
@@ -647,7 +648,7 @@ if (-not $SkipInstructions -and $block) {
 
   if (Use-App 'kimchi') {
     $kimchiSkill = Join-Path $env:USERPROFILE '.config\kimchi\harness\skills\contexto-compartido\SKILL.md'
-    Set-MarkerBlock -Label 'Kimchi Studio (skill)' -File $kimchiSkill -Block ("---`nname: contexto-compartido`ndescription: Contexto compartido con consentimiento explicito`n---`n`n" + $block)
+    Set-MarkerBlock -Label 'Kimchi Studio (skill)' -File $kimchiSkill -Preamble ("---`nname: contexto-compartido`ndescription: Contexto compartido con consentimiento explicito`n---`n`n") -Block $block
   }
 
   $opencodeMd = Join-Path $env:USERPROFILE '.config\opencode\AGENTS.md'

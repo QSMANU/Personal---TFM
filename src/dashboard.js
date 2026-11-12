@@ -24,7 +24,7 @@ import {
   listEntries, listPending, listProjects, listSessions, projectSummary, readAudit, readEntry,
   storeSize, MODES, ENTRY_TYPES, getLastProjectForApp,
 } from './store.js';
-import { KNOWN_APPS, SERVER_NAME } from './apps.js';
+import { KNOWN_APPS, SERVER_NAME, jsonAppConfigured } from './apps.js';
 import { TOOLS, SERVER_VERSION, OPT_IN_PROTOCOL } from './server.js';
 import { buildEntryGraph, graphToDot, graphToMermaid, insights, relatedEntries } from './relations.js';
 
@@ -54,15 +54,13 @@ function appStatus() {
       if (app.kind === 'cli') {
         configured = existsSync(app.config) && readFileSync(app.config, 'utf8').includes(SERVER_NAME);
         detail = configured ? 'registrado' : 'el CLI no está instalado';
-      } else if (app.kind === 'json-opencode') {
-        const serverName = app.serverName || 'sharedctx';
+      } else if (['json-opencode', 'json-mcpServers', 'json-servers'].includes(app.kind)) {
         if (!existsSync(app.config)) {
           detail = 'archivo no encontrado';
         } else {
           const raw = readFileSync(app.config, 'utf8').replace(/^\uFEFF/, '');
-          const entrada = JSON.parse(raw)?.mcp?.servers?.[serverName];
-          configured = Boolean(entrada) && entrada.disabled !== true;
-          detail = configured ? 'configurado' : 'sin nuestra entrada';
+          configured = jsonAppConfigured(app, JSON.parse(raw));
+          detail = configured ? 'configurado' : 'configuración ausente, deshabilitada o incorrecta';
         }
       } else {
         const raw = existsSync(app.config) ? readFileSync(app.config, 'utf8') : '';
