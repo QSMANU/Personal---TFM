@@ -1,0 +1,34 @@
+{
+  "name": "shared-mcp-local",
+  "version": "0.6.0",
+  "private": true,
+  "description": "Servidor MCP local de contexto compartido entre herramientas de AI, con consentimiento explicito (opt-in) y alcance por proyecto.",
+  "type": "module",
+  "bin": {
+    "sharedctx": "./src/cli.js",
+    "sharedctx-mcp": "./src/stdio.js",
+    "sharedctx-http": "./src/http.js"
+  },
+  "scripts": {
+    "mcp": "node src/stdio.js",
+    "http": "node src/http.js",
+    "cli": "node src/cli.js",
+    "check": "node tools/check-syntax.mjs",
+    "test": "powershell -NoProfile -ExecutionPolicy Bypass -File test/install-detection.ps1 && node test/mcp-smoke.mjs && node test/robustness.mjs && node test/relations.mjs && node test/dashboard.mjs && node test/ui.mjs && node test/retrieval.mjs && node test/security.mjs && node test/toml.mjs && node test/metadata.mjs && node test/context-view.mjs && node test/maintenance.mjs",
+    "test:install": "powershell -NoProfile -ExecutionPolicy Bypass -File test/install-detection.ps1",
+    "test:smoke": "node test/mcp-smoke.mjs",
+    "test:robust": "node test/robustness.mjs",
+    "test:relations": "node test/relations.mjs",
+    "test:dashboard": "node test/dashboard.mjs",
+    "test:ui": "node test/ui.mjs"
+  },
+  "engines": {
+    "node": ">=24"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.20.0"
+  },
+  "devDependencies": {
+    "jsdom": "^29.1.1"
+  }
+}

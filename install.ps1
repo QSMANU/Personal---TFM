@@ -1,0 +1,688 @@
+﻿<#
+.SYNOPSIS
+  Instala el contexto compartido local (sharedctx) en todas las herramientas de AI
+  detectadas en esta máquina, con consentimiento explícito por publicación.
+
+.DESCRIPTION
+  Para cada app:
+    1. hace backup del archivo de configuración,
+    2. agrega/actualiza el servidor MCP "sharedctx",
+    3. retira el servidor "context-mcp" (salvo -KeepContextMcp),
+    4. agrega el bloque de instrucciones opt-in donde la app lea un archivo.
+
+  Todo lo que toca queda registrado en state\install-manifest.json, y se puede
+  revertir con:  .\install.ps1 -Restore
+
+.PARAMETER KeepContextMcp
+  No retirar el servidor de terceros "context-mcp" de las apps (por defecto se retira;
+  los datos en ~\.context-mcp NO se tocan).
+
+.PARAMETER SkipInstructions
+  No escribir los bloques de instrucciones en CLAUDE.md / AGENTS.md / GEMINI.md, etc.
+
+.PARAMETER Restore
+  Deshace la instalación: restaura el backup MÁS ANTIGUO de cada archivo (el estado
+  previo a la primera instalación) y quita los bloques/archivos que agregó el instalador.
+  El contexto ya guardado en ~\.shared-mcp NO se toca.
+
+.PARAMETER RestoreLatest
+  Como -Restore, pero con el backup MÁS RECIENTE: deshace solo la última corrida.
+
+.PARAMETER DryRun
+  Muestra qué haría, sin escribir nada.
+
+.PARAMETER Apps
+  Instala solo estas apps (ids separados por coma o como array). Una selección explícita
+  permite forzar una app que el barrido no pudo detectar.
+
+.PARAMETER ExcludeApps
+  Omite estas apps aunque hayan sido detectadas.
+
+.PARAMETER ListApps
+  Muestra el resultado del barrido y termina sin escribir nada.
+
+.PARAMETER VerifyOnly
+  Revisa la configuración y prueba el handshake MCP de las apps con JSON.
+  No modifica archivos; termina con código 1 si alguna app compatible falla.
+
+.EXAMPLE
+  .\install.ps1
+  .\install.ps1 -KeepContextMcp
+  .\install.ps1 -Restore
+  .\install.ps1 -Restore -RestoreLatest
+#>
+[CmdletBinding()]
+param(
+  [switch]$KeepContextMcp,
+  [switch]$SkipInstructions,
+  [switch]$Restore,
+  [switch]$RestoreLatest,
+  [switch]$DryRun,
+  [string[]]$Apps,
+  [string[]]$ExcludeApps,
+  [switch]$ListApps,
+  [switch]$VerifyOnly
+)
+
+$ErrorActionPreference = 'Stop'
+$Repo = Split-Path -Parent $MyInvocation.MyCommand.Path
+$StdioJs = Join-Path $Repo 'src\stdio.js'
+$CliJs = Join-Path $Repo 'src\cli.js'
+$Snippet = Join-Path $Repo 'agents\contexto-compartido.md'
+$StateDir = Join-Path $Repo 'state'
+$ManifestPath = Join-Path $StateDir 'install-manifest.json'
+$Stamp = Get-Date -Format 'yyyyMMddHHmmss'
+$ServerName = 'QSMANU-LOCAL-SHARED-MCP'
+$Retired = @('context-mcp', 'sharedctx')
+
+. (Join-Path $Repo 'tools\detect-installed-apps.ps1')
+
+$script:Changes = New-Object System.Collections.ArrayList
+
+function Write-Utf8NoBom {
+  param([string]$Path, [string]$Text)
+  $dir = Split-Path -Parent $Path
+  if ($dir -and -not (Test-Path -LiteralPath $dir)) { New-Item -ItemType Directory -Force -Path $dir | Out-Null }
+  $enc = New-Object System.Text.UTF8Encoding($false)
+  [System.IO.File]::WriteAllText($Path, $Text, $enc)
+}
+
+function Read-Utf8Text {
+  # Windows PowerShell 5.1 lee sin BOM como ANSI: forzamos UTF-8 al leer.
+  param([string]$Path)
+  if (-not (Test-Path -LiteralPath $Path)) { return '' }
+  return [System.IO.File]::ReadAllText($Path, [System.Text.Encoding]::UTF8)
+}
+
+function Get-ClaudeDesktopConfigPath {
+  # La resolución real vive en tools\detect-installed-apps.ps1: cubre la versión
+  # clásica (%APPDATA%\Claude), la actual de Microsoft Store
+  # (%LOCALAPPDATA%\Claude-Data\<familia>) y la anterior (LocalCache del paquete).
+  return Get-SharedCtxClaudeConfigPath
+}
+
+function Backup-Config {
+  param([string]$Path)
+  if (-not (Test-Path -LiteralPath $Path)) { return $null }
+  $bak = "$Path.backup-sharedctx-$Stamp"
+  Copy-Item -LiteralPath $Path -Destination $bak -Force
+  [void]$script:Changes.Add([pscustomobject]@{ ts = (Get-Date).ToString('s'); kind = 'backup'; path = $Path; backup = $bak })
+  return $bak
+}
+
+function New-ServerJson {
+  param([string]$AppId, [switch]$IncludeType)
+  $obj = [ordered]@{}
+  if ($IncludeType) { $obj['type'] = 'stdio' }
+  $obj['command'] = $Node
+  $obj['args'] = @($StdioJs)
+  $obj['env'] = [ordered]@{ SHARED_MCP_APP = $AppId }
+  $tmp = Join-Path $StateDir "server-$AppId.json"
+  Write-Utf8NoBom -Path $tmp -Text ($obj | ConvertTo-Json -Depth 8)
+  return $tmp
+}
+
+function New-CodexServerJson {
+  param([string]$AppId)
+  $obj = [ordered]@{
+    command                      = $Node
+    args                         = @($StdioJs)
+    default_tools_approval_mode  = 'approve'
+    env                          = [ordered]@{ SHARED_MCP_APP = $AppId }
+    tools                        = [ordered]@{
+      shared_publish = [ordered]@{ approval_mode = 'prompt' }
+      shared_forget  = [ordered]@{ approval_mode = 'prompt' }
+    }
+  }
+  $tmp = Join-Path $StateDir "server-$AppId.json"
+  Write-Utf8NoBom -Path $tmp -Text ($obj | ConvertTo-Json -Depth 8)
+  return $tmp
+}
+
+function New-OpenCodeServerJson {
+  # OpenCode V2: command es un array (ejecutable + argumentos) y las variables
+  # de entorno van en "environment", no en "env".
+  param([string]$AppId)
+  $obj = [ordered]@{
+    type        = 'local'
+    command     = @($Node, $StdioJs)
+    environment = [ordered]@{ SHARED_MCP_APP = $AppId }
+  }
+  $tmp = Join-Path $StateDir "server-$AppId.json"
+  Write-Utf8NoBom -Path $tmp -Text ($obj | ConvertTo-Json -Depth 8)
+  return $tmp
+}
+
+function Invoke-Node {
+  param([string[]]$NodeArgs)
+  $out = & node @NodeArgs 2>&1
+  $code = $LASTEXITCODE
+  if ($code -ne 0) { throw "node $($NodeArgs -join ' ') falló:`n$out" }
+  return $out
+}
+
+function Add-JsonServer {
+  param([string]$AppId, [string]$Label, [string]$ConfigPath, [string]$RootKey = 'mcpServers', [switch]$KeepServer, [switch]$IncludeType, [switch]$OpenCode, [string]$Name = $ServerName, [string[]]$RetireList)
+  Write-Host "`n== $Label" -ForegroundColor Cyan
+  Write-Host "   config: $ConfigPath"
+  if ($DryRun) { Write-Host "   (dry-run) agregaría $RootKey.$Name"; return }
+
+  if (-not $RetireList) { $RetireList = $Retired }
+  Backup-Config -Path $ConfigPath | Out-Null
+  $serverJson = if ($OpenCode) { New-OpenCodeServerJson -AppId $AppId } else { New-ServerJson -AppId $AppId -IncludeType:$IncludeType }
+  $nodeArgs = @((Join-Path $Repo 'tools\merge-mcp-json.mjs'), $ConfigPath, $RootKey, $Name, $serverJson)
+  if (-not $KeepServer) { $nodeArgs += @('--retire', ($RetireList -join ',')) }
+  $out = Invoke-Node -NodeArgs $nodeArgs
+  $out | ForEach-Object { Write-Host "   $_" -ForegroundColor DarkGray }
+  [void]$script:Changes.Add([pscustomobject]@{ ts = (Get-Date).ToString('s'); kind = 'mcp-json'; app = $AppId; path = $ConfigPath; root = $RootKey })
+}
+
+function Remove-BloquesMcpDsh {
+  param([string]$Text, [string[]]$Nombres)
+  $bloques = New-Object System.Collections.ArrayList
+  $actual = New-Object System.Collections.ArrayList
+  foreach ($l in ($Text -split "`r?`n")) {
+    if ($l -match '^-\s' -and $actual.Count -gt 0) {
+      [void]$bloques.Add(($actual.ToArray() -join "`r`n"))
+      $actual = New-Object System.Collections.ArrayList
+    }
+    [void]$actual.Add($l)
+  }
+  if ($actual.Count -gt 0) { [void]$bloques.Add(($actual.ToArray() -join "`r`n")) }
+
+  $conservados = New-Object System.Collections.ArrayList
+  $quitados = 0
+  foreach ($b in $bloques) {
+    $esNuestro = $false
+    foreach ($n in $Nombres) {
+      if ($b -match "(?m)^\s*serverName:\s*$([regex]::Escape($n))\s*$") { $esNuestro = $true }
+    }
+    if ($esNuestro) { $quitados++ } else { [void]$conservados.Add($b) }
+  }
+  return @{ texto = (($conservados.ToArray() -join "`r`n").Trim()); quitados = $quitados }
+}
+
+function Add-TomlServer {
+  param([string]$AppId, [string]$Label, [string]$ConfigPath, [switch]$KeepServer)
+  Write-Host "`n== $Label" -ForegroundColor Cyan
+  Write-Host "   config: $ConfigPath"
+  if ($DryRun) { Write-Host "   (dry-run) agregaría [mcp_servers.$ServerName]"; return }
+
+  Backup-Config -Path $ConfigPath | Out-Null
+  $serverJson = New-CodexServerJson -AppId $AppId
+  $nodeArgs = @((Join-Path $Repo 'tools\merge-codex-toml.mjs'), $ConfigPath, $ServerName, $serverJson)
+  if (-not $KeepServer) { $nodeArgs += @('--retire', ($Retired -join ',')) }
+  $out = Invoke-Node -NodeArgs $nodeArgs
+  $out | ForEach-Object { Write-Host "   $_" -ForegroundColor DarkGray }
+  [void]$script:Changes.Add([pscustomobject]@{ ts = (Get-Date).ToString('s'); kind = 'mcp-toml'; app = $AppId; path = $ConfigPath })
+}
+
+function Set-MarkerBlock {
+  param([string]$Label, [string]$File, [string]$Block)
+  Write-Host "`n== $Label (instrucciones)" -ForegroundColor Cyan
+  Write-Host "   archivo: $File"
+  if ($DryRun) { Write-Host '   (dry-run) insertaría el bloque sharedctx'; return }
+
+  $begin = '<!-- sharedctx:begin -->'
+  $end = '<!-- sharedctx:end -->'
+  $existing = ''
+  if (Test-Path -LiteralPath $File) { $existing = Read-Utf8Text -Path $File }
+  Backup-Config -Path $File | Out-Null
+
+  if ($existing -and $existing.Contains($begin)) {
+    $pattern = [regex]::Escape($begin) + '(?s).*?' + [regex]::Escape($end)
+    $new = [regex]::Replace($existing, $pattern, [System.Text.RegularExpressions.MatchEvaluator] { param($m) $Block })
+  } elseif ($existing -and $existing.Trim().Length -gt 0) {
+    $new = $existing.TrimEnd() + "`r`n`r`n" + $Block + "`r`n"
+  } else {
+    $new = $Block + "`r`n"
+  }
+
+  Write-Utf8NoBom -Path $File -Text $new
+  [void]$script:Changes.Add([pscustomobject]@{ ts = (Get-Date).ToString('s'); kind = 'instructions'; path = $File })
+  Write-Host '   bloque de instrucciones escrito' -ForegroundColor DarkGray
+}
+
+function Get-Backups {
+  param([string]$Path)
+  return @(Get-ChildItem -Path "$Path.backup-sharedctx-*" -ErrorAction SilentlyContinue | Sort-Object Name)
+}
+
+function Remove-BloqueMarcado {
+  param([string]$Path)
+  $begin = '<!-- sharedctx:begin -->'
+  $end = '<!-- sharedctx:end -->'
+  if (-not (Test-Path -LiteralPath $Path)) { return $false }
+  $texto = Read-Utf8Text -Path $Path
+  if (-not $texto.Contains($begin)) { return $false }
+  $patron = [regex]::Escape($begin) + '(?s).*?' + [regex]::Escape($end)
+  $nuevo = ([regex]::Replace($texto, $patron, '')).TrimEnd() + "`r`n"
+  Write-Utf8NoBom -Path $Path -Text $nuevo
+  return $true
+}
+
+<#
+  Deshace la instalación. Por defecto restaura el backup MÁS ANTIGUO de cada
+  archivo (el estado previo a la primera instalación); con -Latest restaura el
+  más reciente (deshace solo la última corrida).
+#>
+function Undo-Install {
+  param([switch]$Latest)
+
+  $objetivos = @(
+    @{ path = (Join-Path $env:APPDATA 'Claude\claude_desktop_config.json'); modo = 'restaurar' },
+    @{ path = (Join-Path $env:USERPROFILE '.cursor\mcp.json'); modo = 'restaurar' },
+    @{ path = (Join-Path $env:USERPROFILE '.gemini\config\mcp_config.json'); modo = 'restaurar' },
+    @{ path = (Join-Path $env:USERPROFILE '.kimi-code\mcp.json'); modo = 'restaurar-o-borrar' },
+    @{ path = (Join-Path $env:USERPROFILE '.config\kimchi\harness\mcp.json'); modo = 'restaurar' },
+    @{ path = (Join-Path $env:USERPROFILE '.codex\config.toml'); modo = 'restaurar' },
+    @{ path = (Join-Path $env:APPDATA 'Code\User\mcp.json'); modo = 'borrar-json-nuestro' },
+    @{ path = (Join-Path $env:USERPROFILE '.copilot\mcp-config.json'); modo = 'borrar-json-nuestro' },
+    @{ path = (Join-Path $env:USERPROFILE '.dsh\profiles\desktop\cordis.patch.yml'); modo = 'restaurar' },
+    @{ path = (Join-Path $env:USERPROFILE '.config\opencode\opencode.json'); modo = 'restaurar-o-borrar' },
+    @{ path = (Join-Path $env:USERPROFILE '.config\opencode\AGENTS.md'); modo = 'quitar-bloque' },
+    @{ path = (Join-Path $env:USERPROFILE '.claude\settings.json'); modo = 'restaurar' },
+    @{ path = (Join-Path $env:USERPROFILE '.claude\CLAUDE.md'); modo = 'quitar-bloque' },
+    @{ path = (Join-Path $env:USERPROFILE '.codex\AGENTS.md'); modo = 'quitar-bloque' },
+    @{ path = (Join-Path $env:USERPROFILE '.gemini\GEMINI.md'); modo = 'quitar-bloque' },
+    @{ path = (Join-Path $env:USERPROFILE '.kimi-code\AGENTS.md'); modo = 'quitar-bloque' },
+    @{ path = (Join-Path $env:USERPROFILE '.cursor\rules\contexto-compartido.mdc'); modo = 'borrar' },
+    @{ path = (Join-Path $env:USERPROFILE '.config\kimchi\harness\skills\contexto-compartido\SKILL.md'); modo = 'borrar' },
+    @{ path = (Join-Path $env:USERPROFILE '.config\kimchi\harness\skills\contexto-compartido'); modo = 'borrar-dir' }
+  )
+
+  $accion = if ($Latest) { 'más reciente' } else { 'más antiguo (estado previo a la primera instalación)' }
+  Write-Host "revirtiendo con el backup $accion`n" -ForegroundColor Cyan
+
+  foreach ($o in $objetivos) {
+    $baks = Get-Backups -Path $o.path
+    switch ($o.modo) {
+      'restaurar' {
+        if ($baks.Count -gt 0) {
+          $elegido = if ($Latest) { $baks[-1] } else { $baks[0] }
+          Copy-Item -LiteralPath $elegido.FullName -Destination $o.path -Force
+          Write-Host "restaurado  $($o.path)" -ForegroundColor Green
+          Write-Host "            desde $($elegido.Name)" -ForegroundColor DarkGray
+        } elseif (Test-Path -LiteralPath $o.path) {
+          Write-Host "sin backup  $($o.path)  (no lo tocó el instalador)" -ForegroundColor DarkGray
+        }
+      }
+      'restaurar-o-borrar' {
+        if ($baks.Count -gt 0) {
+          $elegido = if ($Latest) { $baks[-1] } else { $baks[0] }
+          Copy-Item -LiteralPath $elegido.FullName -Destination $o.path -Force
+          Write-Host "restaurado  $($o.path)" -ForegroundColor Green
+        } elseif (Test-Path -LiteralPath $o.path) {
+          Remove-Item -LiteralPath $o.path -Force
+          Write-Host "borrado     $($o.path)  (lo creó el instalador)" -ForegroundColor Yellow
+        }
+      }
+      'borrar-json-nuestro' {
+        # Este archivo NO existía antes de la instalación: si lo creamos nosotros,
+        # se borra. Si existía y el usuario tenía otras entradas, se limpian solo las nuestras.
+        if (-not (Test-Path -LiteralPath $o.path)) { continue }
+        $json = Read-Utf8Text -Path $o.path | ConvertFrom-Json
+        $raiz = if ($json.PSObject.Properties['servers']) { 'servers' } elseif ($json.PSObject.Properties['mcpServers']) { 'mcpServers' } else { $null }
+        if (-not $raiz) { Write-Host "sin tocar   $($o.path)  (no tiene estructura MCP)" -ForegroundColor DarkGray; continue }
+        $nombres = @($json.$raiz.PSObject.Properties.Name)
+        $otros = @($nombres | Where-Object { $_ -ne 'QSMANU-LOCAL-SHARED-MCP' -and $_ -ne 'sharedctx' -and $_ -ne 'context-mcp' })
+        if ($otros.Count -eq 0) {
+          Remove-Item -LiteralPath $o.path -Force
+          Write-Host "borrado     $($o.path)  (solo tenía nuestras entradas)" -ForegroundColor Yellow
+        } else {
+          foreach ($n in @('QSMANU-LOCAL-SHARED-MCP', 'sharedctx', 'context-mcp')) {
+            if ($nombres -contains $n) { $json.$raiz.PSObject.Properties.Remove($n) }
+          }
+          Write-Utf8NoBom -Path $o.path -Text ($json | ConvertTo-Json -Depth 12)
+          Write-Host "limpiado    $($o.path)  (quedaron las entradas del usuario: $($otros -join ', '))" -ForegroundColor Green
+        }
+      }
+      'quitar-bloque' {
+        if (Remove-BloqueMarcado -Path $o.path) {
+          Write-Host "bloque quitado de  $($o.path)" -ForegroundColor Green
+        } else {
+          Write-Host "sin bloque  $($o.path)" -ForegroundColor DarkGray
+        }
+      }
+      'borrar' {
+        if (Test-Path -LiteralPath $o.path) {
+          Remove-Item -LiteralPath $o.path -Force
+          Write-Host "borrado     $($o.path)" -ForegroundColor Yellow
+        }
+      }
+      'borrar-dir' {
+        if (Test-Path -LiteralPath $o.path) {
+          Remove-Item -LiteralPath $o.path -Recurse -Force -ErrorAction SilentlyContinue
+        }
+      }
+    }
+  }
+
+  if (-not $Latest) {
+    Write-Host "`nEl contexto ya guardado NO se toca: sigue en $env:USERPROFILE\.shared-mcp" -ForegroundColor DarkGray
+  }
+  Write-Host 'Reiniciá las apps para que tomen la configuración anterior.' -ForegroundColor Cyan
+}
+
+function Save-Manifest {
+  if ($DryRun -or $script:Changes.Count -eq 0) { return }
+  if (-not (Test-Path -LiteralPath $StateDir)) { New-Item -ItemType Directory -Force -Path $StateDir | Out-Null }
+  $previous = @()
+  if (Test-Path -LiteralPath $ManifestPath) {
+    try { $previous = @(Get-Content -LiteralPath $ManifestPath -Raw | ConvertFrom-Json) } catch { $previous = @() }
+  }
+  $all = @($previous) + @($script:Changes)
+  Write-Utf8NoBom -Path $ManifestPath -Text ($all | ConvertTo-Json -Depth 6)
+}
+
+# ---------------------------------------------------------------- comprobaciones
+
+$NodeCmd = Get-Command node -ErrorAction SilentlyContinue
+if (-not $NodeCmd) {
+  Write-Host 'No encontré node en el PATH. Instalá Node.js 24+ y volvé a ejecutar.' -ForegroundColor Red
+  exit 1
+}
+$Node = $NodeCmd.Source
+$NodeMajor = [int]((& $Node --version).TrimStart('v').Split('.')[0])
+if ($NodeMajor -lt 24) { throw 'Se requiere Node.js 24 o superior. No se modificó ninguna configuración.' }
+if (-not (Test-Path -LiteralPath $StdioJs)) {
+  Write-Host "Falta $StdioJs" -ForegroundColor Red
+  exit 1
+}
+
+Write-Host "contexto compartido local (sharedctx)" -ForegroundColor Green
+Write-Host "  repo:  $Repo"
+Write-Host "  node:  $Node"
+Write-Host "  modo:  $((& node $CliJs status | Select-Object -First 2) -join ' | ')"
+if ($Restore) { Undo-Install -Latest:$RestoreLatest; exit 0 }
+
+$block = Read-Utf8Text -Path $Snippet
+$keepServer = [bool]$KeepContextMcp
+
+# ----------------------------------------------------------------------- apps
+
+$inventory = @(Get-SharedCtxAppInventory)
+$validIds = @($inventory | ForEach-Object { $_.Id })
+$requestedIds = @($Apps | ForEach-Object { $_ -split ',' } | ForEach-Object { $_.Trim().ToLowerInvariant() } | Where-Object { $_ })
+$excludedIds = @($ExcludeApps | ForEach-Object { $_ -split ',' } | ForEach-Object { $_.Trim().ToLowerInvariant() } | Where-Object { $_ })
+$specifiedIds = @($requestedIds) + @($excludedIds)
+$unknownIds = @($specifiedIds | Where-Object { $_ -notin $validIds } | Sort-Object -Unique)
+if ($unknownIds.Count -gt 0) {
+  throw "App id desconocido: $($unknownIds -join ', '). Válidos: $($validIds -join ', ')"
+}
+
+$selectedIds = if ($requestedIds.Count -gt 0) {
+  @($requestedIds | Where-Object { $_ -notin $excludedIds } | Sort-Object -Unique)
+} else {
+  @($inventory | Where-Object { $_.Installed -and $_.AutoConfigurable -and $_.Id -notin $excludedIds } | ForEach-Object { $_.Id })
+}
+
+Write-Host "`nBarrido de aplicaciones compatibles:" -ForegroundColor Cyan
+foreach ($app in $inventory) {
+  $selected = $app.Id -in $selectedIds
+  $state = if (-not $app.AutoConfigurable -and ($app.Installed -or $selected)) { 'MANUAL' } elseif ($selected) { 'CONFIGURAR' } elseif ($app.Installed) { 'omitida' } else { 'no detectada' }
+  $color = if ($selected) { 'Green' } elseif ($app.Installed) { 'Yellow' } else { 'DarkGray' }
+  $why = if ($app.Evidence.Count -gt 0) { $app.Evidence -join '; ' } else { 'sin comando, ruta ni registro de instalación' }
+  Write-Host ("  {0,-14} {1,-12} {2}" -f $app.Id, $state, $why) -ForegroundColor $color
+  if (-not $app.Installed -and $app.ResidualConfig.Count -gt 0) {
+    Write-Host "    Restos de configuración (no prueban que siga instalada): $($app.ResidualConfig -join '; ')" -ForegroundColor DarkGray
+  }
+  if (-not $app.AutoConfigurable) {
+    Write-Host '    Perplexity Windows: MCP local no disponible; requiere un conector remoto configurado en la app.' -ForegroundColor Yellow
+  }
+}
+
+function Show-Connections {
+  $issues = 0
+  Write-Host "`nVerificación de configuración MCP (no prueba una sesión activa dentro de cada app):" -ForegroundColor Cyan
+  foreach ($app in $inventory | Where-Object { $_.Installed -or $_.Id -in $requestedIds }) {
+    $connection = Get-SharedCtxAppConnection -Id $app.Id -Repo $Repo
+    Write-Host ("  {0,-14} {1,-18} {2}" -f $app.Id, $connection.Status, $connection.Detail)
+    if ($app.AutoConfigurable -and -not $connection.Configured) { $issues++ }
+    if ($connection.Configured -and $connection.Status -eq 'CONFIG VALIDADA' -and -not $ListApps) {
+      $rootKey = switch ($app.Id) { 'vscode' { 'servers' } 'opencode' { 'mcp.servers' } default { 'mcpServers' } }
+      $probeName = if ($app.Id -eq 'opencode') { 'sharedctx' } else { $ServerName }
+      & $Node (Join-Path $Repo 'tools\probe-mcp.mjs') $connection.Path $rootKey $probeName | ForEach-Object { Write-Host "    $_" }
+      if ($LASTEXITCODE -ne 0) { $issues++ }
+    }
+  }
+  Write-Host "  Apps compatibles con configuración pendiente o inválida: $issues"
+  Write-Host '  Para confirmar conexión en la app: invocá shared_status; el panel muestra las sesiones activas.'
+  return $issues
+}
+
+if ($ListApps -or $VerifyOnly) {
+  $issues = Show-Connections
+  Write-Host "`nSolo se mostró el barrido; no se escribió nada." -ForegroundColor Yellow
+  if ($VerifyOnly -and $issues -gt 0) { exit 1 }
+  exit 0
+}
+
+if (-not $DryRun -and -not (Test-Path -LiteralPath $StateDir)) { New-Item -ItemType Directory -Force -Path $StateDir | Out-Null }
+
+function Use-App {
+  param([string]$Id)
+  return $Id -in $selectedIds
+}
+
+$configured = 0
+
+# Claude Desktop (JSON, mcpServers)
+$claudeCfg = Get-ClaudeDesktopConfigPath
+if (Use-App 'claude-desktop') {
+  Add-JsonServer -AppId 'claude-desktop' -Label 'Claude Desktop' -ConfigPath $claudeCfg -KeepServer:$keepServer
+  $configured++
+}
+
+# Cursor (JSON, mcpServers) — nivel usuario; se puede repetir por proyecto en <repo>\.cursor\mcp.json
+$cursorCfg = Join-Path $env:USERPROFILE '.cursor\mcp.json'
+if (Use-App 'cursor') {
+  Add-JsonServer -AppId 'cursor' -Label 'Cursor' -ConfigPath $cursorCfg -KeepServer:$keepServer
+  $configured++
+}
+
+# Antigravity (agente) — comparte el archivo con Gemini
+$geminiCfg = Join-Path $env:USERPROFILE '.gemini\config\mcp_config.json'
+if (Use-App 'antigravity') {
+  Add-JsonServer -AppId 'antigravity' -Label 'Antigravity (agente)' -ConfigPath $geminiCfg -KeepServer:$keepServer
+  $configured++
+}
+
+# Kimi Code (JSON, mcpServers en ~/.kimi-code/mcp.json)
+$kimiDir = Join-Path $env:USERPROFILE '.kimi-code'
+$kimiCfg = Join-Path $kimiDir 'mcp.json'
+if (Use-App 'kimi-code') {
+  Add-JsonServer -AppId 'kimi-code' -Label 'Kimi Code' -ConfigPath $kimiCfg -KeepServer:$keepServer
+  $configured++
+}
+
+# Codex / ChatGPT desktop (TOML)
+$codexCfg = Join-Path $env:USERPROFILE '.codex\config.toml'
+if (Use-App 'codex') {
+  Add-TomlServer -AppId 'codex' -Label 'Codex / ChatGPT desktop' -ConfigPath $codexCfg -KeepServer:$keepServer
+  $configured++
+}
+
+# VS Code (Copilot) — nivel usuario: %APPDATA%\Code\User\mcp.json con clave "servers"
+# (acá solo se retira la entrada vieja nuestra; no se toca context-mcp si existiera)
+$vscodeCfg = Join-Path $env:APPDATA 'Code\User\mcp.json'
+if (Use-App 'vscode') {
+  Add-JsonServer -AppId 'vscode' -Label 'VS Code (Copilot)' -ConfigPath $vscodeCfg -RootKey 'servers' -IncludeType -RetireList @('sharedctx')
+  $configured++
+}
+
+# GitHub Copilot CLI (configuración independiente de VS Code)
+$copilotCfg = Join-Path $env:USERPROFILE '.copilot\mcp-config.json'
+if (Use-App 'copilot') {
+  Add-JsonServer -AppId 'copilot' -Label 'Copilot (global)' -ConfigPath $copilotCfg -RootKey 'mcpServers' -IncludeType -RetireList @('sharedctx')
+  $configured++
+}
+
+# Antigravity IDE: comparte el MISMO archivo que el agente de Antigravity
+# (~/.gemini/config/mcp_config.json), ya configurado arriba. No tiene archivo propio.
+
+# Claude Code — se quitan los hooks de captura automática del servidor viejo
+$claudeSettings = Join-Path $env:USERPROFILE '.claude\settings.json'
+if ((Use-App 'claude-code') -and -not $KeepContextMcp -and (Test-Path -LiteralPath $claudeSettings)) {
+  Write-Host "`n== Claude Code (hooks de captura automática)" -ForegroundColor Cyan
+  Write-Host "   archivo: $claudeSettings"
+  if ($DryRun) {
+    Write-Host '   (dry-run) quitaría los hooks que llaman a context-mcp'
+  } else {
+    Backup-Config -Path $claudeSettings | Out-Null
+    $hookOut = Invoke-Node -NodeArgs @((Join-Path $Repo 'tools\strip-context-mcp-hooks.mjs'), $claudeSettings)
+    $hookOut | ForEach-Object { Write-Host "   $_" -ForegroundColor DarkGray }
+    [void]$script:Changes.Add([pscustomobject]@{ ts = (Get-Date).ToString('s'); kind = 'claude-hooks'; app = 'claude-code'; path = $claudeSettings })
+  }
+}
+
+# Claude Code (CLI) — usa su propio comando para no pelear con el formato interno
+$claudeCli = Get-Command claude -ErrorAction SilentlyContinue
+if ((Use-App 'claude-code') -and $claudeCli) {
+  Write-Host "`n== Claude Code" -ForegroundColor Cyan
+  if ($DryRun) {
+    Write-Host "   (dry-run) claude mcp add --scope user $ServerName ..."
+  } else {
+    & $claudeCli.Source mcp remove --scope user $ServerName 2>$null | Out-Null
+    $addOut = & $claudeCli.Source mcp add --scope user $ServerName -e "SHARED_MCP_APP=claude-code" -- $Node $StdioJs 2>&1
+    Write-Host "   $addOut" -ForegroundColor DarkGray
+    [void]$script:Changes.Add([pscustomobject]@{ ts = (Get-Date).ToString('s'); kind = 'claude-cli'; app = 'claude-code'; path = 'claude mcp add --scope user' })
+    $configured++
+  }
+} elseif (Use-App 'claude-code') {
+  Write-Host "`n== Claude Code" -ForegroundColor Cyan
+  Write-Host "   el CLI ``claude`` no está instalado: se omite (si lo instalás, corré: claude mcp add --scope user $ServerName -e SHARED_MCP_APP=claude-code -- <node> <stdio.js>)" -ForegroundColor Yellow
+}
+
+# DeepSeek Harness — plugin oficial dsh-mcp-client insertado en el patch del perfil$dshPatch = Join-Path $env:USERPROFILE '.dsh\profiles\desktop\cordis.patch.yml'
+if (Use-App 'dsh') {
+  Write-Host "`n== DeepSeek Harness" -ForegroundColor Cyan
+  Write-Host "   patch: $dshPatch"
+  $patchText = Read-Utf8Text -Path $dshPatch
+  $marcaIni = '# >>> sharedctx / QSMANU-LOCAL-SHARED-MCP (generado por install.ps1)'
+  $marcaFin = '# <<< sharedctx / QSMANU-LOCAL-SHARED-MCP'
+  $marcaLegacy = '# Contexto compartido local (opt-in)'
+  $otroMcp = ($patchText -match 'dsh-mcp-client') -and -not ($patchText -match [regex]::Escape($marcaIni)) -and -not ($patchText -match [regex]::Escape($marcaLegacy))
+
+  if ($otroMcp) {
+    Write-Host '   ya hay OTRO servidor MCP declarado a mano: no toco el archivo (revisalo vos).' -ForegroundColor Yellow
+  } elseif ($DryRun) {
+    Write-Host "   (dry-run) insertaría/actualizaría el plugin @deepseek-ai/dsh-mcp-client (stdio → $StdioJs)"
+  } else {
+    Backup-Config -Path $dshPatch | Out-Null
+    # En YAML con comillas simples la barra invertida es literal: no se escapa.
+    $insert = @(
+      $marcaIni,
+      '- insert:',
+      '    - id: sharedctx-mcp',
+      "      name: '@deepseek-ai/dsh-mcp-client'",
+      '      config:',
+      "        serverName: $ServerName",
+      '        transport: stdio',
+      "        command: '$Node'",
+      '        args:',
+      "          - '$StdioJs'",
+      '        env:',
+      '          SHARED_MCP_APP: dsh',
+      '        failOnStartupError: true',
+      '        toolCallTimeoutMs: 30000',
+      $marcaFin
+    ) -join "`r`n"
+
+    if ($patchText.Contains($marcaIni)) {
+      # Regeneración normal: reemplazo el bloque marcado.
+      $patron = [regex]::Escape($marcaIni) + '(?s).*?' + [regex]::Escape($marcaFin)
+      $patchText = [regex]::Replace($patchText, $patron, [System.Text.RegularExpressions.MatchEvaluator] { param($m) $insert })
+      $accion = 'actualizado'
+    } else {
+      $accion = 'insertado'
+    }
+
+    # Limpieza de generaciones anteriores de este mismo servidor (por serverName).
+    $limpio = Remove-BloquesMcpDsh -Text $patchText -Nombres @('sharedctx', 'context-mcp')
+    if ($limpio.quitados -gt 0) {
+      $patchText = $limpio.texto
+      $accion = "$accion + $($limpio.quitados) bloque(s) anterior(es) eliminado(s)"
+    }
+
+    if (-not $patchText.Contains($marcaIni)) {
+      $patchText = $patchText.TrimEnd() + "`r`n`r`n" + $insert
+    }
+    Write-Utf8NoBom -Path $dshPatch -Text ($patchText.TrimEnd() + "`r`n")
+    [void]$script:Changes.Add([pscustomobject]@{ ts = (Get-Date).ToString('s'); kind = 'dsh-plugin'; app = 'dsh'; path = $dshPatch })
+    Write-Host "   plugin $accion (serverName: $ServerName)" -ForegroundColor DarkGray
+    $configured++
+  }
+}
+
+# Kimchi Studio
+$kimchiCfg = Join-Path $env:USERPROFILE '.config\kimchi\harness\mcp.json'
+if (Use-App 'kimchi') {
+  Add-JsonServer -AppId 'kimchi' -Label 'Kimchi Studio' -ConfigPath $kimchiCfg
+  $configured++
+}
+
+# OpenCode (V2) — ~/.config/opencode/opencode.json, entrada mcp.servers.sharedctx
+# command es un array (ejecutable + args) y las variables van en "environment".
+$opencodeCfg = Join-Path $env:USERPROFILE '.config\opencode\opencode.json'
+if (Use-App 'opencode') {
+  Add-JsonServer -AppId 'opencode' -Label 'OpenCode' -ConfigPath $opencodeCfg -RootKey 'mcp.servers' -Name 'sharedctx' -OpenCode -RetireList @('context-mcp')
+  $configured++
+}
+
+# -------------------------------------------------------------- instrucciones
+
+if (-not $SkipInstructions -and $block) {
+  $claudeMd = Join-Path $env:USERPROFILE '.claude\CLAUDE.md'
+  if (Use-App 'claude-code') { Set-MarkerBlock -Label 'Claude Code (CLAUDE.md)' -File $claudeMd -Block $block }
+
+  $agentsMd = Join-Path $env:USERPROFILE '.codex\AGENTS.md'
+  if (Use-App 'codex') { Set-MarkerBlock -Label 'Codex (AGENTS.md)' -File $agentsMd -Block $block }
+
+  $geminiMd = Join-Path $env:USERPROFILE '.gemini\GEMINI.md'
+  if (Use-App 'antigravity') { Set-MarkerBlock -Label 'Antigravity/Gemini (GEMINI.md)' -File $geminiMd -Block $block }
+
+  $kimiMd = Join-Path $env:USERPROFILE '.kimi-code\AGENTS.md'
+  if (Use-App 'kimi-code') { Set-MarkerBlock -Label 'Kimi Code (AGENTS.md)' -File $kimiMd -Block $block }
+
+  if (Use-App 'kimchi') {
+    $kimchiSkill = Join-Path $env:USERPROFILE '.config\kimchi\harness\skills\contexto-compartido\SKILL.md'
+    Set-MarkerBlock -Label 'Kimchi Studio (skill)' -File $kimchiSkill -Block ("---`nname: contexto-compartido`ndescription: Contexto compartido con consentimiento explicito`n---`n`n" + $block)
+  }
+
+  $opencodeMd = Join-Path $env:USERPROFILE '.config\opencode\AGENTS.md'
+  if (Use-App 'opencode') { Set-MarkerBlock -Label 'OpenCode (AGENTS.md)' -File $opencodeMd -Block $block }
+
+  $cursorRule = Join-Path $env:USERPROFILE '.cursor\rules\contexto-compartido.mdc'
+  if (Use-App 'cursor') {
+    $mdc = "---`r`ndescription: Contexto compartido local entre herramientas (opt-in)`r`nalwaysApply: true`r`n---`r`n`r`n" + $block + "`r`n"
+    Write-Host "`n== Cursor (regla global)" -ForegroundColor Cyan
+    Write-Host "   archivo: $cursorRule"
+    if (-not $DryRun) {
+      Backup-Config -Path $cursorRule | Out-Null
+      Write-Utf8NoBom -Path $cursorRule -Text $mdc
+      [void]$script:Changes.Add([pscustomobject]@{ ts = (Get-Date).ToString('s'); kind = 'instructions'; path = $cursorRule })
+    }
+  }
+
+}
+
+Save-Manifest
+
+if (-not $DryRun) { $connectionIssues = Show-Connections }
+
+Write-Host "`n----------------------------------------------" -ForegroundColor Green
+if ($DryRun) {
+  Write-Host 'Simulación terminada: no se escribió nada.' -ForegroundColor Yellow
+} else {
+  Write-Host "Listo. Apps configuradas: $configured" -ForegroundColor Green
+  Write-Host "Manifiesto: $ManifestPath"
+  Write-Host "`nSiguientes pasos:" -ForegroundColor Cyan
+  Write-Host '  1) Cerrá y volvé a abrir cada aplicación (leen la config al arrancar).'
+  Write-Host '  2) Elegí el modo de consentimiento:  sharedctx mode ask     (recomendado)'
+  Write-Host '                                       sharedctx mode readonly  (solo leer)'
+  Write-Host '                                       sharedctx mode on        (publicar directo)'
+  Write-Host '                                       sharedctx mode off       (no compartir nada)'
+  Write-Host '  3) Verificá el estado:               sharedctx status'
+}
+if (-not $DryRun -and $connectionIssues -gt 0) { exit 1 }

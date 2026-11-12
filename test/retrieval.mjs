@@ -1,0 +1,77 @@
+import assert from 'node:assert/strict';
+import { mkdtempSync, rmSync, readFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import { Client } from '@modelcontextprotocol/sdk/client/index.js';
+import { InMemoryTransport } from '@modelcontextprotocol/sdk/inMemory.js';
+const home = mkdtempSync(join(tmpdir(), 'sharedctx-retrieval-'));
+process.env.SHARED_MCP_HOME = home;
+process.env.SHARED_MCP_PROJECT = 'demo';
+process.env.SHARED_MCP_APP = 'retrieval-test';
+const store = await import('../src/store.js');
+const { createServer } = await import('../src/server.js');
+const { relatedEntries, insights } = await import('../src/relations.js');
+const { bounded } = await import('../src/retrieval.js');
+const server = createServer();
+const client = new Client({ name: 'regression', version: '1' });
+const [ct, st] = InMemoryTransport.createLinkedPair();
+await server.connect(st); await client.connect(ct);
+let checks = 0;
+const check = (name, actual) => { assert.ok(actual, name); checks++; console.log('OK  ' + name); };
+const call = async (name, args = {}) => { const r = await client.callTool({ name, arguments: name === 'shared_pull' ? {format:'markdown', ...args} : args }); return { ...r, text: r.content[0].text }; };
+try {
+  for (let i = 1; i <= 12; i++) store.writeEntry({ project: 'demo', id: 'note-' + i, title: 'Nota búsqueda ' + i, content: 'Nota verificable ' + i, type: 'note', tags: ['notas'], createdAt: `2026-01-${String(i).padStart(2, '0')}T00:00:00Z` });
+  for (let i = 1; i <= 10; i++) store.writeEntry({ project: 'demo', id: 'hand-' + i, title: 'Handoff ' + i, content: 'INICIO\n' + 'á 🚀 fin\n'.repeat(5000), type: 'handoff', createdAt: `2026-02-${String(i).padStart(2, '0')}T00:00:00Z` });
+  store.writeEntry({ project: 'private-demo', id: 'private', title: 'PRIVADO-FICTICIO', content: 'exclusivo', type: 'note' });
+  const initial = await call('shared_pull');
+  check('notas filtradas antes de paginar', initial.text.includes('Últimas entradas (3)') && initial.text.includes('note-12'));
+  check('handoff breve explícito y presupuesto por defecto', initial.text.length <= 6000 && initial.text.includes('Vista parcial'));
+  const zero = await call('shared_pull', { limit: 0, handoff_mode: 'omit' });
+  check('cero omite entradas y omit excluye handoff', zero.text.includes('Últimas entradas (0)') && !zero.text.includes('INICIO'));
+  const page2 = await call('shared_pull', { limit: 3, offset: 3, handoff_mode: 'omit' });
+  check('paginación entrega la página siguiente', page2.text.includes('note-9') && !page2.text.includes('note-12'));
+  for (const limit of [-1, 0.5, 51, '2']) check('rechaza límite inválido ' + limit, (await call('shared_pull', { limit })).isError);
+  check('historial handoff accesible por tipo', (await call('shared_pull', { type: 'handoff', limit: 2, handoff_mode: 'omit' })).text.includes('hand-9'));
+  const rev = /Revisión: (\w+)/.exec(initial.text)[1];
+  check('revisión evita repetir respuesta ya recibida', (await call('shared_pull', { since_revision: rev })).text.startsWith('Sin cambios'));
+  check('cambiar opciones invalida la vista cacheada', !(await call('shared_pull', { since_revision: rev, include_content: true })).text.startsWith('Sin cambios'));
+  const search = await call('shared_search', { query: 'búsqueda', limit: 2 });
+  check('búsqueda local normaliza acentos y devuelve IDs', search.text.includes('note-12') && search.text.includes('total=') === false && search.text.includes('Total=12'));
+  for (const tool of ['shared_pull', 'shared_read', 'shared_search', 'shared_related', 'shared_list']) {
+    const args = { project: 'private-demo', ...(tool === 'shared_read' ? { id: 'private' } : {}), ...(tool === 'shared_search' ? { query: 'exclusivo' } : {}) };
+    check(tool + ' exige permiso cruzado', (await call(tool, args)).isError);
+    check(tool + ' permite lectura cruzada autorizada', !(await call(tool, { ...args, confirm_cross_project: true })).isError);
+  }
+  const count = store.listProjects().length;
+  check('nombre desconocido no se adivina', (await call('shared_search', { project: 'privat-demo', query: 'exclusivo', confirm_cross_project: true })).isError && store.listProjects().length === count);
+  const full = store.getHandoff('demo').content;
+  let offset = 0, recovered = '', loops = 0;
+  while (offset < full.length) {
+    const result = await call('shared_read', { id: 'handoff', offset, max_chars: 1024 });
+    assert.ok(result.text.length <= 1024);
+    const body = result.text.replace(/^.*\nRevisión:.*\nLongitud:.*\n/, '').replace(/\n\[(?:Contenido parcial\.[\s\S]*|Fin de la entrada\.)\]$/, '');
+    assert.ok(body.length > 0 && ++loops < 200);
+    recovered += body; offset += body.length;
+  }
+  check('lectura paginada conserva texto Unicode completo', recovered === full);
+  const read = await call('shared_read', { id: 'note-1' });
+  const entryRev = /Revisión: (\w+)/.exec(read.text)[1];
+  check('lectura por ID con revisión incremental', (await call('shared_read', { id: 'note-1', since_revision: entryRev })).text.startsWith('Sin cambios'));
+  store.writeEntry({ project: 'demo', id: 'note-1', title: 'Nota editada', content: 'contenido modificado', type: 'note' });
+  check('edición conservando ID invalida revisión', !(await call('shared_read', { id: 'note-1', since_revision: entryRev })).text.startsWith('Sin cambios'));
+  const files = ['D:\\corpus\\uno,dos\\a.pdf', 'D:\\b.pdf'];
+  const activeId = store.getHandoff('demo').id;
+  store.writeEntry({ project: 'demo', id: 'hand-1', title: 'Old handoff metadata update', content: 'Historical', type: 'handoff' });
+  check('editar historial no sustituye el handoff vigente', store.getHandoff('demo').id === activeId);
+  store.writeEntry({ project: 'demo', id: 'commas', title: 'Comas', content: 'test', files, tags: ['a,b'] });
+  check('rutas y etiquetas con comas hacen round-trip', JSON.stringify(store.readEntry('demo', 'commas').files) === JSON.stringify(files) && store.readEntry('demo', 'commas').tags[0] === 'a,b');
+  check('valida metadatos antes de encolar', (await call('shared_publish', { title: 'x\ntype: handoff', content: 'c', confirm: true })).isError && store.listPending().length === 0);
+  store.writeEntry({ project: 'isolated', id: 'one', title: 'Arquitectura del bus', content: 'Outbox Kafka', tags: ['solo'] });
+  store.writeEntry({ project: 'isolated', id: 'two', title: 'Vacaciones', content: 'Playa y montaña', tags: ['vacaciones'] });
+  check('related no devuelve coincidencias arbitrarias débiles', relatedEntries('isolated', { id: 'one' }).related.length === 0);
+  check('etiqueta única no inventa relación entre entradas', insights('isolated').insights.some(i => i.id === 'huerfanas'));
+  check('presupuesto se respeta incluso con texto largo', bounded('x'.repeat(10000), 512).length === 512);
+  const telemetry = readFileSync(join(home, 'audit.log'), 'utf8').trim().split('\n').map(JSON.parse).filter(x => x.action === 'response');
+  check('telemetría mide volumen y duración sin guardar cuerpos ni búsquedas', telemetry.some(x => x.response_chars > 0 && x.duration_ms >= 0) && telemetry.every(x => !('content' in x) && !('query' in x)));
+} finally { await client.close(); await server.close(); rmSync(home, { recursive: true, force: true }); }
+console.log(checks + ' comprobaciones de recuperación OK.');
